@@ -8,8 +8,6 @@ public class Game
     public string Description { get; set; }
     public string ImagePath { get; set; }
     public double Price { get; set; }
-    public DateTime ReleaseDate { get; set; }
-    public string Developer { get; set; }
     public string MinimumRequirements { get; set; }
     public string RecommendedRequirements { get; set; }
 

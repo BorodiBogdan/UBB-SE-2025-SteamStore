@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using System.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Data;
@@ -13,15 +13,15 @@ public class DataLink
         string? localDataSource = configuration["LocalDataSource"];
         connectionString = "Data Source=" + localDataSource + ";" +
                         "Initial Catalog=SteamStore;" +
-                        "Integrated Security=True;" +
-                        "TrustServerCertificate=True";
+                        "Integrated Security=True;";
+
         try
         {
             sqlConnection = new SqlConnection(connectionString);
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error initializing SQL connection: {connectionString}");
+            throw new Exception($"Error initializing SQL connection: {connectionString}", ex);
         }
     }
 

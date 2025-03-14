@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using System.Data.SqlClient;
 using System;
 using System.Data;
 using System.Collections.Generic;
@@ -21,8 +21,6 @@ public class GameRepository
             new SqlParameter("@Description", game.Description),
             new SqlParameter("@ImagePath", game.ImagePath),
             new SqlParameter("@Price", game.Price),
-            new SqlParameter("@ReleaseDate", game.ReleaseDate),
-            new SqlParameter("@Developer", game.Developer),
             new SqlParameter("@MinimumRequirements", game.MinimumRequirements),
             new SqlParameter("@RecommendedRequirements", game.RecommendedRequirements),
             new SqlParameter("@Status", game.Status)
@@ -51,16 +49,14 @@ public class GameRepository
             {
                 Game game = new Game
                 {
-                    Id = (int)row["Id"],
-                    Name = (string)row["Name"],
+                    Id = (int)row["game_id"],
+                    Name = (string)row["name"],
                     Description = (string)row["Description"],
-                    ImagePath = (string)row["ImagePath"],
-                    Price = (double)row["Price"],
-                    ReleaseDate = (DateTime)row["ReleaseDate"],
-                    Developer = (string)row["Developer"],
-                    MinimumRequirements = (string)row["MinimumRequirements"],
-                    RecommendedRequirements = (string)row["RecommendedRequirements"],
-                    Status = (string)row["Status"]
+                    ImagePath = (string)row["image_url"],
+                    Price = Convert.ToDouble(row["price"]),
+                    MinimumRequirements = (string)row["minimum_requirements"],
+                    RecommendedRequirements = (string)row["recommended_requirements"],
+                    Status = (string)row["status"]
                 };
                 games.Add(game);
             }

@@ -4,18 +4,18 @@ public class HomePageViewModel
 {
     public ObservableCollection<Game> Games { get; set; }
 
-    private readonly GameRepository _gameRepository;
+    private readonly GameService _gameService;
 
-    public HomePageViewModel(GameRepository gameRepository)
+    public HomePageViewModel(GameService gameService)
     {
-        _gameRepository = gameRepository;
+        _gameService = gameService;
         Games = new ObservableCollection<Game>();
         LoadGames();
     }
 
     private void LoadGames()
     {
-        var games = _gameRepository.getAllGames();
+        var games = _gameService.getAllGames();
         foreach (var game in games)
         {
             Games.Add(game);

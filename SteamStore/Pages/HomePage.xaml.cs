@@ -36,7 +36,8 @@ namespace SteamStore.Pages
             .AddJsonFile("appsettings.json")
             .Build());
             var gameRepository = new GameRepository(dataLink);
-            this.DataContext = new HomePageViewModel(gameRepository);
+            var gameService = new GameService(gameRepository);
+            this.DataContext = new HomePageViewModel(gameService);
         }
     }
 }
