@@ -12,7 +12,7 @@ public class DataLink
     {
         string? localDataSource = configuration["LocalDataSource"];
         connectionString = "Data Source=" + localDataSource + ";" +
-                        "Initial Catalog=ISS_Duo;" +
+                        "Initial Catalog=SteamStore;" +
                         "Integrated Security=True;" +
                         "TrustServerCertificate=True";
         try
@@ -21,7 +21,7 @@ public class DataLink
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error initializing SQL connection: {ex.Message}");
+            throw new Exception($"Error initializing SQL connection: {connectionString}");
         }
     }
 

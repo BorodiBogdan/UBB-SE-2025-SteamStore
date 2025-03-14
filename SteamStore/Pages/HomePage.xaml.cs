@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -26,6 +27,16 @@ namespace SteamStore.Pages
         public HomePage()
         {
             this.InitializeComponent();
+
+            // Resolve dependencies (e.g., GameRepository and DataLink)
+
+            // Set the DataContext
+            var dataLink = new DataLink(new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json")
+            .Build());
+            var gameRepository = new GameRepository(dataLink);
+            this.DataContext = new HomePageViewModel(gameRepository);
         }
     }
 }
