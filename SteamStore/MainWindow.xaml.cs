@@ -18,9 +18,6 @@ using Windows.Foundation.Collections;
 
 namespace SteamStore
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : Window
     {
         public MainWindow()
@@ -28,9 +25,13 @@ namespace SteamStore
             this.InitializeComponent();
         }
 
-        private void myButton_Click(object sender, RoutedEventArgs e)
+        private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            myButton.Content = "Clicked";
+            if (args.SelectedItemContainer != null)
+            {
+                var tag = args.SelectedItemContainer.Tag.ToString();
+
+            }
         }
     }
 }
