@@ -64,6 +64,7 @@ namespace SteamStore.Pages
             FilterPopup.IsOpen = false;
         }
 
+        //Navigation to GamePage
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             this.Frame.Navigate(typeof(GamePage));
