@@ -24,7 +24,6 @@ public class GameRepository
             new SqlParameter("@MinimumRequirements", game.MinimumRequirements),
             new SqlParameter("@RecommendedRequirements", game.RecommendedRequirements),
             new SqlParameter("@Status", game.Status)
-            //test on main
         };
 
         try

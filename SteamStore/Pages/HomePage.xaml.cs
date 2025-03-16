@@ -39,5 +39,34 @@ namespace SteamStore.Pages
             var gameService = new GameService(gameRepository);
             this.DataContext = new HomePageViewModel(gameService);
         }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string user_input = SearchBox.Text.ToLower();
+        }
+
+        private void FilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            FilterPopup.IsOpen = true;
+        }
+
+        private void ApplyFilters_Click(object sender, RoutedEventArgs e)
+        {
+            // You can access the filter values from PopupRatingSlider, MinPriceSlider, MaxPriceSlider here.
+            double ratingFilter = PopupRatingSlider.Value;
+            double minPrice = MinPriceSlider.Value;
+            double maxPrice = MaxPriceSlider.Value;
+
+            // Implement your filtering logic, e.g.,
+            // viewModel.FilterGamesByRatingAndPrice(ratingFilter, minPrice, maxPrice);
+
+            // Close the popup
+            FilterPopup.IsOpen = false;
+        }
+
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
