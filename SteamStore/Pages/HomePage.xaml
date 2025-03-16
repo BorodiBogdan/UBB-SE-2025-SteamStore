@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-     x:Class="SteamStore.Pages.HomePage"
+    x:Class="SteamStore.Pages.HomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,20 +8,230 @@
     mc:Ignorable="d">
 
     <Grid>
-        <ListView ItemsSource="{Binding Games}">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Id}" Width="50" />
-                        <TextBlock Text="{Binding Name}" Width="150" Margin="10,0,0,0" />
-                        <TextBlock Text="{Binding Description}" Width="300" Margin="10,0,0,0" />
-                        <TextBlock Text="{Binding Price}" Width="100" Margin="10,0,0,0" />
-                        <TextBlock Text="{Binding ReleaseDate}" Width="120" Margin="10,0,0,0" />
-                        <TextBlock Text="{Binding Developer}" Width="150" Margin="10,0,0,0" />
-                        <TextBlock Text="{Binding Status}" Width="100" Margin="10,0,0,0" />
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Orientation="Vertical" Spacing="20" Padding="10">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBox x:Name="SearchBox"
+                        PlaceholderText="Search for a game"
+                        TextChanged="SearchBox_TextChanged"
+                        Width="300"
+                        Height="40"
+                        FontSize="16"
+                        Padding="5"/>
+                    <Button Content="Filter" Click="FilterButton_Click" HorizontalAlignment="Right"/>
+                </StackPanel>
+
+                <!-- All Games -->
+                <TextBlock Text="All Games" FontSize="20" FontWeight="Bold" Margin="0,10,0,5"/>
+                <ScrollViewer HorizontalScrollMode="Enabled"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollMode="Disabled"
+                    VerticalScrollBarVisibility="Hidden">
+                    <ListView ItemsSource="{Binding allGames}"
+                    ScrollViewer.HorizontalScrollMode="Enabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                    Height="200"
+                    SelectionChanged="ListView_SelectionChanged">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="160" Padding="8" Margin="4">
+                                    <StackPanel Orientation="Vertical" Spacing="4">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13"/>
+                                        <TextBlock Text="{Binding Price}" FontSize="10"/>
+                                        <Image Source="{Binding ImagePath}"
+                                        Width="144" Height="144" 
+                                        Stretch="UniformToFill"
+                                        Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </ScrollViewer>
+
+                <!-- New Releases -->
+                <TextBlock Text="Recommended Games" FontSize="20" FontWeight="Bold" Margin="0,10,0,5"/>
+                <ScrollViewer HorizontalScrollMode="Enabled"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollMode="Disabled"
+                    VerticalScrollBarVisibility="Hidden">
+                    <ListView ItemsSource="{Binding allGames}"
+                        ScrollViewer.HorizontalScrollMode="Enabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                        ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                        Height="200"
+                        SelectionChanged="ListView_SelectionChanged">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="160" Padding="8" Margin="4">
+                                    <StackPanel Orientation="Vertical" Spacing="4">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13"/>
+                                        <TextBlock Text="{Binding Price}" FontSize="10"/>
+                                        <Image Source="{Binding ImagePath}"
+                                            Width="144" Height="144" 
+                                            Stretch="UniformToFill"
+                                            Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </ScrollViewer>
+
+                <!-- Upcoming Games -->
+                <TextBlock Text="Trending Games" FontSize="20" FontWeight="Bold" Margin="0,10,0,5"/>
+                <ScrollViewer HorizontalScrollMode="Enabled"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollMode="Disabled"
+                    VerticalScrollBarVisibility="Hidden">
+                                        <ListView ItemsSource="{Binding allGames}"
+                    ScrollViewer.HorizontalScrollMode="Enabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                    Height="200"
+                    SelectionChanged="ListView_SelectionChanged">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="160" Padding="8" Margin="4">
+                                    <StackPanel Orientation="Vertical" Spacing="4">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13"/>
+                                        <TextBlock Text="{Binding Price}" FontSize="10"/>
+                                        <Image Source="{Binding ImagePath}"
+                                         Width="144" Height="144" 
+                                         Stretch="UniformToFill"
+                                         Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </ScrollViewer>
+
+                <!-- Discounted Games -->
+                <TextBlock Text="Discounted Games" FontSize="20" FontWeight="Bold" Margin="0,10,0,5"/>
+                <ScrollViewer HorizontalScrollMode="Enabled"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollMode="Disabled"
+                    VerticalScrollBarVisibility="Hidden">
+                    <ListView ItemsSource="{Binding allGames}"
+                    ScrollViewer.HorizontalScrollMode="Enabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                    Height="200"
+                    SelectionChanged="ListView_SelectionChanged">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="160" Padding="8" Margin="4">
+                                    <StackPanel Orientation="Vertical" Spacing="4">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13"/>
+                                        <TextBlock Text="{Binding Price}" FontSize="10"/>
+                                        <Image Source="{Binding ImagePath}"
+                 Width="144" Height="144" 
+                 Stretch="UniformToFill"
+                 Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </ScrollViewer>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Popup x:Name="FilterPopup" IsLightDismissEnabled="True">
+            <!-- A full-screen semi-transparent overlay -->
+            <Grid Background="#80000000" Width="{Binding ActualWidth, ElementName=LayoutRoot}" Height="{Binding ActualHeight, ElementName=LayoutRoot}">
+                <Border Background="White" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="10" Width="400">
+                    <StackPanel Spacing="20">
+                        <TextBlock Text="Filter Options" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" />
+                        <!-- Rating Slider -->
+                        <StackPanel Orientation="Vertical" Spacing="10">
+                            <TextBlock Text="Rating" FontSize="16" HorizontalAlignment="Center"/>
+                            <Slider x:Name="PopupRatingSlider"
+                            Minimum="0"
+                            Maximum="10"
+                            Value="5"
+                            TickFrequency="1"
+                            TickPlacement="BottomRight"
+                            Width="200" HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Price Range (Using two sliders as a range) -->
+                        <StackPanel Orientation="Vertical" Spacing="10">
+                            <TextBlock Text="Price Range" FontSize="16" HorizontalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                                <StackPanel>
+                                    <TextBlock Text="Minimum" FontSize="14" HorizontalAlignment="Center"/>
+                                    <Slider x:Name="MinPriceSlider"
+                                    Minimum="0"
+                                    Maximum="1000"
+                                    Value="50"
+                                    TickFrequency="10"
+                                    Width="150"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="Maximum" FontSize="14" HorizontalAlignment="Center"/>
+                                    <Slider x:Name="MaxPriceSlider"
+                                    Minimum="0"
+                                    Maximum="1000"
+                                    Value="500"
+                                    TickFrequency="10"
+                                    Width="150"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Category Selection -->
+                        <StackPanel Orientation="Vertical" Spacing="10">
+                            <Button Content="Tags" HorizontalAlignment="Center">
+                                <Button.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <ListView ItemsSource="{Binding Categories}"
+                                          SelectionMode="Multiple"
+                                          Width="200"
+                                          Height="150">
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" />
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Apply Filters Button -->
+                        <Button Content="Apply Filters" HorizontalAlignment="Center" Click="ApplyFilters_Click" Margin="0,20,0,0"/>
                     </StackPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                </Border>
+            </Grid>
+        </Popup>
+
     </Grid>
 </Page>
