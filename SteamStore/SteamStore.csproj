@@ -68,6 +68,9 @@
     <None Remove="Pages\WishListPage.xaml" />
   </ItemGroup>
   <ItemGroup>
+
+  </ItemGroup>
+  <ItemGroup>
     <Resource Remove="Pages\HomePage.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +110,11 @@
       <HintPath>$(SSDTUnitTestPath)\Microsoft.Data.Tools.Schema.Sql.UnitTestingAdapter.dll</HintPath>
       <Private>True</Private>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Pages\GamePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
   <PropertyGroup>
     <SsdtUnitTestVersion>3.1</SsdtUnitTestVersion>

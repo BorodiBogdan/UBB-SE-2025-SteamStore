@@ -66,7 +66,7 @@ namespace SteamStore.Pages
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            throw new NotImplementedException();
+            this.Frame.Navigate(typeof(GamePage));
         }
     }
 }
