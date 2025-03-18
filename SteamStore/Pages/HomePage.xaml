@@ -28,12 +28,13 @@
                     VerticalScrollMode="Disabled"
                     VerticalScrollBarVisibility="Hidden">
                     <ListView ItemsSource="{Binding allGames}"
-                    ScrollViewer.HorizontalScrollMode="Enabled"
-                    ScrollViewer.VerticalScrollMode="Disabled"
-                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                    ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                    Height="200"
-                    SelectionChanged="ListView_SelectionChanged">
+                        x:Name="GameListView"
+                        ScrollViewer.HorizontalScrollMode="Enabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                        ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                        Height="200"
+                        SelectionChanged="ListView_SelectionChanged">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <ItemsStackPanel Orientation="Horizontal"/>

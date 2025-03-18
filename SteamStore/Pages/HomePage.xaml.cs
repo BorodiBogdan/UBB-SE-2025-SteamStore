@@ -28,10 +28,8 @@ namespace SteamStore.Pages
         {
             this.InitializeComponent();
 
-            // Resolve dependencies (e.g., GameRepository and DataLink)
-
-
             this.DataContext = new HomePageViewModel(_gameService);
+
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -61,7 +59,14 @@ namespace SteamStore.Pages
         //Navigation to GamePage
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.Frame.Navigate(typeof(GamePage));
+            if (sender is ListView listView && listView.SelectedItem is Game selectedGame)
+            {
+                if (this.Parent is Frame frame)
+                {
+                    frame.Navigate(typeof(GamePage), selectedGame);
+                }
+            }
         }
+
     }
 }

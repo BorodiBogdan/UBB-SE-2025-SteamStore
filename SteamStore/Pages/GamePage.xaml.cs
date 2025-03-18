@@ -25,6 +25,15 @@ namespace SteamStore.Pages
         {
             this.InitializeComponent(); // This line should work now
         }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (e.Parameter is Game selectedGame)
+            {
+                this.DataContext = selectedGame; // Bind the selected game
+            }
+        }
+
     }
 
 }
