@@ -24,20 +24,44 @@ namespace SteamStore.Pages
     /// </summary>
     public sealed partial class HomePage : Page
     {
-        public HomePage()
+        public HomePage(GameService _gameService)
         {
             this.InitializeComponent();
 
             // Resolve dependencies (e.g., GameRepository and DataLink)
 
-            // Set the DataContext
-            var dataLink = new DataLink(new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json")
-            .Build());
-            var gameRepository = new GameRepository(dataLink);
-            var gameService = new GameService(gameRepository);
-            this.DataContext = new HomePageViewModel(gameService);
+
+            this.DataContext = new HomePageViewModel(_gameService);
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string user_input = SearchBox.Text.ToLower();
+        }
+
+        private void FilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            FilterPopup.IsOpen = true;
+        }
+
+        private void ApplyFilters_Click(object sender, RoutedEventArgs e)
+        {
+            // You can access the filter values from PopupRatingSlider, MinPriceSlider, MaxPriceSlider here.
+            double ratingFilter = PopupRatingSlider.Value;
+            double minPrice = MinPriceSlider.Value;
+            double maxPrice = MaxPriceSlider.Value;
+
+            // Implement your filtering logic, e.g.,
+            // viewModel.FilterGamesByRatingAndPrice(ratingFilter, minPrice, maxPrice);
+
+            // Close the popup
+            FilterPopup.IsOpen = false;
+        }
+
+        //Navigation to GamePage
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(GamePage));
         }
     }
 }

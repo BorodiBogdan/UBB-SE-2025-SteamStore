@@ -68,6 +68,9 @@
     <None Remove="Pages\WishListPage.xaml" />
   </ItemGroup>
   <ItemGroup>
+
+  </ItemGroup>
+  <ItemGroup>
     <Resource Remove="Pages\HomePage.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -91,9 +94,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Data\Queries\" />
+    <Folder Include="Data\Queries\Game\Populate\" />
+    <Folder Include="Data\Queries\User\Populate\" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup Condition="$(VisualStudioVersion) == '17.0'">
     <Reference Include="Microsoft.Data.Tools.Schema.Sql, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>$(SSDTPath)\Microsoft.Data.Tools.Schema.Sql.dll</HintPath>
@@ -107,6 +110,11 @@
       <HintPath>$(SSDTUnitTestPath)\Microsoft.Data.Tools.Schema.Sql.UnitTestingAdapter.dll</HintPath>
       <Private>True</Private>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Pages\GamePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
   <PropertyGroup>
     <SsdtUnitTestVersion>3.1</SsdtUnitTestVersion>
