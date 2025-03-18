@@ -6,10 +6,102 @@
     xmlns:local="using:SteamStore.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <TextBlock Text="Cart" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <!-- Title -->
+        <TextBlock Text="Your Cart" 
+                   FontSize="28" 
+                   FontWeight="Bold" 
+                   HorizontalAlignment="Center" 
+                   Margin="0,20,0,20"
+                   Foreground="{ThemeResource SystemControlForegroundAccentBrush}"/>
 
+        <!-- List of Games in Cart -->
+        <ListView ItemsSource="{Binding CartGames}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  Margin="20,70,20,20"
+                  Background="Transparent"
+                  BorderThickness="0">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,10,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Game Image -->
+                        <Image Source="{Binding ImageUrl}"
+                               Width="100"
+                               Height="60"
+                               Stretch="UniformToFill"
+                               Margin="10,0,20,0"
+                               VerticalAlignment="Center"/>
+
+                        <!-- Game Name and Price -->
+                        <StackPanel Grid.Column="1"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Name}"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"/>
+                            <TextBlock Text="{Binding Price}"
+                                       FontSize="14"
+                                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                        </StackPanel>
+
+                        <!-- Remove Button -->
+                        <Button Grid.Column="2"
+                                Content="Remove"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Margin="10,0,10,0"
+                                Padding="10,5"
+                                Background="Red"
+                                Foreground="White"
+                                Click="RemoveButton_Click"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Payment Method Selection -->
+        <StackPanel HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Margin="20"
+                    Orientation="Horizontal"
+                    Spacing="20">
+            <ComboBox x:Name="PaymentMethodComboBox"
+                      Header="Select Payment Method"
+                      Width="200"
+                      SelectedIndex="0">
+                <ComboBoxItem Content="Steam Wallet"/>
+                <ComboBoxItem Content="PayPal"/>
+                <ComboBoxItem Content="Credit Card"/>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Total Price and Checkout Button -->
+        <StackPanel HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="20"
+                    Orientation="Horizontal"
+                    Spacing="20">
+            <TextBlock Text="{Binding TotalPrice}"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"/>
+            <Button Content="Checkout"
+                    Padding="20,10"
+                    Background="{ThemeResource SystemAccentColor}"
+                    Foreground="White"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Click="CheckoutButton_Click"/>
+        </StackPanel>
     </Grid>
 </Page>
