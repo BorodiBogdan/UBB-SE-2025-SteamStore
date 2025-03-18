@@ -2,14 +2,14 @@
 
 public class HomePageViewModel
 {
-    public ObservableCollection<Game> Games { get; set; }
+    public ObservableCollection<Game> allGames { get; set; }
 
     private readonly GameService _gameService;
 
     public HomePageViewModel(GameService gameService)
     {
         _gameService = gameService;
-        Games = new ObservableCollection<Game>();
+        allGames = new ObservableCollection<Game>();
         LoadGames();
     }
 
@@ -18,7 +18,7 @@ public class HomePageViewModel
         var games = _gameService.getAllGames();
         foreach (var game in games)
         {
-            Games.Add(game);
+            allGames.Add(game);
         }
     }
 }
