@@ -24,20 +24,14 @@ namespace SteamStore.Pages
     /// </summary>
     public sealed partial class HomePage : Page
     {
-        public HomePage()
+        public HomePage(GameService _gameService)
         {
             this.InitializeComponent();
 
             // Resolve dependencies (e.g., GameRepository and DataLink)
 
-            // Set the DataContext
-            var dataLink = new DataLink(new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json")
-            .Build());
-            var gameRepository = new GameRepository(dataLink);
-            var gameService = new GameService(gameRepository);
-            this.DataContext = new HomePageViewModel(gameService);
+
+            this.DataContext = new HomePageViewModel(_gameService);
         }
     }
 }

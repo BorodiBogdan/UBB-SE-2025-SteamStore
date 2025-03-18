@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -13,6 +14,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using System.Collections.ObjectModel;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -21,17 +23,25 @@ namespace SteamStore
 {
     public sealed partial class MainWindow : Window
     {
-        
+        private GameService gameService;
         public MainWindow()
         {
             this.InitializeComponent();
+
+            var dataLink = new DataLink(new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json")
+            .Build());
+
+            var gameRepository = new GameRepository(dataLink);
+            gameService = new GameService(gameRepository);
 
             if (ContentFrame == null)
             {
                 throw new Exception("ContentFrame is not initialized.");
             }
 
-            ContentFrame.Navigate(typeof(HomePage));
+            ContentFrame.Content = new HomePage(gameService);
         }
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -42,7 +52,7 @@ namespace SteamStore
                 switch (tag)
                 {
                     case "HomePage":
-                        ContentFrame.Navigate(typeof(HomePage));
+                        ContentFrame.Content = new HomePage(gameService);
                         break;
                     case "CartPage":
                         ContentFrame.Navigate(typeof(CartPage));
