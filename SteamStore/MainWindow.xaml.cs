@@ -24,17 +24,24 @@ namespace SteamStore
     public sealed partial class MainWindow : Window
     {
         private GameService gameService;
+        private CartService cartService;
+        private User user;
+
         public MainWindow()
         {
             this.InitializeComponent();
 
+            //initiate the user
+            User loggedInUser = new User(1, "John Doe", "johnyDoe@gmail.com", 999999999, 99999999, User.Role.Developer);
+
+            // Resolve dependencies (e.g., GameRepository and DataLink)
             var dataLink = new DataLink(new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json")
             .Build());
 
-            var gameRepository = new GameRepository(dataLink);
-            gameService = new GameService(gameRepository);
+            gameService = new GameService(new GameRepository(dataLink));
+            cartService = new CartService(new CartRepository(dataLink, loggedInUser));
 
             if (ContentFrame == null)
             {
@@ -54,7 +61,7 @@ namespace SteamStore
                         ContentFrame.Content = new HomePage(gameService);
                         break;
                     case "CartPage":
-                        ContentFrame.Navigate(typeof(CartPage));
+                        ContentFrame.Content = new CartPage(cartService);
                         break;
                     case "PointsShopPage":
                         ContentFrame.Navigate(typeof(PointsShopPage));
