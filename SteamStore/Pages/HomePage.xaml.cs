@@ -34,7 +34,10 @@ namespace SteamStore.Pages
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string user_input = SearchBox.Text.ToLower();
+            string user_input = SearchBox.Text;
+            if (this.DataContext is HomePageViewModel viewModel)
+                viewModel.searchGames(user_input);
+            GameListView.UpdateLayout();
         }
 
         private void FilterButton_Click(object sender, RoutedEventArgs e)
@@ -48,9 +51,6 @@ namespace SteamStore.Pages
             double ratingFilter = PopupRatingSlider.Value;
             double minPrice = MinPriceSlider.Value;
             double maxPrice = MaxPriceSlider.Value;
-
-            // Implement your filtering logic, e.g.,
-            // viewModel.FilterGamesByRatingAndPrice(ratingFilter, minPrice, maxPrice);
 
             // Close the popup
             FilterPopup.IsOpen = false;

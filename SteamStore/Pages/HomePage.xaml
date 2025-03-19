@@ -27,7 +27,7 @@
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollMode="Disabled"
                     VerticalScrollBarVisibility="Hidden">
-                    <ListView ItemsSource="{Binding allGames}"
+                    <ListView ItemsSource="{Binding searchedGames}"
                         x:Name="GameListView"
                         ScrollViewer.HorizontalScrollMode="Enabled"
                         ScrollViewer.VerticalScrollMode="Disabled"
@@ -63,7 +63,7 @@
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollMode="Disabled"
                     VerticalScrollBarVisibility="Hidden">
-                    <ListView ItemsSource="{Binding allGames}"
+                    <ListView ItemsSource="{Binding searchedGames}"
                         ScrollViewer.HorizontalScrollMode="Enabled"
                         ScrollViewer.VerticalScrollMode="Disabled"
                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -98,7 +98,7 @@
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollMode="Disabled"
                     VerticalScrollBarVisibility="Hidden">
-                                        <ListView ItemsSource="{Binding allGames}"
+                    <ListView ItemsSource="{Binding searchedGames}"
                     ScrollViewer.HorizontalScrollMode="Enabled"
                     ScrollViewer.VerticalScrollMode="Disabled"
                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
@@ -133,7 +133,7 @@
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollMode="Disabled"
                     VerticalScrollBarVisibility="Hidden">
-                    <ListView ItemsSource="{Binding allGames}"
+                    <ListView ItemsSource="{Binding searchedGames}"
                     ScrollViewer.HorizontalScrollMode="Enabled"
                     ScrollViewer.VerticalScrollMode="Disabled"
                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
