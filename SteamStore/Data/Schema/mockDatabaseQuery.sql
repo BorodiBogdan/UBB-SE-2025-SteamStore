@@ -87,6 +87,39 @@ CREATE TABLE users_items (
 GO
 
 -- Stored Procedures
+go
+DROP PROCEDURE IF EXISTS getAllTags;
+go
+CREATE PROCEDURE getAllTags as
+begin
+	Select * from tags;
+end
+go
+DROP PROCEDURE IF EXISTS getGameTags;
+go
+CREATE PROCEDURE getGameTags
+    @gid int
+AS
+BEGIN
+    SELECT t.tag_name 
+    FROM Games g
+    INNER JOIN game_tags gt ON gt.game_id = g.game_id
+    INNER JOIN tags t ON t.tag_id = gt.tag_id
+    WHERE g.game_id=@gid; 
+END;
+go
+DROP PROCEDURE IF EXISTS getGameRating;
+go
+CREATE PROCEDURE getGameRating
+	@gid int
+AS
+BEGIN
+    SELECT AVG(gr.rating) 
+    FROM Games g
+    INNER JOIN game_reviews gr ON gr.game_id=g.game_id
+    WHERE g.game_id = @gid; 
+END;
+go
 DROP PROCEDURE IF EXISTS GetAllGames;
 GO
 
@@ -190,6 +223,144 @@ VALUES
 (13, 'Fantasy Quest', 29.99, 2, 'An epic adventure RPG set in a magical world.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPRuOKdjy9y8-lChDfNMqrurbqEBzs0oGYvw&s', '4GB RAM, 2.0GHz Processor', '8GB RAM, 3.0GHz Processor', 'Available'),
 (14, 'Racing Turbo', 19.99, 1, 'A fast-paced racing game with stunning graphics and intense action.', 'https://play-lh.googleusercontent.com/QUM3PMNJvBPb0J5ovrt1WYefhq4ik3LNhIhBDWCSZ_qthzm5F7ODHqfkBoLVhiS0Rdau', '2GB RAM, 1.5GHz Processor', '4GB RAM, 2.5GHz Processor', 'Unavailable');
 GO
+
+-- Insert tags into the tags table
+INSERT INTO tags (tag_id, tag_name)
+VALUES
+    (1, 'Rogue-Like'),
+    (2, 'Third-Person Shooter'),
+    (3, 'Multiplayer'),
+    (4, 'Horror'),
+    (5, 'First-Person Shooter'),
+    (6, 'Action'),
+    (7, 'Platformer'),
+    (8, 'Adventure'),
+    (9, 'Puzzle'),
+    (10, 'Exploration'),
+    (11, 'Sandbox'),
+    (12, 'Survival'),
+    (13, 'Arcade'),
+    (14, 'RPG'),
+    (15, 'Racing');
+
+-- Associate tags with games in the game_tags table
+INSERT INTO game_tags (tag_id, game_id)
+VALUES
+    -- Risk of Rain 2
+    (1, 1),
+    (2, 1),
+    (6, 1),
+    -- Dead by Daylight
+    (3, 2),
+    (4, 2),
+    (6, 2),
+    -- Counter-Strike 2
+    (3, 3),
+    (5, 3),
+    (6, 3),
+    -- Half-Life 2
+    (5, 4),
+    (6, 4),
+    (8, 4),
+    -- Mario
+    (7, 5),
+    (6, 5),
+    (8, 5),
+    -- The Legend of Zelda
+    (8, 6),
+    (6, 6),
+    (14, 6),
+    -- Baba Is You
+    (9, 7),
+    (8, 7),
+    -- Portal 2
+    (9, 8),
+    (5, 8),
+    (6, 8),
+    -- Outer Wilds
+    (10, 9),
+    (8, 9),
+    -- Minecraft
+    (11, 10),
+    (12, 10),
+    (8, 10),
+    -- Subnautica
+    (12, 11),
+    (10, 11),
+    (8, 11),
+    -- Space Invaders
+    (13, 12),
+    (6, 12),
+    -- Fantasy Quest
+    (14, 13),
+    (8, 13),
+    -- Racing Turbo
+    (15, 14),
+    (6, 14);
+
+INSERT INTO game_reviews (id, game_id, rating, comment, username) 
+VALUES 
+-- Risk of Rain 2
+(1, 1, 4.5, 'Great rogue-like action!', 'gamer123'),
+(2, 1, 4.0, 'Fun but tough learning curve.', 'roguelover'),
+(3, 1, 4.7, 'Addictive gameplay!', 'space_runner'),
+(4, 1, 4.6, 'Co-op is awesome!', 'teamplayer'),
+
+-- Dead by Daylight
+(5, 2, 4.8, 'Terrifying and thrilling!', 'horror_fan'),
+(6, 2, 4.2, 'Best multiplayer horror game.', 'survivor_pro'),
+(7, 2, 4.5, 'Killers are fun to play!', 'slasher_king'),
+(8, 2, 4.3, 'Needs better matchmaking.', 'ghosted'),
+
+-- Counter-Strike 2
+(9, 3, 4.7, 'Tactical and competitive.', 'cs_master'),
+(10, 3, 4.6, 'Improved graphics and gameplay.', 'fps_guy'),
+(11, 3, 4.9, 'A must-play shooter!', 'headshot_ace'),
+
+-- Half-Life 2
+(12, 4, 5.0, 'One of the best FPS ever!', 'hl2_legend'),
+(13, 4, 4.9, 'Story and gameplay are top-notch.', 'gamer_dude'),
+(14, 4, 5.0, 'Gordon Freeman is iconic!', 'lambda_fan'),
+
+-- Mario
+(15, 5, 4.9, 'Mario never disappoints!', 'nintendo_fan'),
+(16, 5, 4.7, 'Classic platformer fun.', 'retro_gamer'),
+(17, 5, 5.0, 'A masterpiece!', 'jumpman'),
+(18, 5, 4.6, 'Great for all ages.', 'family_gamer'),
+
+-- The Legend of Zelda
+(19, 6, 5.0, 'Epic adventure, must play!', 'zelda_fan'),
+(20, 6, 4.8, 'Beautiful and engaging.', 'rpg_lover'),
+(21, 6, 5.0, 'Breath of the Wild is GOAT.', 'hyrule_warrior'),
+(22, 6, 4.7, 'Great puzzles and combat.', 'sword_master'),
+
+-- Baba Is You
+(23, 7, 4.5, 'Unique and clever puzzles.', 'puzzle_master'),
+(24, 7, 4.3, 'Mind-bending gameplay.', 'indie_gamer'),
+(25, 7, 4.6, 'Innovative mechanics.', 'logic_wiz'),
+
+-- Portal 2
+(26, 8, 4.9, 'Incredible puzzle design.', 'portal_lover'),
+(27, 8, 4.8, 'Hilarious and challenging.', 'glados_fan'),
+(28, 8, 5.0, 'Perfect co-op mode!', 'coop_champ'),
+(29, 8, 4.7, 'Wish it was longer!', 'puzzle_freak'),
+
+-- Outer Wilds
+(30, 9, 4.7, 'Amazing exploration.', 'space_explorer'),
+(31, 9, 4.6, 'A masterpiece of discovery.', 'curious_gamer'),
+(32, 9, 4.8, 'Great music and story.', 'astro_wanderer'),
+
+-- Minecraft
+(33, 10, 5.0, 'Endless creativity!', 'block_builder'),
+(34, 10, 4.8, 'Addictive and fun.', 'mine_crafter'),
+(35, 10, 5.0, 'Survival mode is the best.', 'crafting_pro'),
+(36, 10, 4.9, 'Best sandbox game ever.', 'pixel_adventurer'),
+
+-- Subnautica
+(37, 11, 4.7, 'Underwater survival at its best.', 'deep_diver'),
+(38, 11, 4.6, 'Great atmosphere and exploration.', 'ocean_explorer'),
+(39, 11, 4.9, 'Beautiful and immersive.', 'sea_survivor'),
+(40, 11, 4.5, 'Scary deep-sea creatures!', 'aquatic_fear');
 
 
 -- Ensure user 1 has purchased at least 5 games
