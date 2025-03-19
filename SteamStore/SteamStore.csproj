@@ -68,9 +68,6 @@
     <None Remove="Pages\WishListPage.xaml" />
   </ItemGroup>
   <ItemGroup>
-
-  </ItemGroup>
-  <ItemGroup>
     <Resource Remove="Pages\HomePage.xaml" />
   </ItemGroup>
   <ItemGroup>

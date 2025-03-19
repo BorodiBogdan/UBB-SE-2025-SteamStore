@@ -9,10 +9,12 @@ public class CartViewModel
     public decimal TotalPrice => (decimal)CartGames.Sum(game => (double)game.Price);
 
     private readonly CartService _cartService;
+    private readonly UserGameService _userGameService;
 
-    public CartViewModel(CartService cartService)
+    public CartViewModel(CartService cartService, UserGameService userGameService)
     {
         _cartService = cartService;
+        _userGameService = userGameService;
         CartGames = new ObservableCollection<Game>();
         LoadGames();
     }
@@ -29,5 +31,11 @@ public class CartViewModel
     {
         _cartService.RemoveGameFromCart(game);
         CartGames.Remove(game);
+    }
+    public void PurchaseGames()
+    {
+        _userGameService.purchaseGames(CartGames.ToList());
+        _cartService.RemoveGamesFromCart(CartGames.ToList());
+        CartGames.Clear();
     }
 }

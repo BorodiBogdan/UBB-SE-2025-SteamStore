@@ -6,7 +6,7 @@
 		IF EXISTS (SELECT * FROM games_users WHERE user_id = @user_id AND game_id = @game_id)
 			BEGIN
 				UPDATE games_users
-				SET is_purchased = 1
+				SET isInCart = 1
 				WHERE user_id = @user_id AND game_id = @game_id;
 			END
 		ELSE

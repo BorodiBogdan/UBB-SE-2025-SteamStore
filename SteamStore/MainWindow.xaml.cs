@@ -25,6 +25,7 @@ namespace SteamStore
     {
         private GameService gameService;
         private CartService cartService;
+        private UserGameService userGameService;
         private User user;
 
         public MainWindow()
@@ -42,6 +43,7 @@ namespace SteamStore
 
             gameService = new GameService(new GameRepository(dataLink));
             cartService = new CartService(new CartRepository(dataLink, loggedInUser));
+            userGameService = new UserGameService(new UserGameRepository(dataLink, loggedInUser));
 
             if (ContentFrame == null)
             {
@@ -62,7 +64,7 @@ namespace SteamStore
                         ContentFrame.Content = new HomePage(gameService);
                         break;
                     case "CartPage":
-                        ContentFrame.Content = new CartPage(cartService);
+                        ContentFrame.Content = new CartPage(cartService, userGameService);
                         break;
                     case "PointsShopPage":
                         ContentFrame.Navigate(typeof(PointsShopPage));
