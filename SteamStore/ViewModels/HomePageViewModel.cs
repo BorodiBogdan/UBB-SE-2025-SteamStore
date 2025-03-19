@@ -15,17 +15,24 @@ public class HomePageViewModel
         }
     }
 
+    // Expose GameService so it can be accessed by the view
+    public GameService GameService { get; private set; }
+
     private readonly GameService _gameService;
 
     public HomePageViewModel(GameService gameService)
     {
         _gameService = gameService;
+        GameService = gameService; // Assign to public property
         searchedGames = new ObservableCollection<Game>();
         LoadGames();
     }
 
     private void LoadGames()
     {
+        // Initialize the collection before adding items
+        _allGames = new ObservableCollection<Game>();
+        
         var games = _gameService.getAllGames();
         foreach (var game in games)
         {

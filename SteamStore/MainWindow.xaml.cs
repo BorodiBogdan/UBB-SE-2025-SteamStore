@@ -23,8 +23,9 @@ namespace SteamStore
 {
     public sealed partial class MainWindow : Window
     {
-        private GameService gameService;
-        private CartService cartService;
+        // Make services public so they can be accessed from other pages
+        public GameService gameService;
+        public CartService cartService;
         private User user;
 
         public MainWindow()
@@ -42,7 +43,7 @@ namespace SteamStore
 
             gameService = new GameService(new GameRepository(dataLink));
             cartService = new CartService(new CartRepository(dataLink, loggedInUser));
-
+            
             if (ContentFrame == null)
             {
                 throw new Exception("ContentFrame is not initialized.");
@@ -72,6 +73,9 @@ namespace SteamStore
                     case "DeveloperModePage":
                         ContentFrame.Navigate(typeof(DeveloperModePage));
                         break;
+                    case "GamePage":
+                        ContentFrame.Content = new GamePage(gameService, cartService);
+                        break;
                 }
             }
             if (NavView != null)
@@ -79,6 +83,40 @@ namespace SteamStore
                 // Deselect the NavigationViewItem when moving to a non-menu page
                 NavView.SelectedItem = null;
             }
+        }
+
+        /// <summary>
+        /// Navigate to the game page with the specified game
+        /// </summary>
+        /// <param name="game">The game to display</param>
+        public void NavigateToGamePage(Game game)
+        {
+            // Create the page with services injected
+            var gamePage = new GamePage(gameService, cartService);
+            
+            // Set as content and pass the game as a property instead of using NavigationEventArgs
+            ContentFrame.Content = gamePage;
+            
+            // Call the view model's load method directly
+            gamePage._viewModel?.LoadGame(game);
+            gamePage.LoadGameUi();
+        }
+        
+        /// <summary>
+        /// Navigate to the game page with the specified game ID
+        /// </summary>
+        /// <param name="gameId">The ID of the game to display</param>
+        public void NavigateToGamePage(int gameId)
+        {
+            // Create the page with services injected
+            var gamePage = new GamePage(gameService, cartService);
+            
+            // Set as content and pass the game ID as a property instead of using NavigationEventArgs
+            ContentFrame.Content = gamePage;
+            
+            // Call the view model's load method directly
+            gamePage._viewModel?.LoadGameById(gameId);
+            gamePage.LoadGameUi();
         }
     }
 }
