@@ -1,15 +1,26 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 public class HomePageViewModel
 {
-    public ObservableCollection<Game> allGames { get; set; }
+    private ObservableCollection<Game> _allGames;
+    public ObservableCollection<Game> searchedGames
+    {
+        get => _allGames;
+        set
+        {
+            _allGames = value;
+            OnPropertyChanged(); // Notify the view when the collection changes
+        }
+    }
 
     private readonly GameService _gameService;
 
     public HomePageViewModel(GameService gameService)
     {
         _gameService = gameService;
-        allGames = new ObservableCollection<Game>();
+        searchedGames = new ObservableCollection<Game>();
         LoadGames();
     }
 
@@ -18,7 +29,19 @@ public class HomePageViewModel
         var games = _gameService.getAllGames();
         foreach (var game in games)
         {
-            allGames.Add(game);
+            _allGames.Add(game);
         }
+    }
+
+    public void searchGames(string search_query)
+    {
+        searchedGames = new ObservableCollection<Game>(_gameService.searchGames(search_query));
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string propertyName = "")
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

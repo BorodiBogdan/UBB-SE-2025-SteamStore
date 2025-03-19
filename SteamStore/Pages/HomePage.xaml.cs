@@ -28,15 +28,16 @@ namespace SteamStore.Pages
         {
             this.InitializeComponent();
 
-            // Resolve dependencies (e.g., GameRepository and DataLink)
-
-
             this.DataContext = new HomePageViewModel(_gameService);
+
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string user_input = SearchBox.Text.ToLower();
+            string user_input = SearchBox.Text;
+            if (this.DataContext is HomePageViewModel viewModel)
+                viewModel.searchGames(user_input);
+            GameListView.UpdateLayout();
         }
 
         private void FilterButton_Click(object sender, RoutedEventArgs e)
@@ -51,9 +52,6 @@ namespace SteamStore.Pages
             double minPrice = MinPriceSlider.Value;
             double maxPrice = MaxPriceSlider.Value;
 
-            // Implement your filtering logic, e.g.,
-            // viewModel.FilterGamesByRatingAndPrice(ratingFilter, minPrice, maxPrice);
-
             // Close the popup
             FilterPopup.IsOpen = false;
         }
@@ -61,7 +59,14 @@ namespace SteamStore.Pages
         //Navigation to GamePage
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.Frame.Navigate(typeof(GamePage));
+            if (sender is ListView listView && listView.SelectedItem is Game selectedGame)
+            {
+                if (this.Parent is Frame frame)
+                {
+                    frame.Navigate(typeof(GamePage), selectedGame);
+                }
+            }
         }
+
     }
 }
