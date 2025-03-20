@@ -44,6 +44,8 @@ public class GameValidatorRepository
             new SqlParameter("@publisher_id", user.UserId),
             new SqlParameter("@description", game.Description),
             new SqlParameter("@image_url", game.ImagePath),
+            new SqlParameter("@trailer_url", game.TrailerPath),
+            new SqlParameter("@gameplay_url", game.GameplayPath),
             new SqlParameter("@minimum_requirements", game.MinimumRequirements),
             new SqlParameter("@recommended_requirements", game.RecommendedRequirements),
             new SqlParameter("@status", game.Status),
