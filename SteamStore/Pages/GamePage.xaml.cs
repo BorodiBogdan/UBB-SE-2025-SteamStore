@@ -31,10 +31,10 @@ namespace SteamStore.Pages
         }
         
         // Constructor that accepts services and game
-        public GamePage(GameService gameService, CartService cartService, Game game)
+        public GamePage(GameService gameService,CartService cartService, UserGameService userGameService, Game game)
         {
             this.InitializeComponent();
-            _viewModel = new GamePageViewModel(gameService, cartService);
+            _viewModel = new GamePageViewModel(gameService, cartService, userGameService);
             this.DataContext = _viewModel;
             
             // Load the game directly
@@ -45,14 +45,6 @@ namespace SteamStore.Pages
             }
         }
         
-        // Constructor that only accepts services
-        public GamePage(GameService gameService, CartService cartService)
-        {
-            this.InitializeComponent();
-            _viewModel = new GamePageViewModel(gameService, cartService);
-            this.DataContext = _viewModel;
-        }
-
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
@@ -198,27 +190,49 @@ namespace SteamStore.Pages
             title.Text = game.Name;
             rating.Text = $"Rating: 4.0/5.0"; // Placeholder - would come from reviews
         }
-        
+
         private void BuyButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Cart functionality is not implemented yet
-            // Just log that the button was clicked
-            System.Diagnostics.Debug.WriteLine($"Add to cart clicked for game: {_viewModel.Game?.Name}");
-            
-            // Uncomment this when cart functionality is ready
-            //_viewModel.AddToCart();
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"Add to cart clicked for game: {_viewModel.Game?.Name}");
+                _viewModel.AddToCart();
+
+                // Show success notification
+                NotificationTip.Title = "Success";
+                NotificationTip.Subtitle = $"{_viewModel.Game.Name} was added to your cart.";
+                NotificationTip.IsOpen = true;
+            }
+            catch (Exception ex)
+            {
+                // Show error notification
+                NotificationTip.Title = "Error";
+                NotificationTip.Subtitle = $"Failed to add {_viewModel.Game.Name} to your cart: {ex.Message}";
+                NotificationTip.IsOpen = true;
+            }
         }
-        
+
         private void WishlistButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Wishlist functionality is not implemented yet
-            // Just log that the button was clicked
-            System.Diagnostics.Debug.WriteLine($"Add to wishlist clicked for game: {_viewModel.Game?.Name}");
-            
-            // Uncomment this when wishlist functionality is ready
-            //_viewModel.AddToWishlist();
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"Add to wishlist clicked for game: {_viewModel.Game?.Name}");
+                _viewModel.AddToWishlist();
+
+                // Show success notification
+                NotificationTip.Title = "Success";
+                NotificationTip.Subtitle = $"{_viewModel.Game.Name} was added to your wishlist.";
+                NotificationTip.IsOpen = true;
+            }
+            catch (Exception ex)
+            {
+                // Show error notification
+                NotificationTip.Title = "Error";
+                NotificationTip.Subtitle = $"Failed to add {_viewModel.Game.Name} to your wishlist: {ex.Message}";
+                NotificationTip.IsOpen = true;
+            }
         }
-        
+
         private void SimilarGame_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is Game game)
@@ -229,14 +243,11 @@ namespace SteamStore.Pages
                 if (frame != null)
                 {
                     // Create a new GamePage passing just the GameService (CartService might be null)
-                    var gamePage = new GamePage(_viewModel._gameService, null);
+                    var gamePage = new GamePage(_viewModel._gameService, _viewModel._cartService, _viewModel._userGameService, game);
                     
                     // Set it as the content of the frame
                     frame.Content = gamePage;
-                    
-                    // Now load the game
-                    gamePage._viewModel.LoadGame(game);
-                    gamePage.LoadGameUi();
+                   
                 }
                 else
                 {
