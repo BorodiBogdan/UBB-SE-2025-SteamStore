@@ -315,17 +315,94 @@ BEGIN
 END;
 GO
 
-DROP PROCEDURE IF EXISTS GetPendingGames
+DROP PROCEDURE IF EXISTS GetAllUnvalidated
 GO
 
-CREATE PROCEDURE GetPendingGames
+CREATE PROCEDURE GetAllUnvalidated
     @publisher_id INT
 AS
 BEGIN    
-    SELECT game_id, name, price, publisher_id, description, image_url, 
-           minimum_requirements, recommended_requirements, status, discount
+    SELECT *
     FROM games
     WHERE status = 'Pending' AND publisher_id <> @publisher_id;
+END;
+GO
+
+DROP PROCEDURE IF EXISTS DeleteGameDeveloper
+GO
+
+CREATE PROCEDURE DeleteGameDeveloper
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DELETE FROM games
+    WHERE game_id = @game_id;
+END;
+GO
+
+DROP PROCEDURE IF EXISTS GetDeveloperGames
+GO
+
+CREATE PROCEDURE GetDeveloperGames
+    @publisher_id INT
+AS
+BEGIN    
+    SELECT *
+    FROM games
+    WHERE publisher_id = @publisher_id;
+END;
+GO
+
+DROP PROCEDURE IF EXISTS UpdateGame
+GO
+
+CREATE PROCEDURE UpdateGame
+    @game_id INT,
+    @name NVARCHAR(255),
+    @price DECIMAL(10,2),
+    @publisher_id INT,
+    @description NVARCHAR(MAX),
+    @image_url NVARCHAR(MAX),
+    @trailer_url NVARCHAR(MAX),
+    @gameplay_url NVARCHAR(MAX),
+    @minimum_requirements NVARCHAR(MAX),
+    @recommended_requirements NVARCHAR(MAX),
+    @status NVARCHAR(MAX),
+    @discount INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    UPDATE games
+    SET name = @name,
+        price = @price,
+        publisher_id = @publisher_id,
+        description = @description,
+        image_url = @image_url,
+        trailer_url = @trailer_url,
+        gameplay_url = @gameplay_url,
+        minimum_requirements = @minimum_requirements,
+        recommended_requirements = @recommended_requirements,
+        status = @status,
+        discount = @discount
+    WHERE game_id = @game_id;
+END;
+GO
+
+DROP PROCEDURE IF EXISTS RejectGame
+GO
+
+CREATE PROCEDURE RejectGame
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    UPDATE games
+    SET status = 'Rejected'
+    WHERE game_id = @game_id;
 END;
 GO
 
