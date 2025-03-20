@@ -25,6 +25,9 @@ public class HomePageViewModel : INotifyPropertyChanged
         }
     }
 
+    // Expose GameService so it can be accessed by the view
+    public GameService GameService { get; private set; }
+
     public event PropertyChangedEventHandler PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -35,6 +38,7 @@ public class HomePageViewModel : INotifyPropertyChanged
     public HomePageViewModel(GameService gameService)
     {
         _gameService = gameService;
+        GameService = gameService; // Assign to public property
         searchedGames = new ObservableCollection<Game>();
         LoadGames();
         tags = new ObservableCollection<Tag>();

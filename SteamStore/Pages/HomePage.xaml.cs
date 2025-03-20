@@ -80,10 +80,30 @@ namespace SteamStore.Pages
         {
             if (sender is ListView listView && listView.SelectedItem is Game selectedGame)
             {
-                if (this.Parent is Frame frame)
+                // Get the services from DataContext
+                if (this.DataContext is HomePageViewModel viewModel)
                 {
-                    frame.Navigate(typeof(GamePage), selectedGame);
+                    // Get game service from viewModel
+                    var gameService = viewModel.GameService;
+                    
+                    // Instead of trying to find MainWindow, navigate directly
+                    // We'll pass the game as navigation parameter
+                    if (this.Parent is Frame frame)
+                    {
+                        // Create the GamePage with just GameService (no CartService yet)
+                        var gamePage = new GamePage(gameService, null);
+                        
+                        // Set it as content
+                        frame.Content = gamePage;
+                        
+                        // Now load the game in the page
+                        gamePage._viewModel.LoadGame(selectedGame);
+                        gamePage.LoadGameUi();
+                    }
                 }
+                
+                // Clear selection
+                listView.SelectedItem = null;
             }
         }
 
