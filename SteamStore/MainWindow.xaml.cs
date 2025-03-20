@@ -49,7 +49,6 @@ namespace SteamStore
             {
                 throw new Exception("ContentFrame is not initialized.");
             }
-
             ContentFrame.Content = new HomePage(gameService);
         }
 
@@ -76,6 +75,11 @@ namespace SteamStore
                         ContentFrame.Navigate(typeof(DeveloperModePage));
                         break;
                 }
+            }
+            if (NavView != null)
+            {
+                // Deselect the NavigationViewItem when moving to a non-menu page
+                NavView.SelectedItem = null;
             }
         }
     }

@@ -4,7 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:SteamStore.Pages">
 
-	<Grid>
-		<TextBlock Text="Game Page" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-	</Grid>
+    <StackPanel Orientation="Vertical" 
+                Spacing="20" 
+                Padding="10" 
+                HorizontalAlignment ="Center" 
+                VerticalAlignment ="Center">
+        <TextBlock Text="Game Page for:" />
+        <TextBlock Text="{Binding Name}" />
+	</StackPanel>
 </Page>
