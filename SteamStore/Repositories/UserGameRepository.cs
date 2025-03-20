@@ -31,7 +31,7 @@ public class UserGameRepository
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            throw new Exception(e.Message);
         }
     }
     public void addGameToPurchased(Game game)
@@ -54,7 +54,24 @@ public class UserGameRepository
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            throw new Exception(e.Message);
+        }
+    }
+    public void addGameToWishlist(Game game)
+    {
+        SqlParameter[] parameters = new SqlParameter[]
+        {
+            new SqlParameter("@user_id", user.UserId),
+            new SqlParameter("@game_id", game.Id)
+        };
+
+        try
+        {
+            data.ExecuteNonQuery("AddGameToWishlist", parameters);
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
         }
     }
 }

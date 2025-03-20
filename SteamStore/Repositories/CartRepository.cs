@@ -43,7 +43,7 @@ public class CartRepository
         }
         return games;
     }   
-    void addProductToCart(Game game)
+    public void addGameToCart(Game game)
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
@@ -53,11 +53,11 @@ public class CartRepository
 
         try
         {
-            dataLink.ExecuteNonQuery("AddProductToCart", parameters);
+            dataLink.ExecuteNonQuery("AddGameToCart", parameters);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            throw new Exception(e.Message);
         }
     }
 
