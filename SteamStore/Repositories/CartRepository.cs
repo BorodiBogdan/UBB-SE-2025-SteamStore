@@ -78,4 +78,8 @@ public class CartRepository
             Console.WriteLine(e.Message);
         }   
     }
+    public float getUserFunds()
+    {
+        return user.WalletBalance;
+    }
 }

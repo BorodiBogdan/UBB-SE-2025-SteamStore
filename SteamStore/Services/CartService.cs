@@ -39,5 +39,10 @@ public class CartService
             _cartRepository.removeGameFromCart(game);
         }
     }   
+
+    public float getUserFunds()
+    {
+        return _cartRepository.getUserFunds();
+    }
 }
 
