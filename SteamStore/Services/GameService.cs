@@ -38,4 +38,23 @@ public class GameService
             )
             .ToList());
     }
+
+    public void computeTrendingScores(Collection<Game> games)
+    {
+        int maxRecentSales = games.Max(game => game.noOfRecentPurchases);
+        foreach (var game in games)
+        {
+            game.trendingScore = (((float)game.noOfRecentPurchases) / maxRecentSales);
+        }
+    }
+
+    public Collection<Game> getTrendingGames()
+    {
+        var games = _gameRepository.getAllGames();
+        computeTrendingScores(games);
+        return new Collection<Game>(games
+                       .OrderByDescending(game => game.trendingScore)
+                       .Take(10)
+                       .ToList());
+    }
 }

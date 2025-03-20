@@ -27,7 +27,7 @@
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollMode="Disabled"
                     VerticalScrollBarVisibility="Hidden">
-                    <ListView ItemsSource="{Binding searchedGames}"
+                    <ListView ItemsSource="{Binding searchedOrFilteredGames}"
                         x:Name="GameListView"
                         ScrollViewer.HorizontalScrollMode="Enabled"
                         ScrollViewer.VerticalScrollMode="Disabled"
@@ -98,7 +98,7 @@
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollMode="Disabled"
                     VerticalScrollBarVisibility="Hidden">
-                    <ListView ItemsSource="{Binding searchedGames}"
+                    <ListView ItemsSource="{Binding trendingGames}"
                     ScrollViewer.HorizontalScrollMode="Enabled"
                     ScrollViewer.VerticalScrollMode="Disabled"
                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
