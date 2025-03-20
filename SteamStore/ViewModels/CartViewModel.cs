@@ -38,4 +38,8 @@ public class CartViewModel
         _cartService.RemoveGamesFromCart(CartGames.ToList());
         CartGames.Clear();
     }
+    public float showUserFunds()
+    {
+        return _cartService.getUserFunds();
+    }   
 }

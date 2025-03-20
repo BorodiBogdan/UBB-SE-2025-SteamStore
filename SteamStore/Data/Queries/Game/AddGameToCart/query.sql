@@ -9,6 +9,12 @@ BEGIN
         RETURN;
     END
 
+    IF EXISTS (SELECT 1 FROM games_users WHERE user_id = @user_id AND game_id = @game_id AND is_purchased = 1)
+    BEGIN
+        RAISERROR ('The game is already purchased.', 16, 1);
+        RETURN;
+    END
+
     IF EXISTS (SELECT 1 FROM games_users WHERE user_id = @user_id AND game_id = @game_id)
     BEGIN
         UPDATE games_users
