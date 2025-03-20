@@ -18,15 +18,21 @@ public class Game
 
     public float Rating { get; set; }
 
+    public string TrailerPath { get; set; }
+
+    public string GameplayPath { get; set; }
+
     public float Discount { get; set; }
 
-    public Game(int id, string name, string description, string imagePath, double price, string minimumRequirements, string recommendedRequirements, string status, string[] tags, float rating, float discount)
+    public Game(int id, string name, string description, string imagePath, string trailerPath, string gameplayPath, double price, string minimumRequirements, string recommendedRequirements, string status, string[] tags, float rating, float discount)
     {
         Id = id;
         Name = name;
         Description = description;
         ImagePath = imagePath;
         Price = price;
+        TrailerPath = trailerPath;
+        GameplayPath = gameplayPath;
         MinimumRequirements = minimumRequirements;
         RecommendedRequirements = recommendedRequirements;
         Status = status;

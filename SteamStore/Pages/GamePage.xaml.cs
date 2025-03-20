@@ -108,9 +108,8 @@ namespace SteamStore.Pages
                 // Set system requirements
                 MinimumRequirements.Text = _viewModel.Game.MinimumRequirements;
                 RecommendedRequirements.Text = _viewModel.Game.RecommendedRequirements;
-                
-                // Add sample media links
-                AddMediaLinks();
+               
+                AddMediaLinks(_viewModel.Game);
                 
                 // Load similar games from ViewModel
                 LoadSimilarGamesUi();
@@ -125,14 +124,14 @@ namespace SteamStore.Pages
             }
         }
         
-        private void AddMediaLinks()
+        private void AddMediaLinks(Game game)
         {
             // Clear existing links
             MediaLinksPanel.Children.Clear();
             
             // Add sample media links
-            AddMediaLink("Official Trailer", "https://www.youtube.com");
-            AddMediaLink("Gameplay Video", "https://www.youtube.com");
+            AddMediaLink("Official Trailer", game.TrailerPath);
+            AddMediaLink("Gameplay Video", game.GameplayPath);
         }
         
         private void AddMediaLink(string title, string url)
