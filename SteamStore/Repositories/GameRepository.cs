@@ -3,6 +3,8 @@ using System;
 using System.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using SteamStore.Pages;
+using SteamStore.Models;
 
 
 public class GameRepository
@@ -38,6 +40,51 @@ public class GameRepository
             return 0;
         }
     }
+
+    private string[] GetGameTags(int gameId)
+    {
+        SqlParameter[] parameters = new SqlParameter[]
+        {
+            new SqlParameter("@gid", gameId)
+        };
+
+        try
+        {
+            DataTable result = dataLink.ExecuteReader("getGameTags", parameters);
+            List<string> tags = new List<string>();
+
+            if (result != null)
+            {
+                foreach (DataRow row in result.Rows)
+                {
+                    tags.Add((string)row["tag_name"]);
+                }
+            }
+
+            return tags.ToArray();
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error getting tags for game {gameId}: {e.Message}");
+        }
+    }
+
+    private float GetGameRating(int gameId)
+    {
+        SqlParameter[] parameters = new SqlParameter[]
+        {
+            new SqlParameter("@gid", gameId)
+        };
+
+        try
+        {
+            float? result = dataLink.ExecuteScalar<float>("getGameRating", parameters);
+            return result ?? 0f;
+        }
+        catch (Exception e) { 
+            throw new Exception($"Error getting rating for game {gameId}: {e.Message}");
+        }
+    }
     public Collection<Game> getAllGames()
     {
 
@@ -57,12 +104,33 @@ public class GameRepository
                     Price = Convert.ToDouble(row["price"]),
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
-                    Status = (string)row["status"]
+                    Status = (string)row["status"],
+                    Tags = GetGameTags((int)row["game_id"]),
+                    Rating = GetGameRating((int)row["game_id"])
                 };
                 games.Add(game);
             }
         }
         
         return new Collection<Game>(games);
+    }
+
+    public Collection<Tag> getAllTags() {
+        DataTable? result = dataLink.ExecuteReader("GetAllTags");
+        List<Tag> tags = new List<Tag>();
+           if (result != null)
+        {
+            foreach (DataRow row in result.Rows)
+            {
+                Tag tag = new Tag
+                {
+                    tag_id = (int)row["tag_id"],
+                    tag_name = (string)row["tag_name"]
+                };
+                tags.Add(tag);
+            }
+        }
+
+        return new Collection<Tag>(tags);
     }
 }
