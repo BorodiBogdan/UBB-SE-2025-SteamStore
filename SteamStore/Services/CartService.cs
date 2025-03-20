@@ -21,5 +21,12 @@ public class CartService
     {
         _cartRepository.removeGameFromCart(game);
     }
+    public void RemoveGamesFromCart(List<Game> games)
+    {
+        foreach (var game in games)
+        {
+            _cartRepository.removeGameFromCart(game);
+        }
+    }   
 }
 

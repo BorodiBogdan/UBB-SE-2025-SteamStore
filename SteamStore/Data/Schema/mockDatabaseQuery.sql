@@ -61,6 +61,7 @@ CREATE TABLE games_users (
     game_id INT FOREIGN KEY REFERENCES games(game_id),
     isInWishlist BIT,
     is_purchased BIT,
+	isInCart BIT,
     PRIMARY KEY (user_id, game_id)
 );
 
@@ -138,10 +139,10 @@ CREATE PROCEDURE GetAllCartGames
     @user_id INT
 AS
 BEGIN
-    SELECT g.game_id, g.name, g.price, g.publisher_id, g.description, g.image_url 
+    SELECT g.game_id, g.name, g.price, g.publisher_id, g.description, g.image_url, gu.is_purchased, gu.isInCart
     FROM games g
     LEFT JOIN games_users gu ON g.game_id = gu.game_id AND gu.user_id = @user_id
-    WHERE gu.is_purchased = 1 AND g.status = 'Available';
+    WHERE gu.isInCart = 1 AND g.status = 'Available';
 END;
 GO
 
@@ -156,7 +157,7 @@ CREATE PROCEDURE AddGameToCart
 		IF EXISTS (SELECT * FROM games_users WHERE user_id = @user_id AND game_id = @game_id)
 			BEGIN
 				UPDATE games_users
-				SET is_purchased = 1
+				SET isInCart = 1
 				WHERE user_id = @user_id AND game_id = @game_id;
 			END
 		ELSE
@@ -178,7 +179,7 @@ BEGIN
 	IF EXISTS (SELECT * FROM games_users WHERE user_id = @user_id AND game_id = @game_id)
 		BEGIN
 			UPDATE games_users
-			SET is_purchased = 0
+			SET isInCart = 0
 			WHERE user_id = @user_id AND game_id = @game_id;
 		END
 	ELSE
@@ -187,6 +188,49 @@ BEGIN
 			VALUES (@user_id, @game_id, 0);
 		END
 END;
+GO
+
+DROP PROCEDURE IF EXISTS RemoveGameFromWishlist
+GO
+
+CREATE PROCEDURE RemoveGameFromWishlist
+	@user_id INT,
+	@game_id INT
+	AS
+	BEGIN
+		IF EXISTS (SELECT * FROM games_users WHERE user_id = @user_id AND game_id = @game_id)
+			BEGIN
+				UPDATE games_users
+				SET isInWishlist = 0
+				WHERE user_id = @user_id AND game_id = @game_id;
+			END
+		ELSE
+			BEGIN
+				RAISERROR('Game is not in wishlist', 16, 1);
+			END
+	END;
+GO
+
+DROP PROCEDURE IF EXISTS addGameToPurchased
+GO
+
+CREATE PROCEDURE addGameToPurchased
+	@user_id INT,
+	@game_id INT
+	AS
+	BEGIN
+		IF EXISTS (SELECT * FROM games_users WHERE user_id = @user_id AND game_id = @game_id)
+			BEGIN
+				UPDATE games_users
+				SET is_purchased = 1
+				WHERE user_id = @user_id AND game_id = @game_id;
+			END
+		ELSE
+			BEGIN
+				INSERT INTO games_users (user_id, game_id, is_purchased)
+				VALUES (@user_id, @game_id, 1);
+			END
+	END;
 GO
 
 -- Insert mock users
@@ -364,13 +408,13 @@ VALUES
 
 
 -- Ensure user 1 has purchased at least 5 games
-INSERT INTO games_users (user_id, game_id, isInWishlist, is_purchased)
+INSERT INTO games_users (user_id, game_id, isInWishlist, is_purchased, isInCart)
 VALUES 
-(1, 1, 0, 1),
-(1, 2, 0, 1),
-(1, 3, 0, 1),
-(1, 4, 0, 1),
-(1, 5, 0, 1);
+(1, 1, 0, 1, 1),
+(1, 2, 0, 1, 1),
+(1, 3, 0, 1, 1),
+(1, 4, 0, 1, 1),
+(1, 5, 0, 1, 1);
 GO
 
 -- Add transactions for user 1

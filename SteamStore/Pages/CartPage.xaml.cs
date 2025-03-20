@@ -7,10 +7,10 @@ namespace SteamStore.Pages
     {
         private CartViewModel _viewModel;
 
-        public CartPage(CartService cartService)
+        public CartPage(CartService cartService, UserGameService userGameService)
         {
             this.InitializeComponent();
-            _viewModel = new CartViewModel(cartService);
+            _viewModel = new CartViewModel(cartService, userGameService);
             this.DataContext = _viewModel;
         }
 
@@ -25,8 +25,10 @@ namespace SteamStore.Pages
 
         private void CheckoutButton_Click(object sender, RoutedEventArgs e)
         {
-            // Handle the checkout logic here
-            // For example, navigate to a checkout page or show a confirmation dialog
+           if (_viewModel.CartGames.Count > 0)
+            {
+                _viewModel.PurchaseGames();
+            }
         }
     }
 }
