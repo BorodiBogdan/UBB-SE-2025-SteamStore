@@ -315,6 +315,21 @@ BEGIN
 END;
 GO
 
+DROP PROCEDURE IF EXISTS GetPendingGames
+GO
+
+CREATE PROCEDURE GetPendingGames
+    @publisher_id INT
+AS
+BEGIN    
+    SELECT game_id, name, price, publisher_id, description, image_url, 
+           minimum_requirements, recommended_requirements, status, discount
+    FROM games
+    WHERE status = 'Pending' AND publisher_id <> @publisher_id;
+END;
+GO
+
+
 
 -- Insert mock users
 INSERT INTO users (user_id, username, balance, point_balance, is_developer)
