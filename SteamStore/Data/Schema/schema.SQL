@@ -42,6 +42,7 @@ CREATE TABLE games_users (
     game_id INT FOREIGN KEY REFERENCES games(game_id),
     isInWishlist BIT,
     is_purchased BIT,
+     isInCart BIT,
     PRIMARY KEY (user_id, game_id)
 );
 

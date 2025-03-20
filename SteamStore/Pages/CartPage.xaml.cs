@@ -7,10 +7,10 @@ namespace SteamStore.Pages
     {
         private CartViewModel _viewModel;
 
-        public CartPage(CartService cartService)
+        public CartPage(CartService cartService, UserGameService userGameService)
         {
             this.InitializeComponent();
-            _viewModel = new CartViewModel(cartService);
+            _viewModel = new CartViewModel(cartService, userGameService);
             this.DataContext = _viewModel;
         }
 
@@ -25,8 +25,28 @@ namespace SteamStore.Pages
 
         private void CheckoutButton_Click(object sender, RoutedEventArgs e)
         {
-            // Handle the checkout logic here
-            // For example, navigate to a checkout page or show a confirmation dialog
+            if (_viewModel.CartGames.Count > 0)
+            {
+                // Check the selected payment method
+                var selectedPaymentMethod = (PaymentMethodComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+
+                if (this.Parent is Frame frame)
+                {
+
+                    if (selectedPaymentMethod == "PayPal")
+                    {
+                        // Navigate to the PayPal payment page
+                        PaypalPaymentPage paypalPaymentPage = new PaypalPaymentPage(_viewModel._cartService, _viewModel._userGameService);
+                        frame.Content = paypalPaymentPage;
+
+                    }
+                    else
+                    {
+                        // Handle other payment methods (e.g., Steam Wallet or Credit Card)
+                        _viewModel.PurchaseGames();
+                    }
+                }
+            }
         }
     }
 }

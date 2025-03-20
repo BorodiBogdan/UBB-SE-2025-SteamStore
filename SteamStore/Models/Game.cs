@@ -12,4 +12,8 @@ public class Game
     public string RecommendedRequirements { get; set; }
 
     public string Status { get; set; }
+
+    public string[] Tags { get; set; }
+
+    public float Rating { get; set; }
 }

@@ -21,5 +21,23 @@ public class CartService
     {
         _cartRepository.removeGameFromCart(game);
     }
+    public void AddGameToCart(Game game)
+    {
+        try
+        {
+            _cartRepository.addGameToCart(game);
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }   
+    }
+    public void RemoveGamesFromCart(List<Game> games)
+    {
+        foreach (var game in games)
+        {
+            _cartRepository.removeGameFromCart(game);
+        }
+    }   
 }
 
