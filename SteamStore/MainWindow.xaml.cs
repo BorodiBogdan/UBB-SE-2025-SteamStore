@@ -51,7 +51,10 @@ namespace SteamStore
             }
             ContentFrame.Content = new HomePage(gameService, cartService, userGameService);
         }
-
+        public void ResetToHomePage()
+        {
+            ContentFrame.Content = new HomePage(gameService, cartService, userGameService);
+        }
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             if (args.SelectedItemContainer != null)

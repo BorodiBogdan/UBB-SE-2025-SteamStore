@@ -25,9 +25,27 @@ namespace SteamStore.Pages
 
         private void CheckoutButton_Click(object sender, RoutedEventArgs e)
         {
-           if (_viewModel.CartGames.Count > 0)
+            if (_viewModel.CartGames.Count > 0)
             {
-                _viewModel.PurchaseGames();
+                // Check the selected payment method
+                var selectedPaymentMethod = (PaymentMethodComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+
+                if (this.Parent is Frame frame)
+                {
+
+                    if (selectedPaymentMethod == "PayPal")
+                    {
+                        // Navigate to the PayPal payment page
+                        PaypalPaymentPage paypalPaymentPage = new PaypalPaymentPage(_viewModel._cartService, _viewModel._userGameService);
+                        frame.Content = paypalPaymentPage;
+
+                    }
+                    else
+                    {
+                        // Handle other payment methods (e.g., Steam Wallet or Credit Card)
+                        _viewModel.PurchaseGames();
+                    }
+                }
             }
         }
     }

@@ -8,8 +8,8 @@ public class CartViewModel
 
     public decimal TotalPrice => (decimal)CartGames.Sum(game => (double)game.Price);
 
-    private readonly CartService _cartService;
-    private readonly UserGameService _userGameService;
+    public CartService _cartService;
+    public UserGameService _userGameService;
 
     public CartViewModel(CartService cartService, UserGameService userGameService)
     {
