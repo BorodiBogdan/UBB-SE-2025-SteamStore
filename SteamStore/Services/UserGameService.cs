@@ -16,6 +16,15 @@ public class UserGameService
     {
         _userGameRepository.removeGameFromWishlist(game);
     }
+
+    public void addGameToWishlist(Game game)
+    {
+        try
+        {
+            _userGameRepository.addGameToWishlist(game);
+        }
+        catch (Exception e) { throw new Exception(e.Message); }
+    }
     public void purchaseGames(List<Game> games)
     {
         {

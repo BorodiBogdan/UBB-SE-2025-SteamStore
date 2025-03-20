@@ -25,11 +25,17 @@ namespace SteamStore.Pages
     /// </summary>
     public sealed partial class HomePage : Page
     {
-        public HomePage(GameService _gameService)
+        private UserGameService _userGameService;
+        private CartService _cartService;
+
+        public HomePage(GameService _gameService, CartService _cartService, UserGameService _userGameService)
         {
             this.InitializeComponent();
 
             this.DataContext = new HomePageViewModel(_gameService);
+            this._userGameService = _userGameService;
+            this._cartService = _cartService;
+
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -85,20 +91,19 @@ namespace SteamStore.Pages
                 {
                     // Get game service from viewModel
                     var gameService = viewModel.GameService;
+                    var cartService = _cartService;
+                    var userGameService = _userGameService;
                     
                     // Instead of trying to find MainWindow, navigate directly
                     // We'll pass the game as navigation parameter
                     if (this.Parent is Frame frame)
                     {
                         // Create the GamePage with just GameService (no CartService yet)
-                        var gamePage = new GamePage(gameService, null);
+                        var gamePage = new GamePage(gameService, cartService, userGameService, selectedGame);
                         
                         // Set it as content
                         frame.Content = gamePage;
-                        
-                        // Now load the game in the page
-                        gamePage._viewModel.LoadGame(selectedGame);
-                        gamePage.LoadGameUi();
+
                     }
                 }
                 

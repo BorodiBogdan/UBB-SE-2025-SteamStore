@@ -8,9 +8,10 @@ using System.Runtime.CompilerServices;
 public class GamePageViewModel : INotifyPropertyChanged
 {
     // Make services accessible to the view
-    internal readonly GameService _gameService;
     internal readonly CartService _cartService;
-    
+    internal readonly UserGameService _userGameService;
+    internal readonly GameService _gameService;
+
     private Game _game;
     private ObservableCollection<Game> _similarGames;
     
@@ -37,10 +38,11 @@ public class GamePageViewModel : INotifyPropertyChanged
     }
     
     // Constructor - inject services
-    public GamePageViewModel(GameService gameService, CartService cartService)
+    public GamePageViewModel(GameService gameService, CartService cartService, UserGameService userGameService)
     {
-        _gameService = gameService;
-        _cartService = cartService; // This might be null, and that's okay
+        _cartService = cartService;
+        _userGameService = userGameService;
+        _gameService = gameService; 
         SimilarGames = new ObservableCollection<Game>();
     }
     
@@ -92,15 +94,32 @@ public class GamePageViewModel : INotifyPropertyChanged
     {
         if (Game != null && _cartService != null)
         {
-            // Only call AddGame if CartService is available
-            //_cartService.AddGame(Game);
+            try
+            {
+                _cartService.AddGameToCart(Game);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+
         }
     }
     
     // Add game to wishlist - this will be implemented later
     public void AddToWishlist()
     {
-        // TODO: Wishlist functionality will be implemented in the future
+        if(Game != null && _userGameService != null)
+        {
+            try
+            {
+                _userGameService.addGameToWishlist(Game);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
     }
     
     // INotifyPropertyChanged implementation
