@@ -143,7 +143,7 @@ BEGIN
     SELECT g.game_id, g.name, g.price, g.publisher_id, g.description, g.image_url, gu.is_purchased, gu.isInCart
     FROM games g
     LEFT JOIN games_users gu ON g.game_id = gu.game_id AND gu.user_id = @user_id
-    WHERE gu.isInCart = 1 AND g.status = 'Available';
+    WHERE gu.isInCart = 1 AND g.status = 'Approved';
 END;
 GO
 
@@ -275,11 +275,11 @@ CREATE PROCEDURE ValidateGame
     @game_id INT
 AS
 BEGIN
-    SET NOCOUNT ON;
     UPDATE games
     SET status = 'Approved'
     WHERE game_id = @game_id AND status = 'Pending';
 END;
+GO
 
 DROP PROCEDURE IF EXISTS InsertGame
 GO
@@ -297,14 +297,13 @@ CREATE PROCEDURE InsertGame
     @discount INT
 AS
 BEGIN
-    SET NOCOUNT ON;
     
     INSERT INTO games (game_id, name, price, publisher_id, description, image_url, 
                        minimum_requirements, recommended_requirements, status, discount)
     VALUES (@game_id, @name, @price, @publisher_id, @description, @image_url, 
             @minimum_requirements, @recommended_requirements, @status, @discount);
 END;
-
+GO
 
 
 -- Insert mock users
@@ -327,7 +326,7 @@ delete from games
 INSERT INTO games (game_id, name, price, publisher_id, description, image_url, minimum_requirements, recommended_requirements, status, discount)
 VALUES 
 (1, 'Risk of Rain 2', 24.99, 3, 'A rogue-like third-person shooter where players fight through hordes of monsters to escape an alien planet.', 'https://upload.wikimedia.org/wikipedia/en/c/c1/Risk_of_Rain_2.jpg', '4GB RAM, 2.5GHz Processor, GTX 580', '8GB RAM, 3.0GHz Processor, GTX 680', 'Approved',20),
-(2, 'Dead by Daylight', 19.99, 4, 'A multiplayer horror game where survivors must evade a killer.', 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/11986720-4999-4524-9809-1a25313ee2e5/dg8ii9d-d3f5eb42-9041-4ddc-954a-c3f9359e914e.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzExOTg2NzIwLTQ5OTktNDUyNC05ODA5LTFhMjUzMTNlZTJlNVwvZGc4aWk5ZC1kM2Y1ZWI0Mi05MDQxLTRkZGMtOTU0YS1jM2Y5MzU5ZTkxNGUucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.XGf2I0nx7hyCw6EFGJ5lEdexo3Uj5emUoC6texzl3A4', '8GB RAM, i3-4170, GTX 760', '16GB RAM, i5-6500, GTX 1060', 'Available',40),
+(2, 'Dead by Daylight', 19.99, 4, 'A multiplayer horror game where survivors must evade a killer.', 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/11986720-4999-4524-9809-1a25313ee2e5/dg8ii9d-d3f5eb42-9041-4ddc-954a-c3f9359e914e.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzExOTg2NzIwLTQ5OTktNDUyNC05ODA5LTFhMjUzMTNlZTJlNVwvZGc4aWk5ZC1kM2Y1ZWI0Mi05MDQxLTRkZGMtOTU0YS1jM2Y5MzU5ZTkxNGUucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.XGf2I0nx7hyCw6EFGJ5lEdexo3Uj5emUoC6texzl3A4', '8GB RAM, i3-4170, GTX 760', '16GB RAM, i5-6500, GTX 1060', 'Approved',40),
 (3, 'Counter-Strike 2', 0.00, 5, 'A tactical first-person shooter featuring team-based gameplay.', 'https://sm.ign.com/ign_nordic/cover/c/counter-st/counter-strike-2_jc2d.jpg', '8GB RAM, i5-2500K, GTX 660', '16GB RAM, i7-7700K, GTX 1060', 'Approved',50),
 (4, 'Half-Life 2', 9.99, 5, 'A story-driven first-person shooter that revolutionized the genre.', 'https://media.moddb.com/images/mods/1/47/46951/d1jhx20-dc797b78-5feb-4005-b206-.1.jpg', '512MB RAM, 1.7GHz Processor, DirectX 8 GPU', '1GB RAM, 3.0GHz Processor, DirectX 9 GPU', 'Approved',60),
 (5, 'Mario', 59.99, 6, 'A classic platformer adventure with iconic characters and worlds.', 'https://play-lh.googleusercontent.com/3ZKfMRp_QrdN-LzsZTbXdXBH-LS1iykSg9ikNq_8T2ppc92ltNbFxS-tORxw2-6kGA', 'N/A', 'N/A', 'Approved',70),
@@ -484,11 +483,11 @@ VALUES
 -- Ensure user 1 has purchased at least 5 games
 INSERT INTO games_users (user_id, game_id, isInWishlist, is_purchased, isInCart)
 VALUES 
-(1, 1, 0, 1, 1),
-(1, 2, 0, 1, 1),
-(1, 3, 0, 1, 1),
-(1, 4, 0, 1, 1),
-(1, 5, 0, 1, 1);
+(1, 1, 0, 0, 0),
+(1, 2, 0, 0, 0),
+(1, 3, 0, 0, 0),
+(1, 4, 0, 0, 0),
+(1, 5, 0, 0, 0);
 GO
 
 -- Add transactions for user 1
