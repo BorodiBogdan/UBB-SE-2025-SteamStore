@@ -248,6 +248,20 @@ CREATE PROCEDURE addGameToPurchased
 	END;
 GO
 
+go
+DROP PROCEDURE IF EXISTS getNoOfRecentSalesForGame;
+go
+create procedure getNoOfRecentSalesForGame 
+	@gid int
+	as
+begin
+	SELECT count(*)
+	FROM Games g
+	INNER JOIN store_transaction st ON st.game_id = g.game_id
+	WHERE g.game_id=@gid and st.date > DATEADD(DAY, -7, GETDATE());
+end
+
+go
 DROP PROCEDURE IF EXISTS addGameToWishlist
 GO
 
@@ -580,6 +594,77 @@ VALUES
 (38, 11, 4.6, 'Great atmosphere and exploration.', 'ocean_explorer'),
 (39, 11, 4.9, 'Beautiful and immersive.', 'sea_survivor'),
 (40, 11, 4.5, 'Scary deep-sea creatures!', 'aquatic_fear');
+
+INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
+VALUES 
+-- 🏆 TRENDING GAME: Counter-Strike 2
+(3, 1, GETDATE(), 19.99, 1),
+(3, 2, DATEADD(DAY, -1, GETDATE()), 19.99, 1),
+(3, 3, GETDATE(), 19.99, 1),
+(3, 4, GETDATE(), 19.99, 1),
+(3, 5, GETDATE(), 19.99, 1),
+(3, 6, DATEADD(DAY, -12, GETDATE()), 19.99, 1),
+(3, 7, DATEADD(DAY, -15, GETDATE()), 19.99, 1),
+
+-- 🏆 TRENDING GAME: Minecraft
+(10, 1, GETDATE(), 29.99, 1),
+(10, 2, GETDATE(), 29.99, 1),
+(10, 3, DATEADD(DAY, -1, GETDATE()), 29.99, 1),
+(10, 4, GETDATE(), 29.99, 1),
+(10, 5, DATEADD(DAY, -2, GETDATE()), 29.99, 1),
+(10, 6, DATEADD(DAY, -10, GETDATE()), 29.99, 1),
+
+-- 🏆 TRENDING GAME: Dead by Daylight
+(2, 1, GETDATE(), 29.99, 1),
+(2, 2, DATEADD(DAY, -1, GETDATE()), 29.99, 1),
+(2, 3, DATEADD(DAY, -2, GETDATE()), 29.99, 1),
+(2, 4, GETDATE(), 29.99, 1),
+(2, 5, GETDATE(), 29.99, 1),
+(2, 6, DATEADD(DAY, -11, GETDATE()), 29.99, 1),
+
+-- ⚖️ BALANCED GAME: Risk of Rain 2
+(1, 1, DATEADD(DAY, -10, GETDATE()), 9.99, 1),
+(1, 2, DATEADD(DAY, -12, GETDATE()), 9.99, 1),
+(1, 3, GETDATE(), 9.99, 1),
+
+-- ⏳ LESS TRENDING: Half-Life 2
+(4, 1, DATEADD(DAY, -20, GETDATE()), 39.99, 1),
+(4, 2, DATEADD(DAY, -9, GETDATE()), 39.99, 1),
+
+-- ⏳ LESS TRENDING: The Legend of Zelda
+(6, 1, DATEADD(DAY, -13, GETDATE()), 59.99, 1),
+(6, 2, DATEADD(DAY, -8, GETDATE()), 59.99, 1),
+
+-- ⚖️ BALANCED: Portal 2
+(8, 1, GETDATE(), 9.99, 1),
+(8, 2, DATEADD(DAY, -11, GETDATE()), 9.99, 1),
+(8, 3, DATEADD(DAY, -14, GETDATE()), 9.99, 1),
+
+-- ⏳ LESS TRENDING: Baba Is You
+(7, 1, DATEADD(DAY, -22, GETDATE()), 14.99, 1),
+(7, 2, DATEADD(DAY, -9, GETDATE()), 14.99, 1),
+
+-- ⚖️ BALANCED: Outer Wilds
+(9, 1, DATEADD(DAY, -18, GETDATE()), 24.99, 1),
+(9, 2, GETDATE(), 24.99, 1),
+
+-- ⏳ LESS TRENDING: Subnautica
+(11, 1, DATEADD(DAY, -16, GETDATE()), 29.99, 1),
+(11, 2, GETDATE(), 29.99, 1),
+
+-- ⏳ LESS TRENDING: Space Invaders
+(12, 1, DATEADD(DAY, -19, GETDATE()), 9.99, 1),
+(12, 2, DATEADD(DAY, -1, GETDATE()), 9.99, 1),
+
+-- ⏳ LESS TRENDING: Fantasy Quest
+(13, 1, DATEADD(DAY, -14, GETDATE()), 29.99, 1),
+(13, 2, GETDATE(), 29.99, 1),
+
+-- ⏳ LESS TRENDING: Racing Turbo
+(14, 1, DATEADD(DAY, -11, GETDATE()), 19.99, 1),
+(14, 2, DATEADD(DAY, -1, GETDATE()), 19.99, 1),
+(14, 3, GETDATE(), 19.99, 1);
+GO
 
 
 -- Ensure user 1 has purchased at least 5 games

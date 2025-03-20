@@ -76,7 +76,7 @@ namespace SteamStore.Pages
             MaxPriceSlider.Value = 200;
             TagListView.SelectedItems.Clear();
             if (this.DataContext is HomePageViewModel viewModel)
-                viewModel.LoadGames();
+                viewModel.LoadAllGames();
             FilterPopup.IsOpen = false;
         }
 

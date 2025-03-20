@@ -88,6 +88,24 @@ public class GameRepository
             throw new Exception($"Error getting rating for game {gameId}: {e.Message}");
         }
     }
+
+    private int GetNoOfRecentSalesForGame(int gameId)
+    {
+        SqlParameter[] parameters = new SqlParameter[]
+        {
+            new SqlParameter("@gid", gameId)
+        };
+
+        try
+        {
+            int? result = dataLink.ExecuteScalar<int>("getNoOfRecentSalesForGame", parameters);
+            return result ?? 0;
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error getting no. of recent purchases for game {gameId}: {e.Message}");
+        }
+    }
     public Collection<Game> getAllGames()
     {
 
@@ -111,7 +129,9 @@ public class GameRepository
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
                     Tags = GetGameTags((int)row["game_id"]),
-                    Rating = GetGameRating((int)row["game_id"]) // trb fixata asta????
+                    Rating = GetGameRating((int)row["game_id"]),
+                    noOfRecentPurchases = GetNoOfRecentSalesForGame((int)row["game_id"]),
+                    trendingScore = Game.NOT_COMPUTED
                 };
                 games.Add(game);
             }
@@ -130,7 +150,8 @@ public class GameRepository
                 Tag tag = new Tag
                 {
                     tag_id = (int)row["tag_id"],
-                    tag_name = (string)row["tag_name"]
+                    tag_name = (string)row["tag_name"],
+                    no_of_user_games_with_tag = Tag.NOT_COMPUTED
                 };
                 tags.Add(tag);
             }
