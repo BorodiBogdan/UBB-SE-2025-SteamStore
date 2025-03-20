@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Pages\CartPage.xaml" />
+    <None Remove="Pages\CreditCardPaymentPage.xaml" />
     <None Remove="Pages\DeveloperModePage.xaml" />
     <None Remove="Pages\HomePage.xaml" />
     <None Remove="Pages\PaypalPaymentPage.xaml" />
@@ -106,6 +107,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Pages\CreditCardPaymentPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="Pages\GamePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
