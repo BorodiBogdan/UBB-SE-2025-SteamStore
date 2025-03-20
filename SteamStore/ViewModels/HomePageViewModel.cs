@@ -7,7 +7,9 @@ using System.Runtime.CompilerServices;
 
 public class HomePageViewModel : INotifyPropertyChanged
 {
-    public ObservableCollection<Game> searchedGames{get;set;}
+    public ObservableCollection<Game> searchedOrFilteredGames{get;set;}
+    public ObservableCollection<Game> trendingGames { get; set; }
+
     public string _search_filter_text;
     public ObservableCollection<Tag> tags { get; set; }
     private readonly GameService _gameService;
@@ -39,12 +41,23 @@ public class HomePageViewModel : INotifyPropertyChanged
     {
         _gameService = gameService;
         GameService = gameService; // Assign to public property
-        searchedGames = new ObservableCollection<Game>();
-        LoadGames();
+        searchedOrFilteredGames = new ObservableCollection<Game>();
+        trendingGames = new ObservableCollection<Game>();
+        LoadAllGames();
+        LoadTrendingGames();
         tags = new ObservableCollection<Tag>();
         LoadTags();
     }
 
+    private void LoadTrendingGames()
+    {
+        trendingGames.Clear();
+        var games = _gameService.getTrendingGames();
+        foreach (var game in games)
+        {
+            trendingGames.Add(game);
+        }
+    }
     private void LoadTags()
     {
         var tagsList = _gameService.getAllTags();
@@ -54,24 +67,24 @@ public class HomePageViewModel : INotifyPropertyChanged
         }
     }
 
-    public void LoadGames()
+    public void LoadAllGames()
     {
-        searchedGames.Clear();
+        searchedOrFilteredGames.Clear();
         search_filter_text = "All Games";
         var games = _gameService.getAllGames();
         foreach (var game in games)
         {
-            searchedGames.Add(game);
+            searchedOrFilteredGames.Add(game);
         }
     }
 
     public void SearchGames(string search_query)
     {
-        searchedGames.Clear();
+        searchedOrFilteredGames.Clear();
         var games = _gameService.searchGames(search_query);
         foreach (var game in games)
         {
-            searchedGames.Add(game);
+            searchedOrFilteredGames.Add(game);
         }
         if(search_query == "")
         {
@@ -88,11 +101,11 @@ public class HomePageViewModel : INotifyPropertyChanged
 
     public void FilterGames(int minRating, int minPrice, int maxPrice, String[] Tags)
     {
-        searchedGames.Clear();
+        searchedOrFilteredGames.Clear();
         var games = _gameService.filterGames(minRating, minPrice, maxPrice, Tags);
         foreach (var game in games)
         {
-            searchedGames.Add(game);
+            searchedOrFilteredGames.Add(game);
         }
         if (games.Count == 0)
         {
