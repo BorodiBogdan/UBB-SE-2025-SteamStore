@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Intrinsics.X86;
 using Windows.Devices.Pwm;
 
 public class Game
@@ -16,4 +17,26 @@ public class Game
     public string[] Tags { get; set; }
 
     public float Rating { get; set; }
+
+    public float Discount { get; set; }
+
+    public Game(int id, string name, string description, string imagePath, double price, string minimumRequirements, string recommendedRequirements, string status, string[] tags, float rating, float discount)
+    {
+        Id = id;
+        Name = name;
+        Description = description;
+        ImagePath = imagePath;
+        Price = price;
+        MinimumRequirements = minimumRequirements;
+        RecommendedRequirements = recommendedRequirements;
+        Status = status;
+        Tags = tags;
+        Rating = rating;
+        Discount = discount;
+    }
+    public Game()
+    {
+    }
+
+
 }

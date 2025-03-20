@@ -106,7 +106,7 @@ public class GameRepository
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
                     Tags = GetGameTags((int)row["game_id"]),
-                    Rating = GetGameRating((int)row["game_id"])
+                    Rating = GetGameRating((int)row["game_id"]) // trb fixata asta????
                 };
                 games.Add(game);
             }
