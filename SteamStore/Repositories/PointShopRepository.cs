@@ -90,6 +90,16 @@ namespace SteamStore.Repositories
 
         public void PurchaseItem(PointShopItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item), "Cannot purchase a null item");
+            }
+            
+            if (_user == null)
+            {
+                throw new InvalidOperationException("User is not initialized");
+            }
+            
             if (_user.PointsBalance < item.PointPrice)
             {
                 throw new Exception("Insufficient points to purchase this item");
@@ -119,6 +129,16 @@ namespace SteamStore.Repositories
 
         public void ActivateItem(PointShopItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item), "Cannot activate a null item");
+            }
+            
+            if (_user == null)
+            {
+                throw new InvalidOperationException("User is not initialized");
+            }
+            
             try
             {
                 SqlParameter[] parameters = new SqlParameter[]
@@ -137,6 +157,16 @@ namespace SteamStore.Repositories
 
         public void DeactivateItem(PointShopItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item), "Cannot deactivate a null item");
+            }
+            
+            if (_user == null)
+            {
+                throw new InvalidOperationException("User is not initialized");
+            }
+            
             try
             {
                 SqlParameter[] parameters = new SqlParameter[]

@@ -93,13 +93,11 @@ namespace SteamStore.Pages
 
         private async void ShowErrorDialog(string title, string message)
         {
-            ContentDialog errorDialog = new ContentDialog
-            {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot
-            };
+            ContentDialog errorDialog = new ContentDialog();
+            errorDialog.Title = title;
+            errorDialog.Content = message;
+            errorDialog.CloseButtonText = "OK";
+            errorDialog.XamlRoot = this.XamlRoot;
 
             await errorDialog.ShowAsync();
         }
@@ -136,23 +134,41 @@ namespace SteamStore.Pages
             }
         }
 
+        private void CloseDetailButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Hide the item detail panel and clear the selection
+            ItemDetailPanel.Visibility = Visibility.Collapsed;
+            ItemsGridView.SelectedItem = null;
+            ViewModel.SelectedItem = null;
+        }
+
         private async void PurchaseButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                // Store the item name before the purchase
+                if (ViewModel.SelectedItem == null)
+                {
+                    ShowErrorDialog("Purchase Failed", "No item selected");
+                    return;
+                }
+                
+                string itemName = ViewModel.SelectedItem.Name;
+                
                 bool success = await ViewModel.PurchaseSelectedItem();
                 
                 if (success)
                 {
-                    ContentDialog successDialog = new ContentDialog
-                    {
-                        Title = "Purchase Successful",
-                        Content = $"You have successfully purchased {ViewModel.SelectedItem.Name}. Check your inventory to view it.",
-                        CloseButtonText = "OK",
-                        XamlRoot = this.XamlRoot
-                    };
+                    ContentDialog successDialog = new ContentDialog();
+                    successDialog.Title = "Purchase Successful";
+                    successDialog.Content = $"You have successfully purchased {itemName}. Check your inventory to view it.";
+                    successDialog.CloseButtonText = "OK";
+                    successDialog.XamlRoot = this.XamlRoot;
                     
                     await successDialog.ShowAsync();
+                    
+                    // Close the detail panel
+                    ItemDetailPanel.Visibility = Visibility.Collapsed;
                     
                     // Refresh the shop and inventory
                     ViewModel.LoadItems();
@@ -160,7 +176,7 @@ namespace SteamStore.Pages
                     
                     // Reset selection
                     ItemsGridView.SelectedItem = null;
-                    ItemDetailPanel.Visibility = Visibility.Collapsed;
+                    ViewModel.SelectedItem = null;
                 }
             }
             catch (Exception ex)
@@ -198,13 +214,12 @@ namespace SteamStore.Pages
                         // Deactivate the item
                         await ViewModel.DeactivateItem(item);
 
-                        ContentDialog dialog = new ContentDialog
-                        {
-                            Title = "Item Deactivated",
-                            Content = $"{item.Name} has been deactivated.",
-                            CloseButtonText = "OK",
-                            XamlRoot = this.XamlRoot
-                        };
+                        ContentDialog dialog = new ContentDialog();
+                        dialog.Title = "Item Deactivated";
+                        dialog.Content = $"{item.Name} has been deactivated.";
+                        dialog.CloseButtonText = "OK";
+                        dialog.XamlRoot = this.XamlRoot;
+                        
                         await dialog.ShowAsync();
                     }
                     else
@@ -212,13 +227,12 @@ namespace SteamStore.Pages
                         // Activate the item
                         await ViewModel.ActivateItem(item);
 
-                        ContentDialog dialog = new ContentDialog
-                        {
-                            Title = "Item Activated",
-                            Content = $"{item.Name} has been activated.",
-                            CloseButtonText = "OK",
-                            XamlRoot = this.XamlRoot
-                        };
+                        ContentDialog dialog = new ContentDialog();
+                        dialog.Title = "Item Activated";
+                        dialog.Content = $"{item.Name} has been activated.";
+                        dialog.CloseButtonText = "OK";
+                        dialog.XamlRoot = this.XamlRoot;
+                        
                         await dialog.ShowAsync();
                     }
                 }

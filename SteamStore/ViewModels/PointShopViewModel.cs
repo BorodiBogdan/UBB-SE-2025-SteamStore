@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Threading;
+using Microsoft.UI.Xaml.Controls;
 
 namespace SteamStore.ViewModels
 {
@@ -148,10 +149,10 @@ namespace SteamStore.ViewModels
                     return false;
 
                 // Check if user already owns this item
-                var alreadyOwns = UserItems.Any(item => item.ItemId == SelectedItem.ItemId);
+                bool alreadyOwns = UserItems.Any(item => item.ItemId == SelectedItem.ItemId);
                 
                 // Check if user has enough points
-                var hasEnoughPoints = _user.PointsBalance >= SelectedItem.PointPrice;
+                bool hasEnoughPoints = _user.PointsBalance >= SelectedItem.PointPrice;
                 
                 return !alreadyOwns && hasEnoughPoints;
             }
@@ -161,12 +162,23 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var items = _pointShopService.GetAllItems();
+                // Get all available items
+                var allItems = _pointShopService.GetAllItems();
+                
+                // Get user's items to filter them out
+                var userItems = _pointShopService.GetUserItems();
+                
+                // Filter out items the user already owns
+                var availableItems = allItems.Where(item => 
+                    !userItems.Any(userItem => userItem.ItemId == item.ItemId)).ToList();
+                
+                // Update the shop items
                 ShopItems.Clear();
-                foreach (var item in items)
+                foreach (var item in availableItems)
                 {
                     ShopItems.Add(item);
                 }
+                
                 ApplyFilters();
             }
             catch (Exception ex)
@@ -197,15 +209,27 @@ namespace SteamStore.ViewModels
         public async Task<bool> PurchaseSelectedItem()
         {
             if (SelectedItem == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Cannot purchase: SelectedItem is null");
                 return false;
+            }
 
             try
             {
-                _pointShopService.PurchaseItem(SelectedItem);
+                // Store a local copy of the item to prevent issues after state changes
+                var itemToPurchase = SelectedItem;
+                
+                _pointShopService.PurchaseItem(itemToPurchase);
                 
                 // Point balance is updated in the repository
                 OnPropertyChanged(nameof(UserPointBalance));
                 OnPropertyChanged(nameof(CanPurchase));
+                
+                // Reload user items to show the new purchase
+                LoadUserItems();
+                
+                // Reload shop items to remove the purchased item
+                LoadItems();
                 
                 return true;
             }
@@ -262,8 +286,15 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                // Start with all items
-                var filteredItems = _pointShopService.GetAllItems();
+                // Get all available items (filtering out owned items)
+                var allItems = _pointShopService.GetAllItems();
+                var userItems = _pointShopService.GetUserItems();
+                
+                // Filter out items the user already owns
+                var availableItems = allItems.Where(item => 
+                    !userItems.Any(userItem => userItem.ItemId == item.ItemId)).ToList();
+                    
+                var filteredItems = availableItems;
 
                 // Apply type filter
                 if (!string.IsNullOrEmpty(_filterType) && _filterType != "All")

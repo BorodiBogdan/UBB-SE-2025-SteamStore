@@ -21,6 +21,14 @@
             <Setter Property="Stretch" Value="Uniform"/>
             <Setter Property="Margin" Value="10"/>
         </Style>
+        
+        <!-- Info button style with hover effect -->
+        <Style x:Key="InfoButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
     </Page.Resources>
 
     <Grid>
@@ -46,11 +54,42 @@
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <Image Width="24" Height="24" Margin="0,0,5,0"/>
                 <TextBlock x:Name="PointsBalance" Text="{Binding UserPointBalance}" FontSize="20" FontWeight="Bold" Foreground="#75b022"/>
+                <TextBlock Text=" Points" FontSize="20" FontWeight="Bold" Foreground="#75b022" Margin="0,0,10,0"/>
+                <Button x:Name="HelpButton"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        Padding="8"
+                        Margin="5,0,0,0"
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon Glyph="&#xE897;" FontSize="16" Foreground="#aaaaaa"/>
+                        <TextBlock Text="Help" Margin="4,0,0,0" Foreground="#aaaaaa" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Background="#2a3a4a" BorderBrush="#75b022">
+                            <StackPanel Width="600" Margin="2">
+                                <TextBlock Text="Earning Points" FontWeight="Bold" Margin="0,0,0,5" Foreground="White"/>
+                                <TextBlock TextWrapping="WrapWholeWords" Margin="5,5,0,0" Foreground="#cccccc">
+                                    • Users earn <Bold>10% of the total purchase</Bold> price of 
+                                </TextBlock>
+                                <TextBlock TextWrapping="WrapWholeWords" Margin="15,2,0,0" Foreground="#cccccc">
+                                        any real money store transaction as points
+                                </TextBlock>
+                                <TextBlock TextWrapping="WrapWholeWords" Margin="5,5,0,0" Foreground="#cccccc">
+                                    • Points does not expire and can be spent anytime
+                                </TextBlock>
+                                <TextBlock TextWrapping="WrapWholeWords" Margin="5,5,0,0" Foreground="#cccccc">
+                                    • You can't gain points from Points Shop purchases
+                                </TextBlock>
+                            </StackPanel>
+                        </ToolTip>
+                    </ToolTipService.ToolTip>
+                </Button>
             </StackPanel>
         </Grid>
 
         <!-- Filters -->
-        <Grid Grid.Row="1" Background="#2a3a4a" Padding="20">
+        <Grid Grid.Row="1" Background="#2a3a4a" Padding="20,12,20,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -61,13 +100,13 @@
             <!-- Search box -->
             <TextBox Grid.Column="0" x:Name="SearchBox" PlaceholderText="Search items..." 
                      Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     Margin="0,0,10,0"/>
+                     Margin="0,0,10,0" Height="32" VerticalAlignment="Center"/>
 
             <!-- Item type filter -->
             <ComboBox Grid.Column="1" x:Name="ItemTypeFilter" Width="150" 
                       SelectedItem="{Binding ElementName=ItemTypeFilter, Path=SelectedItem}"
                       SelectionChanged="ItemTypeFilter_SelectionChanged"
-                      Margin="10,0,10,0">
+                      Margin="10,0,10,0" Height="32" VerticalAlignment="Center">
                 <ComboBoxItem Content="All" IsSelected="True"/>
                 <ComboBoxItem Content="ProfileBackground"/>
                 <ComboBoxItem Content="Avatar"/>
@@ -77,7 +116,7 @@
             </ComboBox>
 
             <!-- Price Range filter -->
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="10,0,10,0">
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="10,0,10,0" VerticalAlignment="Center">
                 <Slider x:Name="MinPriceSlider" Width="100" 
                         Minimum="0" Maximum="10000" 
                         Value="{Binding MinPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -90,7 +129,8 @@
 
             <!-- View Inventory Button -->
             <Button Grid.Column="3" x:Name="ViewInventoryButton" Content="My Inventory" 
-                    Click="ViewInventoryButton_Click" Margin="10,0,0,0"/>
+                    Click="ViewInventoryButton_Click" Margin="10,0,0,0" 
+                    Height="32" VerticalAlignment="Center" Padding="12,4,12,4"/>
         </Grid>
 
         <!-- Content -->
@@ -137,6 +177,7 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <!-- Item Image -->
@@ -157,7 +198,18 @@
             <!-- Purchase Button -->
             <Button Grid.Column="2" x:Name="PurchaseButton" Content="Purchase" 
                     Click="PurchaseButton_Click" 
-                    IsEnabled="{Binding CanPurchase}"/>
+                    IsEnabled="{Binding CanPurchase}" 
+                    Margin="10,0,10,0"/>
+            
+            <!-- Close Button -->
+            <Button Grid.Column="3" x:Name="CloseDetailButton" Content="✕" 
+                    Click="CloseDetailButton_Click"
+                    Background="Transparent" 
+                    BorderBrush="Transparent"
+                    Foreground="White"
+                    FontSize="16"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Right"/>
         </Grid>
 
         <!-- Inventory Panel -->
