@@ -36,7 +36,7 @@ public class CartRepository
                     Description = (string)row["Description"],
                     ImagePath = (string)row["image_url"],
                     Price = Convert.ToDouble(row["price"]),
-                    Status = "Available"
+                    Status = "Approved"
                 };
                 games.Add(game);
             }
@@ -77,5 +77,9 @@ public class CartRepository
         {
             Console.WriteLine(e.Message);
         }   
+    }
+    public float getUserFunds()
+    {
+        return user.WalletBalance;
     }
 }
