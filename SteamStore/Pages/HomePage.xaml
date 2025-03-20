@@ -22,7 +22,7 @@
                 </StackPanel>
 
                 <!-- All Games -->
-                <TextBlock Text="All Games" FontSize="20" FontWeight="Bold" Margin="0,10,0,5"/>
+                <TextBlock Text="{Binding search_filter_text}" FontSize="20" FontWeight="Bold" Margin="0,10,0,5"/>
                 <ScrollViewer HorizontalScrollMode="Enabled"
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollMode="Disabled"
@@ -166,20 +166,20 @@
 
         <Popup x:Name="FilterPopup" IsLightDismissEnabled="True">
             <!-- A full-screen semi-transparent overlay -->
-            <Grid Background="#80000000" Width="{Binding ActualWidth, ElementName=LayoutRoot}" Height="{Binding ActualHeight, ElementName=LayoutRoot}">
-                <Border Background="White" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="10" Width="400">
+            <Grid Background="{ThemeResource SystemControlBackgroundAltHighBrush}" Width="{Binding ActualWidth, ElementName=LayoutRoot}" Height="{Binding ActualHeight, ElementName=LayoutRoot}">
+                <Border Background="{ThemeResource SystemControlBackgroundAltHighBrush}" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="10" Width="400">
                     <StackPanel Spacing="20">
                         <TextBlock Text="Filter Options" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" />
                         <!-- Rating Slider -->
                         <StackPanel Orientation="Vertical" Spacing="10">
-                            <TextBlock Text="Rating" FontSize="16" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Minimum Rating" FontSize="16" HorizontalAlignment="Center"/>
                             <Slider x:Name="PopupRatingSlider"
-                            Minimum="0"
-                            Maximum="10"
-                            Value="5"
-                            TickFrequency="1"
-                            TickPlacement="BottomRight"
-                            Width="200" HorizontalAlignment="Center"/>
+                    Minimum="0"
+                    Maximum="5"
+                    Value="0"
+                    TickFrequency="5"
+                    TickPlacement="BottomRight"
+                    Width="200" HorizontalAlignment="Center"/>
                         </StackPanel>
 
                         <!-- Price Range (Using two sliders as a range) -->
@@ -189,36 +189,39 @@
                                 <StackPanel>
                                     <TextBlock Text="Minimum" FontSize="14" HorizontalAlignment="Center"/>
                                     <Slider x:Name="MinPriceSlider"
-                                    Minimum="0"
-                                    Maximum="1000"
-                                    Value="50"
-                                    TickFrequency="10"
-                                    Width="150"/>
+                            Minimum="0"
+                            Maximum="200"
+                            Value="0"
+                            TickFrequency="10"
+                            TickPlacement="BottomRight"
+                            Width="150"/>
                                 </StackPanel>
                                 <StackPanel>
                                     <TextBlock Text="Maximum" FontSize="14" HorizontalAlignment="Center"/>
                                     <Slider x:Name="MaxPriceSlider"
-                                    Minimum="0"
-                                    Maximum="1000"
-                                    Value="500"
-                                    TickFrequency="10"
-                                    Width="150"/>
+                            Minimum="0"
+                            Maximum="200"
+                            Value="200"
+                            TickFrequency="10"
+                            TickPlacement="BottomRight"
+                            Width="150"/>
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
 
-                        <!-- Category Selection -->
+                        <!-- Tag Selection -->
                         <StackPanel Orientation="Vertical" Spacing="10">
                             <Button Content="Tags" HorizontalAlignment="Center">
                                 <Button.Flyout>
                                     <Flyout Placement="Bottom">
-                                        <ListView ItemsSource="{Binding Categories}"
-                                          SelectionMode="Multiple"
-                                          Width="200"
-                                          Height="150">
+                                        <ListView ItemsSource="{Binding tags}"
+                                    x:Name="TagListView"
+                                    SelectionMode="Multiple"
+                                    Width="200"
+                                    Height="150">
                                             <ListView.ItemTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding}" />
+                                                    <TextBlock Text="{Binding tag_name}" />
                                                 </DataTemplate>
                                             </ListView.ItemTemplate>
                                         </ListView>
@@ -227,12 +230,18 @@
                             </Button>
                         </StackPanel>
 
-                        <!-- Apply Filters Button -->
-                        <Button Content="Apply Filters" HorizontalAlignment="Center" Click="ApplyFilters_Click" Margin="0,20,0,0"/>
+                        <!-- Button Container for Apply and Reset -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+                            <!-- Reset Button -->
+                            <Button Content="Reset Filters" HorizontalAlignment="Center" Click="ResetFilters_Click" />
+                            <!-- Apply Filters Button -->
+                            <Button Content="Apply Filters" HorizontalAlignment="Center" Click="ApplyFilters_Click" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </Grid>
         </Popup>
+
 
     </Grid>
 </Page>

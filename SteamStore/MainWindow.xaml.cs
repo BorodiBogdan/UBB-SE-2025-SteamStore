@@ -23,9 +23,9 @@ namespace SteamStore
 {
     public sealed partial class MainWindow : Window
     {
-        // Make services public so they can be accessed from other pages
-        public GameService gameService;
-        public CartService cartService;
+        private GameService gameService;
+        private CartService cartService;
+        private UserGameService userGameService;
         private User user;
 
         public MainWindow()
@@ -43,7 +43,8 @@ namespace SteamStore
 
             gameService = new GameService(new GameRepository(dataLink));
             cartService = new CartService(new CartRepository(dataLink, loggedInUser));
-            
+            userGameService = new UserGameService(new UserGameRepository(dataLink, loggedInUser));
+
             if (ContentFrame == null)
             {
                 throw new Exception("ContentFrame is not initialized.");
@@ -62,7 +63,7 @@ namespace SteamStore
                         ContentFrame.Content = new HomePage(gameService);
                         break;
                     case "CartPage":
-                        ContentFrame.Content = new CartPage(cartService);
+                        ContentFrame.Content = new CartPage(cartService, userGameService);
                         break;
                     case "PointsShopPage":
                         ContentFrame.Navigate(typeof(PointsShopPage));
