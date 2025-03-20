@@ -166,8 +166,8 @@
 
         <Popup x:Name="FilterPopup" IsLightDismissEnabled="True">
             <!-- A full-screen semi-transparent overlay -->
-            <Grid Background="#80000000" Width="{Binding ActualWidth, ElementName=LayoutRoot}" Height="{Binding ActualHeight, ElementName=LayoutRoot}">
-                <Border Background="White" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="10" Width="400">
+            <Grid Background="{ThemeResource SystemControlBackgroundAltHighBrush}" Width="{Binding ActualWidth, ElementName=LayoutRoot}" Height="{Binding ActualHeight, ElementName=LayoutRoot}">
+                <Border Background="{ThemeResource SystemControlBackgroundAltHighBrush}" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="10" Width="400">
                     <StackPanel Spacing="20">
                         <TextBlock Text="Filter Options" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" />
                         <!-- Rating Slider -->
