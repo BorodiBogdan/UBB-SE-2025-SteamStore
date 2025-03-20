@@ -6,9 +6,213 @@
     xmlns:local="using:SteamStore.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    xmlns:models="using:SteamStore.Models"
+    xmlns:utils="using:SteamStore.Utils"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <utils:BoolToActivateButtonTextConverter x:Key="BoolToActivateButtonTextConverter"/>
+        <utils:BoolToStatusTextConverter x:Key="BoolToStatusTextConverter"/>
+        <utils:BoolToActiveColorConverter x:Key="BoolToActiveColorConverter"/>
+        
+        <!-- Default style for images with fallback -->
+        <Style x:Key="ItemImageStyle" TargetType="Image">
+            <Setter Property="Stretch" Value="Uniform"/>
+            <Setter Property="Margin" Value="10"/>
+        </Style>
+    </Page.Resources>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
+        <!-- Header -->
+        <Grid Grid.Row="0" Background="#1a2233" Padding="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Points Shop" FontSize="32" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="Customize your profile with points earned from purchases" FontSize="14" Foreground="#aaaaaa" Margin="0,10,0,0"/>
+            </StackPanel>
+            
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Image Width="24" Height="24" Margin="0,0,5,0"/>
+                <TextBlock x:Name="PointsBalance" Text="{Binding UserPointBalance}" FontSize="20" FontWeight="Bold" Foreground="#75b022"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Filters -->
+        <Grid Grid.Row="1" Background="#2a3a4a" Padding="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Search box -->
+            <TextBox Grid.Column="0" x:Name="SearchBox" PlaceholderText="Search items..." 
+                     Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Margin="0,0,10,0"/>
+
+            <!-- Item type filter -->
+            <ComboBox Grid.Column="1" x:Name="ItemTypeFilter" Width="150" 
+                      SelectedItem="{Binding ElementName=ItemTypeFilter, Path=SelectedItem}"
+                      SelectionChanged="ItemTypeFilter_SelectionChanged"
+                      Margin="10,0,10,0">
+                <ComboBoxItem Content="All" IsSelected="True"/>
+                <ComboBoxItem Content="ProfileBackground"/>
+                <ComboBoxItem Content="Avatar"/>
+                <ComboBoxItem Content="Emoticon"/>
+                <ComboBoxItem Content="AvatarFrame"/>
+                <ComboBoxItem Content="MiniProfile"/>
+            </ComboBox>
+
+            <!-- Price Range filter -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="10,0,10,0">
+                <Slider x:Name="MinPriceSlider" Width="100" 
+                        Minimum="0" Maximum="10000" 
+                        Value="{Binding MinPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Header="Min Points"/>
+                <Slider x:Name="MaxPriceSlider" Width="100" 
+                        Minimum="0" Maximum="10000" 
+                        Value="{Binding MaxPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Header="Max Points"/>
+            </StackPanel>
+
+            <!-- View Inventory Button -->
+            <Button Grid.Column="3" x:Name="ViewInventoryButton" Content="My Inventory" 
+                    Click="ViewInventoryButton_Click" Margin="10,0,0,0"/>
+        </Grid>
+
+        <!-- Content -->
+        <Grid Grid.Row="2" Padding="20">
+            <ScrollViewer>
+                <GridView x:Name="ItemsGridView" 
+                          ItemsSource="{Binding ShopItems}"
+                          SelectionMode="Single"
+                          SelectionChanged="ItemsGridView_SelectionChanged"
+                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="models:PointShopItem">
+                            <Grid Width="200" Height="250" Margin="10" Background="#2a3a4a">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Item Image -->
+                                <Image Grid.Row="0" Source="{x:Bind ImagePath}" Style="{StaticResource ItemImageStyle}" ImageFailed="Image_ImageFailed"/>
+
+                                <!-- Item Info -->
+                                <StackPanel Grid.Row="1" Padding="10">
+                                    <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{x:Bind ItemType}" Foreground="#aaaaaa" FontSize="12"/>
+                                </StackPanel>
+
+                                <!-- Item Price -->
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" Padding="10">
+                                    <TextBlock Text="{x:Bind PointPrice}" FontWeight="Bold" Foreground="#75b022"/>
+                                    <TextBlock Text=" Points" FontWeight="Bold" Foreground="#75b022"/>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Selected Item Details -->
+        <Grid Grid.Row="3" x:Name="ItemDetailPanel" Visibility="Collapsed" Background="#2a3a4a" Padding="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Item Image -->
+            <Image Grid.Column="0" x:Name="SelectedItemImage" Width="100" Height="100" 
+                     Margin="0,0,20,0" Style="{StaticResource ItemImageStyle}" 
+                     ImageFailed="Image_ImageFailed"/>
+
+            <!-- Item Details -->
+            <StackPanel Grid.Column="1">
+                <TextBlock x:Name="SelectedItemName" FontSize="18" FontWeight="Bold"/>
+                <TextBlock x:Name="SelectedItemType" Foreground="#aaaaaa" Margin="0,5,0,0"/>
+                <TextBlock x:Name="SelectedItemDescription" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <TextBlock x:Name="SelectedItemPrice" FontWeight="Bold" Foreground="#75b022"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Purchase Button -->
+            <Button Grid.Column="2" x:Name="PurchaseButton" Content="Purchase" 
+                    Click="PurchaseButton_Click" 
+                    IsEnabled="{Binding CanPurchase}"/>
+        </Grid>
+
+        <!-- Inventory Panel -->
+        <Grid Grid.Row="2" Grid.RowSpan="2" x:Name="InventoryPanel" Visibility="Collapsed" Background="#1a2233" Padding="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Inventory Header -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="My Inventory" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                <Button Grid.Column="1" x:Name="CloseInventoryButton" Content="Back to Shop" Click="CloseInventoryButton_Click"/>
+            </Grid>
+
+            <!-- Inventory Items -->
+            <ScrollViewer Grid.Row="1" Margin="0,20,0,0">
+                <GridView x:Name="InventoryGridView" ItemsSource="{Binding UserItems}">
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="models:PointShopItem">
+                            <Grid Width="200" Height="250" Margin="10" Background="#2a3a4a">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Item Image -->
+                                <Image Grid.Row="0" Source="{x:Bind ImagePath}" Style="{StaticResource ItemImageStyle}" ImageFailed="Image_ImageFailed"/>
+
+                                <!-- Item Info -->
+                                <StackPanel Grid.Row="1" Padding="10">
+                                    <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{x:Bind ItemType}" Foreground="#aaaaaa" FontSize="12"/>
+                                    <TextBlock Text="{x:Bind IsActive, Converter={StaticResource BoolToStatusTextConverter}}" 
+                                               Foreground="{x:Bind IsActive, Converter={StaticResource BoolToActiveColorConverter}}" 
+                                               FontSize="12" Margin="0,5,0,0"/>
+                                </StackPanel>
+
+                                <!-- Controls -->
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Padding="10">
+                                    <Button Content="{x:Bind IsActive, Converter={StaticResource BoolToActivateButtonTextConverter}}" 
+                                            Tag="{x:Bind ItemId}" 
+                                            Click="RemoveButtons_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>
