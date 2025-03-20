@@ -23,9 +23,12 @@ public class GameRepository
             new SqlParameter("@Description", game.Description),
             new SqlParameter("@ImagePath", game.ImagePath),
             new SqlParameter("@Price", game.Price),
+            new SqlParameter("@TrailerPath", game.TrailerPath),
+            new SqlParameter("GameplayPath", game.GameplayPath),
             new SqlParameter("@MinimumRequirements", game.MinimumRequirements),
             new SqlParameter("@RecommendedRequirements", game.RecommendedRequirements),
-            new SqlParameter("@Status", game.Status)
+            new SqlParameter("@Status", game.Status),
+            new SqlParameter("@Discount", game.Discount)
             //test on main
         };
 
@@ -101,6 +104,8 @@ public class GameRepository
                     Name = (string)row["name"],
                     Description = (string)row["Description"],
                     ImagePath = (string)row["image_url"],
+                    TrailerPath = (string)row["trailer_url"],
+                    GameplayPath = (string)row["gameplay_url"],
                     Price = Convert.ToDouble(row["price"]),
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
