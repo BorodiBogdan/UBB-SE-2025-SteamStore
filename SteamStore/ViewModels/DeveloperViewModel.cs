@@ -17,6 +17,7 @@ public class DeveloperViewModel
     }
     public void LoadGames()
     {
+        DeveloperGames.Clear();
         var games = _developerService.GetDeveloperGames();
         foreach (var game in games)
         {

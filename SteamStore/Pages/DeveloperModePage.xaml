@@ -23,7 +23,8 @@
                  Margin="0,0,0,20"/>
 
         <!-- Developer Games List -->
-        <ListView x:Name="DeveloperGamesList"
+        <ListView ItemsSource="{Binding DeveloperGames}"
+                 x:Name="DeveloperGamesList"
                  Grid.Row="1" 
                  Margin="0,0,0,20"
                  Visibility="Visible">
@@ -55,7 +56,6 @@
                                 Margin="10,0"/>
                         <Button Content="Reject Message" 
                                 Grid.Column="4"
-                                Visibility="{Binding Status, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Rejected}"
                                 Background="Orange"/>
                     </Grid>
                 </DataTemplate>
@@ -63,7 +63,8 @@
         </ListView>
 
         <!-- Review Games List -->
-        <ListView x:Name="ReviewGamesList"
+        <ListView ItemsSource="{Binding DeveloperGames}"
+                x:Name="ReviewGamesList"
                  Grid.Row="1" 
                  Margin="0,0,0,20"
                  Visibility="Collapsed">
