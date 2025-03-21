@@ -26,6 +26,19 @@ namespace SteamStore.Pages
         public DeveloperModePage()
         {
             this.InitializeComponent();
+            AddGameButton.Click += AddGameButton_Click;
+        }
+
+        private async void AddGameButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Show the add game dialog
+            await AddGameDialog.ShowAsync();
+        }
+
+        private async void ShowRejectionMessage(string message)
+        {
+            RejectionMessageText.Text = message;
+            await RejectionMessageDialog.ShowAsync();
         }
     }
 }
