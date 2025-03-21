@@ -853,6 +853,5 @@ VALUES
 (1, 3, GETDATE(), 0),  -- Golden frame (inactive)
 (1, 5, GETDATE(), 1);  -- Happy emoticon (active)
 
-PRINT 'Point Shop extension setup complete!'
 GO
     
