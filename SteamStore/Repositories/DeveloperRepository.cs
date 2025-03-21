@@ -131,7 +131,7 @@ public class DeveloperRepository
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
-                    Discount = (float)row["discount"]
+                    Discount = Convert.ToSingle(row["discount"])
                 };
                 games.Add(game);
             }

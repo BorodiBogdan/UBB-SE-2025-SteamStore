@@ -23,9 +23,29 @@ namespace SteamStore.Pages
     /// </summary>
     public sealed partial class DeveloperModePage : Page
     {
-        public DeveloperModePage()
+        private DeveloperViewModel _viewModel;
+
+        public DeveloperModePage(DeveloperService developerService, UserGameService userGameService)
         {
-            this.InitializeComponent();
+            InitializeComponent();
+            _viewModel = new DeveloperViewModel(developerService, userGameService);
+            this.DataContext = _viewModel;
+
+            AddGameButton.Click += AddGameButton_Click;
+        }
+
+        //Get unvalidated games
+
+        private async void AddGameButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Show the add game dialog
+            await AddGameDialog.ShowAsync();
+        }
+
+        private async void ShowRejectionMessage(string message)
+        {
+            RejectionMessageText.Text = message;
+            await RejectionMessageDialog.ShowAsync();
         }
     }
 }

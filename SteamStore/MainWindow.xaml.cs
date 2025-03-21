@@ -15,6 +15,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,6 +27,7 @@ namespace SteamStore
         private GameService gameService;
         private CartService cartService;
         private UserGameService userGameService;
+        private DeveloperService developerService;
         private User user;
 
         public MainWindow()
@@ -45,6 +47,13 @@ namespace SteamStore
             gameService = new GameService(gameRepository);
             cartService = new CartService(new CartRepository(dataLink, loggedInUser));
             userGameService = new UserGameService(new UserGameRepository(dataLink, loggedInUser),gameRepository);
+            // De aici am inceput
+            var developerRepository = new DeveloperRepository(dataLink,loggedInUser);
+            developerService = new DeveloperService(developerRepository);
+            //DeveloperViewModel devView = new DeveloperViewModel(developerService, userGameService);
+
+            //Aici sa termin
+
 
             if (ContentFrame == null)
             {
@@ -76,7 +85,7 @@ namespace SteamStore
                         ContentFrame.Navigate(typeof(WishListPage));
                         break;
                     case "DeveloperModePage":
-                        ContentFrame.Navigate(typeof(DeveloperModePage));
+                        ContentFrame.Content = new DeveloperModePage(developerService, userGameService);
                         break;
                 }
             }
