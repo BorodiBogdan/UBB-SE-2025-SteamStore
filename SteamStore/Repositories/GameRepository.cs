@@ -128,10 +128,12 @@ public class GameRepository
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
+                    Discount = (int)row["discount"],
                     Tags = GetGameTags((int)row["game_id"]),
                     Rating = GetGameRating((int)row["game_id"]),
                     noOfRecentPurchases = GetNoOfRecentSalesForGame((int)row["game_id"]),
-                    trendingScore = Game.NOT_COMPUTED
+                    trendingScore = Game.NOT_COMPUTED,
+                    tagScore = Game.NOT_COMPUTED
                 };
                 games.Add(game);
             }

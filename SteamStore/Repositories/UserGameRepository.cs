@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Gaming.Input;
 
 public class UserGameRepository
 {
@@ -107,8 +108,12 @@ public class UserGameRepository
 
     public Collection<Game> getAllUserGames()
     {
+        SqlParameter[] parameters = new SqlParameter[]
+        {
+            new SqlParameter("@uid", user.UserId)
+        };
 
-        DataTable? result = data.ExecuteReader("getUserGames");
+        DataTable? result = data.ExecuteReader("getUserGames",parameters);
         List<Game> games = new List<Game>();
 
         if (result != null)

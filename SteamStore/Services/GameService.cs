@@ -57,4 +57,15 @@ public class GameService
                        .Take(10)
                        .ToList());
     }
+
+    public Collection<Game> getDiscountedGames()
+    {
+        var games = _gameRepository.getAllGames();
+        computeTrendingScores(games);
+        return new Collection<Game>(games
+                        .Where(game => game.Discount>0)
+                        .OrderByDescending(game => game.trendingScore)
+                        .Take(10)
+                        .ToList());
+    }
 }
