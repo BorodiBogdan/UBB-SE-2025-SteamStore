@@ -9,10 +9,12 @@ public class HomePageViewModel : INotifyPropertyChanged
 {
     public ObservableCollection<Game> searchedOrFilteredGames{get;set;}
     public ObservableCollection<Game> trendingGames { get; set; }
-
+    public ObservableCollection<Game> recommendedGames { get; set; }
+    public ObservableCollection<Game> discountedGames { get; set;}
     public string _search_filter_text;
     public ObservableCollection<Tag> tags { get; set; }
     private readonly GameService _gameService;
+    private readonly UserGameService _userGameService;
 
     public string search_filter_text
     {
@@ -37,18 +39,24 @@ public class HomePageViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public HomePageViewModel(GameService gameService)
+    public HomePageViewModel(GameService gameService, UserGameService userGameService)
     {
         _gameService = gameService;
+        _userGameService = userGameService;
         GameService = gameService; // Assign to public property
         searchedOrFilteredGames = new ObservableCollection<Game>();
         trendingGames = new ObservableCollection<Game>();
+        recommendedGames = new ObservableCollection<Game>();
+        discountedGames = new ObservableCollection<Game>();
         LoadAllGames();
         LoadTrendingGames();
+        LoadRecommendedGames();
+        LoadDiscountedGames();
         tags = new ObservableCollection<Tag>();
         LoadTags();
     }
 
+    
     private void LoadTrendingGames()
     {
         trendingGames.Clear();
@@ -66,6 +74,28 @@ public class HomePageViewModel : INotifyPropertyChanged
             tags.Add(tag);
         }
     }
+
+    private void LoadRecommendedGames()
+    {
+        recommendedGames.Clear();
+        var games = _userGameService.getRecommendedGames();
+        foreach (var game in games)
+        {
+            recommendedGames.Add(game);
+        }
+    }
+    
+    private void LoadDiscountedGames()
+    {
+        discountedGames.Clear();
+        var games = _gameService.getDiscountedGames();
+        foreach (var game in games)
+        {
+            discountedGames.Add(game);
+        }
+    }
+
+
 
     public void LoadAllGames()
     {

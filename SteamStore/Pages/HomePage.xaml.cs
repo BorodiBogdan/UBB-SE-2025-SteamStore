@@ -32,11 +32,12 @@ namespace SteamStore.Pages
         {
             this.InitializeComponent();
 
-            this.DataContext = new HomePageViewModel(_gameService);
+            this.DataContext = new HomePageViewModel(_gameService,_userGameService);
             this._userGameService = _userGameService;
             this._cartService = _cartService;
 
         }
+
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {

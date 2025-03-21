@@ -92,6 +92,19 @@ GO
 
 -- Stored Procedures
 go
+DROP PROCEDURE IF EXISTS getUserGames;
+go
+create procedure getUserGames 
+	@uid int
+	as
+begin
+	select g.* from Games g
+	inner join games_users gu on gu.game_id=g.game_id
+	inner join users u on u.user_id=gu.user_id
+	where @uid=u.user_id and g.status='Approved'
+end
+
+go
 DROP PROCEDURE IF EXISTS getAllTags;
 go
 CREATE PROCEDURE getAllTags as
@@ -131,7 +144,8 @@ CREATE PROCEDURE GetAllGames
 AS  
 BEGIN  
     SELECT game_id, name, price, publisher_id, description, image_url, trailer_url, gameplay_url, minimum_requirements, recommended_requirements, status, discount 
-    FROM games;  
+    FROM games
+	where status='Approved';
 END;
 GO
 

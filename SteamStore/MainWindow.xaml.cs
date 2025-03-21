@@ -41,9 +41,10 @@ namespace SteamStore
             .AddJsonFile("appsettings.json")
             .Build());
 
-            gameService = new GameService(new GameRepository(dataLink));
+            var gameRepository = new GameRepository(dataLink);
+            gameService = new GameService(gameRepository);
             cartService = new CartService(new CartRepository(dataLink, loggedInUser));
-            userGameService = new UserGameService(new UserGameRepository(dataLink, loggedInUser));
+            userGameService = new UserGameService(new UserGameRepository(dataLink, loggedInUser),gameRepository);
 
             if (ContentFrame == null)
             {
