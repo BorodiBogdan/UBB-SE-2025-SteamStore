@@ -60,7 +60,9 @@
                                 CommandParameter="{Binding Id}"/>
                         <Button Content="Reject Message" 
                                 Grid.Column="4"
-                                Background="Orange"/>
+                                Background="Orange"
+                                Click="ViewRejectionMessageButton_Click"
+                                CommandParameter="{Binding Id}"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -99,7 +101,9 @@
                                 CommandParameter="{Binding Id}"/>
                         <Button Content="Reject" 
                                 Grid.Column="3"
-                                Background="Red"/>
+                                Background="Red"
+                                Click="RejectButton_Click"
+                                CommandParameter="{Binding Id}"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -273,6 +277,22 @@
                           TextWrapping="Wrap"
                           FontSize="14"/>
             </ScrollViewer>
+        </ContentDialog>
+
+        <!-- Reject Game Dialog -->
+        <ContentDialog x:Name="RejectGameDialog"
+                      Title="Reject Game" 
+                      CloseButtonText="Cancel"
+                      PrimaryButtonText="Reject"
+                      DefaultButton="Close">
+            <StackPanel Spacing="10">
+                <TextBlock Text="Enter rejection reason:" FontSize="14"/>
+                <TextBox x:Name="RejectReasonTextBox"
+                       Height="100"
+                       AcceptsReturn="True"
+                       TextWrapping="Wrap"
+                       PlaceholderText="Explain why this game is being rejected..."/>
+            </StackPanel>
         </ContentDialog>
     </Grid>
 
