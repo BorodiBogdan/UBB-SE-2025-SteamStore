@@ -18,10 +18,22 @@
                         SelectionChanged="NavView_SelectionChanged">
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Homepage" Tag="HomePage" Icon="Home" />
-                <NavigationViewItem Content="Cart" Tag="CartPage"  />
-                <NavigationViewItem Content="Points Shop" Tag="PointsShopPage" />
-                <NavigationViewItem Content="Wishlist" Tag="WishlistPage" />
-                <NavigationViewItem Content="Developer Mode" Tag="DeveloperModePage" />
+                <NavigationViewItem Content="Cart" Tag="CartPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7BF;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Points Shop" Tag="PointsShopPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8C9;" FontSize="16"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Wishlist" Tag="WishlistPage" Icon="Favorite" />
+                <NavigationViewItem Content="Developer Mode" Tag="DeveloperModePage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE943;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
 
             <Frame x:Name="ContentFrame" />
