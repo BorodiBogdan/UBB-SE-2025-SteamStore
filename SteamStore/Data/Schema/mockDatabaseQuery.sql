@@ -1022,8 +1022,9 @@ GO
 
 --SELECT * FROM games;
 --EXEC getGameTags @gid = "133";
---EXEC getGameTags @gid = "4142";
+--EXEC getGameTags @gid = "1";
+--select * from games where game_id = 1;
 
---EXEC ValidateGame @game_id = "133";
+--EXEC ValidateGame @game_id = "";
 
 --EXEC getAllTags;

@@ -209,5 +209,162 @@ namespace SteamStore.Pages
                 }
             }
         }
+
+        private async void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("EditButton_Click was called!");
+            
+            if (sender is Button button && button.CommandParameter is int gameId)
+            {
+                var game = _viewModel.DeveloperGames.FirstOrDefault(g => g.Id == gameId);
+                if (game != null)
+                {
+                    // Populate edit form with game data
+                    EditGameId.Text = game.Id.ToString();
+                    EditGameId.IsEnabled = false; // Cannot change game ID
+                    EditGameName.Text = game.Name;
+                    EditGameDescription.Text = game.Description;
+                    EditGamePrice.Text = game.Price.ToString();
+                    EditGameImageUrl.Text = game.ImagePath;
+                    EditGameplayUrl.Text = game.GameplayPath ?? "";
+                    EditTrailerUrl.Text = game.TrailerPath ?? "";
+                    EditGameMinReq.Text = game.MinimumRequirements;
+                    EditGameRecReq.Text = game.RecommendedRequirements;
+                    EditGameDiscount.Text = game.Discount.ToString();
+                    
+                    // Get game tags and preselect them in the UI
+                    EditGameTagList.SelectedItems.Clear();
+                    
+                    try {
+                        var gameTags = _viewModel._developerService.GetGameTags(game.Id);
+                        
+                        // Ensure EditGameTagList has items
+                        if (EditGameTagList.Items != null && EditGameTagList.Items.Count > 0)
+                        {
+                            foreach (var tag in EditGameTagList.Items)
+                            {
+                                if (tag is Tag tagItem && gameTags.Any(t => t.tag_id == tagItem.tag_id))
+                                {
+                                    EditGameTagList.SelectedItems.Add(tag);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("EditGameTagList has no items loaded");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error loading game tags: {ex.Message}");
+                    }
+                    
+                    // Set XamlRoot for the dialog
+                    EditGameDialog.XamlRoot = this.Content.XamlRoot;
+                    
+                    var result = await EditGameDialog.ShowAsync();
+                    
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        try
+                        {
+                            // Validation
+                            if (string.IsNullOrWhiteSpace(EditGameName.Text) ||
+                                string.IsNullOrWhiteSpace(EditGamePrice.Text) ||
+                                string.IsNullOrWhiteSpace(EditGameDescription.Text) ||
+                                string.IsNullOrWhiteSpace(EditGameImageUrl.Text) ||
+                                string.IsNullOrWhiteSpace(EditGameMinReq.Text) ||
+                                string.IsNullOrWhiteSpace(EditGameRecReq.Text) ||
+                                string.IsNullOrWhiteSpace(EditGameDiscount.Text))
+                            {
+                                await ShowErrorMessage("Validation Error", "All fields are required.");
+                                return;
+                            }
+                            
+                            // Validate price (must be a positive number)
+                            if (!double.TryParse(EditGamePrice.Text, out double price) || price < 0)
+                            {
+                                await ShowErrorMessage("Validation Error", "Price must be a positive number.");
+                                return;
+                            }
+                            
+                            // Validate discount (must be between 0 and 100)
+                            if (!float.TryParse(EditGameDiscount.Text, out float discount) || discount < 0 || discount > 100)
+                            {
+                                await ShowErrorMessage("Validation Error", "Discount must be between 0 and 100.");
+                                return;
+                            }
+                            
+                            // Validate at least one tag is selected
+                            var selectedTags = EditGameTagList.SelectedItems.Cast<Tag>().ToList();
+                            if (selectedTags.Count == 0)
+                            {
+                                await ShowErrorMessage("Validation Error", "Please select at least one tag for the game.");
+                                return;
+                            }
+                            
+                            // Create updated game object
+                            var updatedGame = new Game
+                            {
+                                Id = game.Id,
+                                Name = EditGameName.Text,
+                                Price = price,
+                                Description = EditGameDescription.Text,
+                                ImagePath = EditGameImageUrl.Text,
+                                GameplayPath = EditGameplayUrl.Text,
+                                TrailerPath = EditTrailerUrl.Text,
+                                MinimumRequirements = EditGameMinReq.Text,
+                                RecommendedRequirements = EditGameRecReq.Text,
+                                Status = "Pending", // Always reset status to Pending for any edited game to require re-validation
+                                Discount = discount,
+                                PublisherId = game.PublisherId // Keep existing publisher
+                            };
+                            
+                            System.Diagnostics.Debug.WriteLine($"Game status set to 'Pending' for game ID {game.Id}");
+                            
+                            // First delete existing tags, then add the new ones
+                            try
+                            {
+                                _viewModel._developerService.DeleteGameTags(game.Id);
+                                System.Diagnostics.Debug.WriteLine("Successfully deleted existing game tags");
+                            }
+                            catch (Exception tagEx)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Error deleting game tags: {tagEx.Message}");
+                                await ShowErrorMessage("Tag Error", $"Failed to remove existing game tags: {tagEx.Message}");
+                                return;
+                            }
+                            
+                            // Update the game
+                            _viewModel.UpdateGame(updatedGame);
+                            
+                            // Add new tags
+                            try
+                            {
+                                foreach (var tag in selectedTags)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Inserting tag ID {tag.tag_id} for game ID {game.Id}");
+                                    _viewModel._developerService.InsertGameTag(game.Id, tag.tag_id);
+                                }
+                                System.Diagnostics.Debug.WriteLine("Successfully inserted all game tags");
+                            }
+                            catch (Exception tagEx)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Error inserting game tags: {tagEx.Message}");
+                                await ShowErrorMessage("Tag Error", $"Failed to add new game tags: {tagEx.Message}");
+                                return;
+                            }
+                            
+                            // Refresh the games list
+                            _viewModel.LoadGames();
+                        }
+                        catch (Exception ex)
+                        {
+                            await ShowErrorMessage("Error", $"Failed to update game: {ex.Message}");
+                        }
+                    }
+                }
+            }
+        }
     }
 }

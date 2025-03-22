@@ -51,6 +51,7 @@
     <Grid Background="#1b2838">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -72,13 +73,13 @@
                         Style="{StaticResource SteamButtonStyle}"/>
                 
                 <TextBox x:Name="SearchBox"
-                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         TextChanged="SearchBox_TextChanged"
+                     Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     TextChanged="SearchBox_TextChanged"
                          PlaceholderText="Search wishlist..."
                          Style="{StaticResource SteamSearchBox}"
                          Width="300"/>
             </StackPanel>
-
+            
             <!-- Right Section -->
             <StackPanel Grid.Column="2" 
                         Orientation="Horizontal" 
@@ -87,7 +88,7 @@
                         HorizontalAlignment="Right">
                 <ComboBox x:Name="FilterComboBox"
                          Style="{StaticResource SteamComboBox}"
-                         SelectionChanged="FilterComboBox_SelectionChanged"
+                      SelectionChanged="FilterComboBox_SelectionChanged" 
                          PlaceholderText="Filter by Rating"
                          MinWidth="150">
                     <ComboBoxItem Content="All Games"/>
@@ -95,19 +96,19 @@
                     <ComboBoxItem Content="Very Positive (8-9)"/>
                     <ComboBoxItem Content="Mixed (4-8)"/>
                     <ComboBoxItem Content="Negative (&lt;4)"/>
-                </ComboBox>
-                
+            </ComboBox>
+            
                 <ComboBox x:Name="SortComboBox"
                          Style="{StaticResource SteamComboBox}"
-                         SelectionChanged="SortComboBox_SelectionChanged"
+                      SelectionChanged="SortComboBox_SelectionChanged"
                          PlaceholderText="Sort by"
                          MinWidth="150">
                     <ComboBoxItem Content="Price (Low to High)"/>
                     <ComboBoxItem Content="Price (High to Low)"/>
                     <ComboBoxItem Content="Rating (High to Low)"/>
                     <ComboBoxItem Content="Discount (High to Low)"/>
-                </ComboBox>
-            </StackPanel>
+            </ComboBox>
+        </StackPanel>
         </Grid>
 
         <!-- Content Area -->
@@ -117,7 +118,7 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        FontSize="24"
-                       FontWeight="SemiBold"
+                FontWeight="SemiBold"
                        Foreground="#66c0f4"
                        TextAlignment="Center"
                        Visibility="{Binding WishListGames.Count, Converter={StaticResource CountToVisibilityConverter}}"/>
@@ -126,7 +127,7 @@
             <ScrollViewer Padding="20"
                           HorizontalScrollMode="Disabled"
                           VerticalScrollMode="Auto">
-                <ItemsControl ItemsSource="{Binding WishListGames}">
+            <ItemsControl ItemsSource="{Binding WishListGames}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <VariableSizedWrapGrid ItemWidth="600" 
@@ -136,8 +137,10 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="#444444" BorderThickness="1" Margin="0,0,0,10" 
+                                Background="#2A2A2A" CornerRadius="5">
                             <Grid Margin="10">
                                 <!-- Game Card -->
                                 <Border Background="#16202d" 
@@ -145,17 +148,18 @@
                                         BorderThickness="1" 
                                         CornerRadius="3">
                                     <Grid>
-                                        <Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="280"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                                        <!-- Game Image -->
+                                <!-- Game Image -->
                                         <Image Source="{Binding ImagePath}" 
                                                Stretch="UniformToFill"
                                                Height="140"/>
 
-                                        <!-- Game Details -->
+                                <!-- Game Details -->
                                         <StackPanel Grid.Column="1" 
                                                     Padding="15,10"
                                                     MaxWidth="300">
@@ -181,9 +185,9 @@
                                                         Visibility="{Binding Discount, Converter={StaticResource DiscountVisibilityConverter}}">
                                                     <TextBlock>
                                                         <Run Text="-"/>
-                                                        <Run Text="{Binding Discount}"/>
-                                                        <Run Text="%"/>
-                                                    </TextBlock>
+                                            <Run Text="{Binding Discount}"/>
+                                            <Run Text="%"/>
+                                        </TextBlock>
                                                 </Border>
                                                 
                                                 <!-- Price -->
@@ -202,9 +206,9 @@
                                                            Foreground="#8f98a0"/>
                                                 <TextBlock Text="{Binding Rating}" 
                                                            Foreground="#66c0f4"/>
-                                            </StackPanel>
+                                </StackPanel>
 
-                                            <!-- Action Buttons -->
+                                <!-- Action Buttons -->
                                             <StackPanel Orientation="Horizontal" 
                                                         Spacing="10">
                                                 <Button Content="View Details" 
@@ -214,14 +218,14 @@
                                                         Click="RemoveFromWishlist_Click"
                                                         Style="{StaticResource SteamDangerButtonStyle}"/>
                                             </StackPanel>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
+                                </StackPanel>
                             </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-        </Grid>
+                        </Border>
+                            </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
     </Grid>
 </Page> 

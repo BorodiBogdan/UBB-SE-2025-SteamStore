@@ -75,4 +75,12 @@ public class DeveloperService
     {
         return _developerRepository.IsGameIdInUse(gameId);
     }
+    public List<Tag> GetGameTags(int gameId)
+    {
+        return _developerRepository.GetGameTags(gameId);
+    }
+    public void DeleteGameTags(int gameId)
+    {
+        _developerRepository.DeleteGameTags(gameId);
+    }
 }
