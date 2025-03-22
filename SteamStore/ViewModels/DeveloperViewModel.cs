@@ -95,4 +95,21 @@ public class DeveloperViewModel
             UnvalidatedGames.Add(game);
         }
     }
+
+    public bool IsGameIdInUse(int gameId)
+    {
+        // Check in the developer's own games first
+        if (DeveloperGames.Any(g => g.Id == gameId))
+        {
+            return true;
+        }
+        
+        // Check in unvalidated games
+        if (UnvalidatedGames.Any(g => g.Id == gameId))
+        {
+            return true;
+        }
+        
+        return _developerService.IsGameIdInUse(gameId);
+    }
 }

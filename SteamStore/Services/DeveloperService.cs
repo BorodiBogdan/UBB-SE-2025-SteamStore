@@ -71,4 +71,8 @@ public class DeveloperService
     {
         return _developerRepository.GetAllTags();
     }
+    public bool IsGameIdInUse(int gameId)
+    {
+        return _developerRepository.IsGameIdInUse(gameId);
+    }
 }

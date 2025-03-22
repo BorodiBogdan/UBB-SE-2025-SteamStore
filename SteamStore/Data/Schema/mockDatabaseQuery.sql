@@ -466,6 +466,21 @@ BEGIN
 END;
 GO 
 
+DROP PROCEDURE IF EXISTS IsGameIdInUse;
+GO
+
+CREATE PROCEDURE IsGameIdInUse
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF EXISTS (SELECT 1 FROM games WHERE game_id = @game_id)
+        SELECT 1 AS Result;
+    ELSE
+        SELECT 0 AS Result;
+END;
+GO 
 
 
 -- Insert mock users
@@ -887,3 +902,16 @@ VALUES
 
 GO
 
+--EXEC GetAllUnvalidated @publisher_id = "1";
+
+--EXEC ValidateGame @game_id = "7";
+
+--EXEC GetAllUnvalidated @publisher_id = "2";
+
+--SELECT * FROM games;
+--EXEC getGameTags @gid = "133";
+--EXEC getGameTags @gid = "4142";
+
+--EXEC ValidateGame @game_id = "133";
+
+--EXEC getAllTags;

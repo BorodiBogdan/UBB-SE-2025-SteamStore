@@ -13,6 +13,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using SteamStore.Models;
+using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -71,11 +72,61 @@ namespace SteamStore.Pages
             {
                 try
                 {
+                    // Validation
+                    if (string.IsNullOrWhiteSpace(AddGameId.Text) ||
+                        string.IsNullOrWhiteSpace(AddGameName.Text) ||
+                        string.IsNullOrWhiteSpace(AddGamePrice.Text) ||
+                        string.IsNullOrWhiteSpace(AddGameDescription.Text) ||
+                        string.IsNullOrWhiteSpace(AddGameImageUrl.Text) ||
+                        string.IsNullOrWhiteSpace(AddGameMinReq.Text) ||
+                        string.IsNullOrWhiteSpace(AddGameRecReq.Text) ||
+                        string.IsNullOrWhiteSpace(AddGameDiscount.Text))
+                    {
+                        await ShowErrorMessage("Validation Error", "All fields are required.");
+                        return;
+                    }
+                    
+                    // Validate game ID (must be an integer and not already in use)
+                    if (!int.TryParse(AddGameId.Text, out int gameId))
+                    {
+                        await ShowErrorMessage("Validation Error", "Game ID must be a valid integer.");
+                        return;
+                    }
+                    
+                    // Check if game ID is already in use
+                    if (_viewModel.IsGameIdInUse(gameId))
+                    {
+                        await ShowErrorMessage("Validation Error", "Game ID is already in use. Please choose another ID.");
+                        return;
+                    }
+                    
+                    // Validate price (must be a positive number)
+                    if (!double.TryParse(AddGamePrice.Text, out double price) || price < 0)
+                    {
+                        await ShowErrorMessage("Validation Error", "Price must be a positive number.");
+                        return;
+                    }
+                    
+                    // Validate discount (must be between 0 and 100)
+                    if (!float.TryParse(AddGameDiscount.Text, out float discount) || discount < 0 || discount > 100)
+                    {
+                        await ShowErrorMessage("Validation Error", "Discount must be between 0 and 100.");
+                        return;
+                    }
+                    
+                    // Validate at least one tag is selected
+                    var selectedTags = AddGameTagList.SelectedItems.Cast<Tag>().ToList();
+                    if (selectedTags.Count == 0)
+                    {
+                        await ShowErrorMessage("Validation Error", "Please select at least one tag for the game.");
+                        return;
+                    }
+                    
                     var game = new Game
                     {
-                        Id = int.Parse(AddGameId.Text),
+                        Id = gameId,
                         Name = AddGameName.Text,
-                        Price = double.Parse(AddGamePrice.Text),
+                        Price = price,
                         Description = AddGameDescription.Text,
                         ImagePath = AddGameImageUrl.Text,
                         GameplayPath = AddGameplayUrl.Text,
@@ -83,11 +134,8 @@ namespace SteamStore.Pages
                         MinimumRequirements = AddGameMinReq.Text,
                         RecommendedRequirements = AddGameRecReq.Text,
                         Status = "Pending",
-                        Discount = float.Parse(AddGameDiscount.Text)
+                        Discount = discount
                     };
-
-                    // Get selected tags
-                    var selectedTags = AddGameTagList.SelectedItems.Cast<Tag>().ToList();
                     
                     _viewModel.CreateGame(game, selectedTags);
 
@@ -109,16 +157,21 @@ namespace SteamStore.Pages
                 }
                 catch (Exception ex)
                 {
-                    ContentDialog errorDialog = new ContentDialog
-                    {
-                        Title = "Error",
-                        Content = $"Failed to add game: {ex.Message}",
-                        CloseButtonText = "OK",
-                        XamlRoot = this.Content.XamlRoot
-                    };
-                    await errorDialog.ShowAsync();
+                    await ShowErrorMessage("Error", $"Failed to add game: {ex.Message}");
                 }
             }
+        }
+
+        private async Task ShowErrorMessage(string title, string message)
+        {
+            ContentDialog errorDialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+            await errorDialog.ShowAsync();
         }
 
         private async void ShowRejectionMessage(string message)
