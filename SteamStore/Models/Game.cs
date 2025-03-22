@@ -33,8 +33,6 @@ public class Game
 
     public int PublisherId { get; set; }
 
-    public string RejectionMessage { get; set; }
-
     public Game(int id, string name, string description, string imagePath, string trailerPath, string gameplayPath, double price, string minimumRequirements, string recommendedRequirements, string status, string[] tags, float rating, float discount, int publisherId)
     {
         Id = id;

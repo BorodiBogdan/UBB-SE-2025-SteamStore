@@ -61,7 +61,7 @@
                         <Button Content="Reject Message" 
                                 Grid.Column="4"
                                 Background="Orange"
-                                Click="ViewRejectionMessageButton_Click"
+                                Click="RejectionButton_Click"
                                 CommandParameter="{Binding Id}"/>
                     </Grid>
                 </DataTemplate>
@@ -265,6 +265,24 @@
                       DefaultButton="Close">
             <TextBlock Text="Are you sure you want to delete this game?" 
                       TextWrapping="Wrap"/>
+        </ContentDialog>
+
+        <!-- Delete Warning Dialog -->
+        <ContentDialog x:Name="DeleteWarningDialog"
+                      Title="Warning: Game Owned by Users" 
+                      CloseButtonText="Cancel"
+                      PrimaryButtonText="Delete Anyway"
+                      DefaultButton="Close">
+            <StackPanel Spacing="10">
+                <TextBlock Text="Warning: This game is currently owned by users. Deleting it will remove it from their libraries and transaction history." 
+                         TextWrapping="Wrap"
+                         Foreground="Red"/>
+                <TextBlock x:Name="OwnerCountText"
+                         TextWrapping="Wrap"/>
+                <TextBlock Text="Are you sure you want to proceed with deletion?" 
+                         TextWrapping="Wrap"
+                         FontWeight="SemiBold"/>
+            </StackPanel>
         </ContentDialog>
 
         <!-- Rejection Message Dialog -->

@@ -86,17 +86,6 @@ public class DeveloperViewModel
         UnvalidatedGames.Remove(game);
     }
 
-    public void RejectGameWithMessage(int game_id, string message)
-    {
-        _developerService.RejectGameWithMessage(game_id, message);
-        var game = UnvalidatedGames.FirstOrDefault(x => x.Id == game_id);
-        if (game != null)
-        {
-            game.Status = "Rejected";
-            UnvalidatedGames.Remove(game);
-        }
-    }
-
     public string GetRejectionMessage(int game_id)
     {
         return _developerService.GetRejectionMessage(game_id);
@@ -127,5 +116,10 @@ public class DeveloperViewModel
         }
         
         return _developerService.IsGameIdInUse(gameId);
+    }
+
+    public int GetGameOwnerCount(int game_id)
+    {
+        return _developerService.GetGameOwnerCount(game_id);
     }
 }

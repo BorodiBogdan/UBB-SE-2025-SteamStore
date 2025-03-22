@@ -113,19 +113,42 @@ public class DeveloperRepository
     {
         try
         {
-            // First delete the game tags to avoid foreign key constraint violation
+            // Delete related data from all tables in the correct order to avoid foreign key constraint violations
+            
+            // 1. First delete game tags
             DeleteGameTags(game_id);
             
-            // Then delete the game
-            SqlParameter[] sqlParameters = new SqlParameter[]
+            // 2. Delete game reviews
+            SqlParameter[] reviewParams = new SqlParameter[]
             {
                 new SqlParameter("@game_id", game_id)
             };
-            dataLink.ExecuteNonQuery("DeleteGameDeveloper", sqlParameters);
+            dataLink.ExecuteNonQuery("DeleteGameReviews", reviewParams);
+            
+            // 3. Delete game from transaction history
+            SqlParameter[] transactionParams = new SqlParameter[]
+            {
+                new SqlParameter("@game_id", game_id)
+            };
+            dataLink.ExecuteNonQuery("DeleteGameTransactions", transactionParams);
+            
+            // 4. Delete game from user libraries
+            SqlParameter[] libraryParams = new SqlParameter[]
+            {
+                new SqlParameter("@game_id", game_id)
+            };
+            dataLink.ExecuteNonQuery("DeleteGameFromUserLibraries", libraryParams);
+            
+            // 5. Finally delete the game itself
+            SqlParameter[] gameParams = new SqlParameter[]
+            {
+                new SqlParameter("@game_id", game_id)
+            };
+            dataLink.ExecuteNonQuery("DeleteGameDeveloper", gameParams);
         }
         catch (Exception e)
         {
-            throw new Exception(e.Message);
+            throw new Exception($"Error deleting game: {e.Message}");
         }
     }
     public List<Game> GetDeveloperGames()
@@ -231,10 +254,14 @@ public class DeveloperRepository
             
             if (result != null && result.Rows.Count > 0)
             {
-                return (string)result.Rows[0]["reject_message"];
+                if (result.Rows[0]["reject_message"] != DBNull.Value)
+                {
+                    return result.Rows[0]["reject_message"].ToString();
+                }
+                return string.Empty;
             }
             
-            return null;
+            return string.Empty;
         }
         catch (Exception e)
         {
@@ -344,5 +371,28 @@ public class DeveloperRepository
         }
         
         return tags;
+    }
+    public int GetGameOwnerCount(int game_id)
+    {
+        SqlParameter[] sqlParameters = new SqlParameter[]
+        {
+            new SqlParameter("@game_id", game_id)
+        };
+        
+        try
+        {
+            DataTable? result = dataLink.ExecuteReader("GetGameOwnerCount", sqlParameters);
+            
+            if (result != null && result.Rows.Count > 0)
+            {
+                return Convert.ToInt32(result.Rows[0]["OwnerCount"]);
+            }
+            
+            return 0;
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error checking game ownership: {e.Message}");
+        }
     }
 }
