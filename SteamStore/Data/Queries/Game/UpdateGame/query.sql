@@ -29,7 +29,8 @@ BEGIN
         minimum_requirements = @minimum_requirements,
         recommended_requirements = @recommended_requirements,
         status = @status,
-        discount = @discount
+        discount = @discount,
+        reject_message = NULL
     WHERE game_id = @game_id;
 END;
 GO

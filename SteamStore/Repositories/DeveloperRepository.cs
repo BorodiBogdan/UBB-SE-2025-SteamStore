@@ -203,6 +203,44 @@ public class DeveloperRepository
             throw new Exception(e.Message);
         }
     }
+    public void RejectGameWithMessage(int game_id, string message)
+    {
+        SqlParameter[] sqlParameters = new SqlParameter[]
+        {
+            new SqlParameter("@game_id", game_id),
+            new SqlParameter("@rejection_message", message)
+        };
+        try
+        {
+            dataLink.ExecuteNonQuery("RejectGameWithMessage", sqlParameters);
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error rejecting game with message: {e.Message}");
+        }
+    }
+    public string GetRejectionMessage(int game_id)
+    {
+        SqlParameter[] sqlParameters = new SqlParameter[]
+        {
+            new SqlParameter("@game_id", game_id)
+        };
+        try
+        {
+            DataTable? result = dataLink.ExecuteReader("GetRejectionMessage", sqlParameters);
+            
+            if (result != null && result.Rows.Count > 0)
+            {
+                return (string)result.Rows[0]["reject_message"];
+            }
+            
+            return null;
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error getting rejection message: {e.Message}");
+        }
+    }
     public Collection<Tag> GetAllTags()
     {
         Collection<Tag> tags = new Collection<Tag>();
@@ -262,7 +300,7 @@ public class DeveloperRepository
             
             if (result != null && result.Rows.Count > 0)
             {
-                int count = Convert.ToInt32(result.Rows[0]["Count"]);
+                int count = Convert.ToInt32(result.Rows[0]["Result"]);
                 return count > 0;
             }
             

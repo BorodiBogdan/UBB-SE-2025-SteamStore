@@ -63,6 +63,14 @@ public class DeveloperService
     {
         _developerRepository.RejectGame(game_id);
     }
+    public void RejectGameWithMessage(int game_id, string message)
+    {
+        _developerRepository.RejectGameWithMessage(game_id, message);
+    }
+    public string GetRejectionMessage(int game_id)
+    {
+        return _developerRepository.GetRejectionMessage(game_id);
+    }
     public void InsertGameTag(int gameId, int tagId)
     {
         _developerRepository.InsertGameTag(gameId, tagId);
