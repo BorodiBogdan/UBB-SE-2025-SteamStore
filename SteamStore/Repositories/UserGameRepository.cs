@@ -54,6 +54,9 @@ public class UserGameRepository
 
             data.ExecuteNonQuery("AddGameToPurchased", parameters);
             user.WalletBalance -= (float)game.Price;
+            
+            // Calculate and add points (121 points for every $1 spent)
+            AddPointsForPurchase((float)game.Price);
         }
         catch (Exception e)
         {
@@ -138,6 +141,37 @@ public class UserGameRepository
         }
 
         return new Collection<Game>(games);
+    }
+
+    private void AddPointsForPurchase(float purchaseAmount)
+    {
+        try
+        {
+            // Calculate points (121 points for every $1 spent)
+            int earnedPoints = (int)(purchaseAmount * 121);
+            
+            // Update user's point balance
+            user.PointsBalance += earnedPoints;
+            
+            // Update in database
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@UserId", user.UserId),
+                new SqlParameter("@PointBalance", user.PointsBalance)
+            };
+
+            data.ExecuteNonQuery("UpdateUserPointBalance", parameters);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to add points for purchase: {ex.Message}");
+        }
+    }
+
+    public float GetUserPointsBalance()
+    {
+        // Simply return the user's current points balance from the model
+        return user.PointsBalance;
     }
 
 }

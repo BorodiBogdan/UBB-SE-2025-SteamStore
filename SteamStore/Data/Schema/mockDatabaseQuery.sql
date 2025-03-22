@@ -25,6 +25,24 @@ CREATE TABLE users (
     is_developer BIT
 );
 
+-- Check if users already exist before inserting new ones
+IF NOT EXISTS (SELECT 1 FROM users WHERE user_id = 1)
+BEGIN
+    -- Insert initial users with reset point balances if they don't exist
+    INSERT INTO users (user_id, username, balance, point_balance, is_developer)
+    VALUES 
+    (1, 'John Doe', 999999.99, 999999.99, 1),   -- Developer with many points
+    (2, 'Regular User', 1000, 5000, 0),         -- Regular user with 5000 points
+    (3, 'Another User', 500, 2500, 0);          -- Another user with fewer points
+END
+ELSE
+BEGIN
+    -- Reset point balances for existing users
+    UPDATE users SET point_balance = 999999.99 WHERE user_id = 1;
+    UPDATE users SET point_balance = 5000 WHERE user_id = 2;
+    UPDATE users SET point_balance = 2500 WHERE user_id = 3;
+END
+
 CREATE TABLE games (
     game_id INT PRIMARY KEY,
     name NVARCHAR(255),
@@ -484,6 +502,8 @@ GO
 
 
 -- Insert mock users
+-- NOTE: This is now commented out because we already inserted users at the beginning of the script
+/* 
 INSERT INTO users (user_id, username, balance, point_balance, is_developer)
 VALUES
 (1, 'john_doe', 100.00, 500.00, 0),
@@ -497,6 +517,22 @@ VALUES
 (9, 'Mojang Studios', 300.00, 900.00, 1),
 (10, 'Unknown Worlds Entertainment', 180.00, 700.00, 1),
 (11, 'mary_jones', 200.00, 1000.00, 1);
+*/
+
+-- Additionally, let's insert publisher users if they don't exist
+IF NOT EXISTS (SELECT 1 FROM users WHERE user_id = 4)
+BEGIN
+    INSERT INTO users (user_id, username, balance, point_balance, is_developer)
+    VALUES
+    (4, 'Behaviour Interactive', 200.00, 1000.00, 1),
+    (5, 'Valve Corporation', 150.00, 300.00, 1),
+    (6, 'Nintendo', 250.00, 800.00, 1),
+    (7, 'Hempuli Oy', 100.00, 500.00, 1),
+    (8, 'Mobius Digital', 120.00, 600.00, 1),
+    (9, 'Mojang Studios', 300.00, 900.00, 1),
+    (10, 'Unknown Worlds Entertainment', 180.00, 700.00, 1),
+    (11, 'mary_jones', 200.00, 1000.00, 1);
+END
 
 -- Insert mock games
 delete from games
@@ -656,89 +692,129 @@ VALUES
 (39, 11, 4.9, 'Beautiful and immersive.', 'sea_survivor'),
 (40, 11, 4.5, 'Scary deep-sea creatures!', 'aquatic_fear');
 
+-- Delete existing transactions to avoid duplicates/issues
+DELETE FROM store_transaction;
+GO
+
+-- Then insert mock transactions
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES 
 -- 🏆 TRENDING GAME: Counter-Strike 2
 (3, 1, GETDATE(), 19.99, 1),
 (3, 2, DATEADD(DAY, -1, GETDATE()), 19.99, 1),
-(3, 3, GETDATE(), 19.99, 1),
+(3, 3, GETDATE(), 19.99, 1);
+GO
+
+-- Remainder of transactions to avoid overwhelming the insert
+-- Insert more transaction data in smaller batches
+INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
+VALUES
 (3, 4, GETDATE(), 19.99, 1),
 (3, 5, GETDATE(), 19.99, 1),
 (3, 6, DATEADD(DAY, -12, GETDATE()), 19.99, 1),
-(3, 7, DATEADD(DAY, -15, GETDATE()), 19.99, 1),
+(3, 7, DATEADD(DAY, -15, GETDATE()), 19.99, 1);
+GO
 
+-- More transactions in batches
+INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
+VALUES
 -- 🏆 TRENDING GAME: Minecraft
 (10, 1, GETDATE(), 29.99, 1),
 (10, 2, GETDATE(), 29.99, 1),
 (10, 3, DATEADD(DAY, -1, GETDATE()), 29.99, 1),
 (10, 4, GETDATE(), 29.99, 1),
 (10, 5, DATEADD(DAY, -2, GETDATE()), 29.99, 1),
-(10, 6, DATEADD(DAY, -10, GETDATE()), 29.99, 1),
+(10, 6, DATEADD(DAY, -10, GETDATE()), 29.99, 1);
+GO
 
 -- 🏆 TRENDING GAME: Dead by Daylight
+INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
+VALUES
 (2, 1, GETDATE(), 29.99, 1),
 (2, 2, DATEADD(DAY, -1, GETDATE()), 29.99, 1),
 (2, 3, DATEADD(DAY, -2, GETDATE()), 29.99, 1),
 (2, 4, GETDATE(), 29.99, 1),
 (2, 5, GETDATE(), 29.99, 1),
-(2, 6, DATEADD(DAY, -11, GETDATE()), 29.99, 1),
+(2, 6, DATEADD(DAY, -11, GETDATE()), 29.99, 1);
+GO
 
+-- Other games transactions - batch 1
+INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
+VALUES
 -- ⚖️ BALANCED GAME: Risk of Rain 2
 (1, 1, DATEADD(DAY, -10, GETDATE()), 9.99, 1),
 (1, 2, DATEADD(DAY, -12, GETDATE()), 9.99, 1),
 (1, 3, GETDATE(), 9.99, 1),
-
 -- ⏳ LESS TRENDING: Half-Life 2
 (4, 1, DATEADD(DAY, -20, GETDATE()), 39.99, 1),
-(4, 2, DATEADD(DAY, -9, GETDATE()), 39.99, 1),
+(4, 2, DATEADD(DAY, -9, GETDATE()), 39.99, 1);
+GO
 
+-- Other games transactions - batch 2
+INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
+VALUES
 -- ⏳ LESS TRENDING: The Legend of Zelda
 (6, 1, DATEADD(DAY, -13, GETDATE()), 59.99, 1),
 (6, 2, DATEADD(DAY, -8, GETDATE()), 59.99, 1),
-
 -- ⚖️ BALANCED: Portal 2
 (8, 1, GETDATE(), 9.99, 1),
 (8, 2, DATEADD(DAY, -11, GETDATE()), 9.99, 1),
-(8, 3, DATEADD(DAY, -14, GETDATE()), 9.99, 1),
+(8, 3, DATEADD(DAY, -14, GETDATE()), 9.99, 1);
+GO
 
+-- Other games transactions - batch 3
+INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
+VALUES
 -- ⏳ LESS TRENDING: Baba Is You
 (7, 1, DATEADD(DAY, -22, GETDATE()), 14.99, 1),
 (7, 2, DATEADD(DAY, -9, GETDATE()), 14.99, 1),
-
 -- ⚖️ BALANCED: Outer Wilds
 (9, 1, DATEADD(DAY, -18, GETDATE()), 24.99, 1),
-(9, 2, GETDATE(), 24.99, 1),
+(9, 2, GETDATE(), 24.99, 1);
+GO
 
+-- Other games transactions - batch 4
+INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
+VALUES
 -- ⏳ LESS TRENDING: Subnautica
 (11, 1, DATEADD(DAY, -16, GETDATE()), 29.99, 1),
 (11, 2, GETDATE(), 29.99, 1),
-
 -- ⏳ LESS TRENDING: Space Invaders
 (12, 1, DATEADD(DAY, -19, GETDATE()), 9.99, 1),
-(12, 2, DATEADD(DAY, -1, GETDATE()), 9.99, 1),
+(12, 2, DATEADD(DAY, -1, GETDATE()), 9.99, 1);
+GO
 
+-- Other games transactions - batch 5
+INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
+VALUES
 -- ⏳ LESS TRENDING: Fantasy Quest
 (13, 1, DATEADD(DAY, -14, GETDATE()), 29.99, 1),
 (13, 2, GETDATE(), 29.99, 1),
-
 -- ⏳ LESS TRENDING: Racing Turbo
 (14, 1, DATEADD(DAY, -11, GETDATE()), 19.99, 1),
 (14, 2, DATEADD(DAY, -1, GETDATE()), 19.99, 1),
 (14, 3, GETDATE(), 19.99, 1);
 GO
 
-
 -- Ensure user 1 has purchased at least 5 games
-INSERT INTO games_users (user_id, game_id, isInWishlist, is_purchased, isInCart)
-VALUES 
-(1, 1, 0, 0, 0),
-(1, 2, 0, 0, 0),
-(1, 3, 0, 0, 0),
-(1, 4, 0, 0, 0),
-(1, 5, 0, 0, 0);
+-- First check if entries already exist
+IF NOT EXISTS (SELECT 1 FROM games_users WHERE user_id = 1 AND game_id = 1)
+BEGIN
+    INSERT INTO games_users (user_id, game_id, isInWishlist, is_purchased, isInCart)
+    VALUES 
+    (1, 1, 0, 0, 0),
+    (1, 2, 0, 0, 0),
+    (1, 3, 0, 0, 0),
+    (1, 4, 0, 0, 0),
+    (1, 5, 0, 0, 0);
+END
 GO
 
--- Add transactions for user 1
+-- Add transactions for user 1 if they don't already exist
+-- Delete old transactions to avoid foreign key issues
+DELETE FROM store_transaction WHERE user_id = 1 AND game_id IN (1, 2, 3, 4, 5);
+
+-- Now insert fresh transactions
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES 
 (1, 1, GETDATE(), 9.99, 1),
@@ -894,11 +970,28 @@ VALUES
 (10, 'Fantasy Mini-Profile', 'Fantasy-themed mini profile', 'https://picsum.photos/id/100/200/200', 3000, 'MiniProfile');
 
 -- Add some items to test user's inventory
-INSERT INTO UserInventoryItems (UserId, ItemId, PurchaseDate, IsActive)
-VALUES
-(1, 1, GETDATE(), 1),  -- Blue background (active)
-(1, 3, GETDATE(), 0),  -- Golden frame (inactive)
-(1, 5, GETDATE(), 1);  -- Happy emoticon (active)
+-- First check if these items already exist
+IF NOT EXISTS (SELECT 1 FROM UserInventoryItems WHERE UserId = 1 AND ItemId = 1)
+BEGIN
+    INSERT INTO UserInventoryItems (UserId, ItemId, PurchaseDate, IsActive)
+    VALUES
+    (1, 1, GETDATE(), 1),  -- Blue background (active)
+    (1, 3, GETDATE(), 0),  -- Golden frame (inactive)
+    (1, 5, GETDATE(), 1);  -- Happy emoticon (active)
+END
+ELSE
+BEGIN
+    -- Reset user inventory to initial state on each script run
+    -- Delete any newly purchased items and keep only the initial items
+    DELETE FROM UserInventoryItems 
+    WHERE UserId = 1 
+    AND ItemId NOT IN (1, 3, 5);
+    
+    -- Reset the activation status
+    UPDATE UserInventoryItems SET IsActive = 1 WHERE UserId = 1 AND ItemId = 1;
+    UPDATE UserInventoryItems SET IsActive = 0 WHERE UserId = 1 AND ItemId = 3;
+    UPDATE UserInventoryItems SET IsActive = 1 WHERE UserId = 1 AND ItemId = 5;
+END
 
 GO
 

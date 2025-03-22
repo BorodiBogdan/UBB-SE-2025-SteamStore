@@ -11,11 +11,15 @@ public class UserGameService
 {
     private UserGameRepository _userGameRepository;
     private GameRepository _gameRepository;
+    
+    // Property to track points earned in the last purchase
+    public int LastEarnedPoints { get; private set; }
 
     public UserGameService(UserGameRepository userGameRepository,GameRepository gameRepository)
     {
         _userGameRepository = userGameRepository;
         _gameRepository = gameRepository;
+        LastEarnedPoints = 0;
     }
     public void removeGameFromWishlist(Game game)
     {
@@ -32,13 +36,22 @@ public class UserGameService
     }
     public void purchaseGames(List<Game> games)
     {
+        // Reset points counter
+        LastEarnedPoints = 0;
+        
+        // Track user's points before purchase
+        float pointsBalanceBefore = _userGameRepository.GetUserPointsBalance();
+        
+        // Purchase games
+        foreach (var game in games)
         {
-            foreach (var game in games)
-            {
-                _userGameRepository.addGameToPurchased(game);
-                _userGameRepository.removeGameFromWishlist(game);
-            }
+            _userGameRepository.addGameToPurchased(game);
+            _userGameRepository.removeGameFromWishlist(game);
         }
+        
+        // Calculate earned points by comparing balances
+        float pointsBalanceAfter = _userGameRepository.GetUserPointsBalance();
+        LastEarnedPoints = (int)(pointsBalanceAfter - pointsBalanceBefore);
     }
 
     public void computeNoOfUserGamesForEachTag(Collection<Tag> all_tags)

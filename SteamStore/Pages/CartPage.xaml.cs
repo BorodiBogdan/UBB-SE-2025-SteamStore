@@ -61,7 +61,24 @@ namespace SteamStore.Pages
                         bool isConfirmed = await ShowConfirmationDialogAsync();
                         if (!isConfirmed)
                             return;
+                        
                         _viewModel.PurchaseGames();
+                        
+                        // Show notification about earned points
+                        if (_viewModel.LastEarnedPoints > 0)
+                        {
+                            // Store the points in App resources for PointsShopPage to access
+                            try
+                            {
+                                Application.Current.Resources["RecentEarnedPoints"] = _viewModel.LastEarnedPoints;
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Error storing points: {ex.Message}");
+                            }
+                            
+                            await ShowPointsEarnedDialogAsync(_viewModel.LastEarnedPoints);
+                        }
                     }
                 }
             }
@@ -94,6 +111,19 @@ namespace SteamStore.Pages
             };
 
             await errorDialog.ShowAsync();
+        }
+        private async Task ShowPointsEarnedDialogAsync(int pointsEarned)
+        {
+            ContentDialog pointsDialog = new ContentDialog
+            {
+                Title = "Points Earned!",
+                Content = $"You earned {pointsEarned} points for your purchase!\nVisit the Points Shop to spend your points on exclusive items.",
+                CloseButtonText = "OK",
+                DefaultButton = ContentDialogButton.Close
+            };
+
+            pointsDialog.XamlRoot = this.Content.XamlRoot;
+            await pointsDialog.ShowAsync();
         }
     }
 }

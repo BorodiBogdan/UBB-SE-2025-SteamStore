@@ -35,7 +35,10 @@ namespace SteamStore
             this.InitializeComponent();
 
             //initiate the user
-            User loggedInUser = new User(1, "John Doe", "johnyDoe@gmail.com", 999999999, 99999999, User.Role.Developer);
+            User loggedInUser = new User(1, "John Doe", "johnyDoe@gmail.com", 999999.99f, 6000f, User.Role.Developer);
+            
+            // Assign to the class field so it can be used in navigation
+            this.user = loggedInUser;
 
             // Resolve dependencies (e.g., GameRepository and DataLink)
             var dataLink = new DataLink(new ConfigurationBuilder()
@@ -76,7 +79,7 @@ namespace SteamStore
                         ContentFrame.Content = new CartPage(cartService, userGameService);
                         break;
                     case "PointsShopPage":
-                        ContentFrame.Navigate(typeof(PointsShopPage));
+                        ContentFrame.Navigate(typeof(PointsShopPage), user);
                         break;
                     case "WishlistPage":
                         ContentFrame.Navigate(typeof(WishListPage));

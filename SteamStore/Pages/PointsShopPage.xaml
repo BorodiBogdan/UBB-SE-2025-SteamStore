@@ -29,10 +29,21 @@
             <Setter Property="Padding" Value="5"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
+        
+        <!-- Style for notifications -->
+        <Style x:Key="PointsNotificationStyle" TargetType="InfoBar">
+            <Setter Property="Background" Value="#75b022"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="IsClosable" Value="True"/>
+            <Setter Property="Width" Value="450"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
     </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -70,16 +81,16 @@
                             <StackPanel Width="600" Margin="2">
                                 <TextBlock Text="Earning Points" FontWeight="Bold" Margin="0,0,0,5" Foreground="White"/>
                                 <TextBlock TextWrapping="WrapWholeWords" Margin="5,5,0,0" Foreground="#cccccc">
-                                    • Users earn <Bold>10% of the total purchase</Bold> price of 
+                                    • Users earn <Bold>121 points for every $1 spent</Bold> 
                                 </TextBlock>
-                                <TextBlock TextWrapping="WrapWholeWords" Margin="15,2,0,0" Foreground="#cccccc">
-                                        any real money store transaction as points
-                                </TextBlock>
-                                <TextBlock TextWrapping="WrapWholeWords" Margin="5,5,0,0" Foreground="#cccccc">
-                                    • Points does not expire and can be spent anytime
+                                <TextBlock TextWrapping="WrapWholeWords" Margin="13,1,0,0" Foreground="#cccccc">
+                                    in the Steam Store
                                 </TextBlock>
                                 <TextBlock TextWrapping="WrapWholeWords" Margin="5,5,0,0" Foreground="#cccccc">
-                                    • You can't gain points from Points Shop purchases
+                                    • Points accumulate with every cart purchase
+                                </TextBlock>
+                                <TextBlock TextWrapping="WrapWholeWords" Margin="5,5,0,0" Foreground="#cccccc">
+                                    • You can't earn points from Points Shop purchases
                                 </TextBlock>
                             </StackPanel>
                         </ToolTip>
@@ -88,8 +99,21 @@
             </StackPanel>
         </Grid>
 
+        <!-- Simple Notification Bar -->
+        <Border Grid.Row="1" x:Name="NotificationBar" Visibility="Collapsed" Background="#75b022" Padding="15,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="NotificationText" Text="Points Earned!" Foreground="White" FontWeight="SemiBold"/>
+                <Button Grid.Column="1" Content="✕" Click="CloseNotification_Click" 
+                        Background="Transparent" BorderBrush="Transparent" Foreground="White"/>
+            </Grid>
+        </Border>
+
         <!-- Filters -->
-        <Grid Grid.Row="1" Background="#2a3a4a" Padding="20,12,20,12">
+        <Grid Grid.Row="2" Background="#2a3a4a" Padding="20,12,20,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -134,7 +158,7 @@
         </Grid>
 
         <!-- Content -->
-        <Grid Grid.Row="2" Padding="20">
+        <Grid Grid.Row="3" Padding="20">
             <ScrollViewer>
                 <GridView x:Name="ItemsGridView" 
                           ItemsSource="{Binding ShopItems}"
@@ -172,7 +196,7 @@
         </Grid>
 
         <!-- Selected Item Details -->
-        <Grid Grid.Row="3" x:Name="ItemDetailPanel" Visibility="Collapsed" Background="#2a3a4a" Padding="20">
+        <Grid Grid.Row="4" x:Name="ItemDetailPanel" Visibility="Collapsed" Background="#2a3a4a" Padding="20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -213,7 +237,7 @@
         </Grid>
 
         <!-- Inventory Panel -->
-        <Grid Grid.Row="2" Grid.RowSpan="2" x:Name="InventoryPanel" Visibility="Collapsed" Background="#1a2233" Padding="20">
+        <Grid Grid.Row="3" Grid.RowSpan="2" x:Name="InventoryPanel" Visibility="Collapsed" Background="#1a2233" Padding="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>

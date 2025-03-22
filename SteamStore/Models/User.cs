@@ -14,7 +14,7 @@ public class User {
 
     public Role UserRole { get; set; }
 
-    public User(int userId, string name, string email, int walletBalance, int pointsBalance, Role userRole)
+    public User(int userId, string name, string email, float walletBalance, float pointsBalance, Role userRole)
     {
         UserId = userId;
         Name = name;
