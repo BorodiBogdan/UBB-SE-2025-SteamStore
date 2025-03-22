@@ -174,4 +174,39 @@ public class UserGameRepository
         return user.PointsBalance;
     }
 
+    public Collection<Game> getWishlistGames()
+    {
+        SqlParameter[] parameters = new SqlParameter[]
+        {
+            new SqlParameter("@user_id", user.UserId)
+        };
+
+        DataTable? result = data.ExecuteReader("GetWishlistGames", parameters);
+        List<Game> games = new List<Game>();
+
+        if (result != null)
+        {
+            foreach (DataRow row in result.Rows)
+            {
+                Game game = new Game
+                {
+                    Id = (int)row["game_id"],
+                    Name = (string)row["name"],
+                    Description = (string)row["Description"],
+                    ImagePath = (string)row["image_url"],
+                    Price = Convert.ToDouble(row["price"]),
+                    MinimumRequirements = (string)row["minimum_requirements"],
+                    RecommendedRequirements = (string)row["recommended_requirements"],
+                    Status = (string)row["status"],
+                    Rating = Convert.ToSingle(row["rating"]),
+                    Discount = Convert.ToSingle(row["discount"]),
+                    Tags = GetGameTags((int)row["game_id"])
+                };
+                games.Add(game);
+            }
+        }
+
+        return new Collection<Game>(games);
+    }
+
 }
