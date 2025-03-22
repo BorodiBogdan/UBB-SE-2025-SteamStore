@@ -304,7 +304,7 @@ AS
 BEGIN
     IF EXISTS (SELECT 1 FROM games_users WHERE user_id = @user_id AND game_id = @game_id AND isInWishlist = 1)
     BEGIN
-        RAISERROR ('The game is already in the wishlist.', 16, 1);
+        RAISERROR('Failed to add game to your wishlist: Already in wishlist', 16, 1);
         RETURN;
     END
 
@@ -1022,9 +1022,8 @@ GO
 
 --SELECT * FROM games;
 --EXEC getGameTags @gid = "133";
---EXEC getGameTags @gid = "1";
---select * from games where game_id = 1;
+--EXEC getGameTags @gid = "4142";
 
---EXEC ValidateGame @game_id = "";
+--EXEC ValidateGame @game_id = "133";
 
 --EXEC getAllTags;

@@ -67,18 +67,12 @@
     <None Remove="Pages\HomePage.xaml" />
     <None Remove="Pages\PaypalPaymentPage.xaml" />
     <None Remove="Pages\PointsShopPage.xaml" />
-    <None Remove="Pages\WishListPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Resource Remove="Pages\HomePage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\DeveloperModePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Pages\WishListPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

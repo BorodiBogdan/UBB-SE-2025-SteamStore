@@ -227,7 +227,12 @@ namespace SteamStore.Pages
             {
                 // Show error notification
                 NotificationTip.Title = "Error";
-                NotificationTip.Subtitle = $"Failed to add {_viewModel.Game.Name} to your wishlist: {ex.Message}";
+                string errorMessage = ex.Message;
+                if (errorMessage.Contains("ExecuteNonQuery"))
+                {
+                    errorMessage = $"Failed to add {_viewModel.Game.Name} to your wishlist: Already in wishlist";
+                }
+                NotificationTip.Subtitle = errorMessage;
                 NotificationTip.IsOpen = true;
             }
         }
