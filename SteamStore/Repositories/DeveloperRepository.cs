@@ -94,7 +94,7 @@ public class DeveloperRepository
         }
         return games;
     }
-    public void DeleteGame(int game_id)
+    public void DeleteGameTags(int game_id)
     {
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
@@ -102,6 +102,25 @@ public class DeveloperRepository
         };
         try
         {
+            dataLink.ExecuteNonQuery("DeleteGameTags", sqlParameters);
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error deleting game tags: {e.Message}");
+        }
+    }
+    public void DeleteGame(int game_id)
+    {
+        try
+        {
+            // First delete the game tags to avoid foreign key constraint violation
+            DeleteGameTags(game_id);
+            
+            // Then delete the game
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@game_id", game_id)
+            };
             dataLink.ExecuteNonQuery("DeleteGameDeveloper", sqlParameters);
         }
         catch (Exception e)
@@ -182,6 +201,52 @@ public class DeveloperRepository
         catch (Exception e)
         {
             throw new Exception(e.Message);
+        }
+    }
+    public Collection<Tag> GetAllTags()
+    {
+        Collection<Tag> tags = new Collection<Tag>();
+        
+        try
+        {
+            DataTable? result = dataLink.ExecuteReader("GetAllTags", null);
+            
+            if (result != null)
+            {
+                foreach (DataRow row in result.Rows)
+                {
+                    Tag tag = new Tag
+                    {
+                        tag_id = (int)row["tag_id"],
+                        tag_name = (string)row["tag_name"]
+                    };
+                    tags.Add(tag);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error getting tags: {e.Message}");
+        }
+        
+        return tags;
+    }
+    
+    public void InsertGameTag(int gameId, int tagId)
+    {
+        SqlParameter[] sqlParameters = new SqlParameter[]
+        {
+            new SqlParameter("@game_id", gameId),
+            new SqlParameter("@tag_id", tagId)
+        };
+        
+        try
+        {
+            dataLink.ExecuteNonQuery("InsertGameTags", sqlParameters);
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error inserting game tag: {e.Message}");
         }
     }
 }

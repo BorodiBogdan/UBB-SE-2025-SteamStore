@@ -343,6 +343,24 @@ BEGIN
 END;
 GO
 
+DROP PROCEDURE IF EXISTS InsertGameTags;
+GO
+
+CREATE PROCEDURE InsertGameTags
+    @game_id INT,
+    @tag_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    IF NOT EXISTS (SELECT 1 FROM game_tags WHERE game_id = @game_id AND tag_id = @tag_id)
+    BEGIN
+        INSERT INTO game_tags (game_id, tag_id)
+        VALUES (@game_id, @tag_id);
+    END
+END;
+GO 
+
 DROP PROCEDURE IF EXISTS GetAllUnvalidated
 GO
 
@@ -433,6 +451,20 @@ BEGIN
     WHERE game_id = @game_id;
 END;
 GO
+
+DROP PROCEDURE IF EXISTS DeleteGameTags;
+GO
+
+CREATE PROCEDURE DeleteGameTags
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DELETE FROM game_tags
+    WHERE game_id = @game_id;
+END;
+GO 
 
 
 

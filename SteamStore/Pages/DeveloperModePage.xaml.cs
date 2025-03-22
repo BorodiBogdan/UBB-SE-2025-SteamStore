@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using SteamStore.Models;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -85,7 +86,10 @@ namespace SteamStore.Pages
                         Discount = float.Parse(AddGameDiscount.Text)
                     };
 
-                    _viewModel.CreateGame(game);
+                    // Get selected tags
+                    var selectedTags = AddGameTagList.SelectedItems.Cast<Tag>().ToList();
+                    
+                    _viewModel.CreateGame(game, selectedTags);
 
                     // Clear all fields after successful addition
                     AddGameId.Text = "";
@@ -98,6 +102,7 @@ namespace SteamStore.Pages
                     AddGameMinReq.Text = "";
                     AddGameRecReq.Text = "";
                     AddGameDiscount.Text = "";
+                    AddGameTagList.SelectedItems.Clear();
 
                     // Refresh the games list
                     _viewModel.LoadGames();

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SteamStore.Models;
 
 public class DeveloperService
 {
@@ -60,5 +62,13 @@ public class DeveloperService
     public void RejectGame(int game_id)
     {
         _developerRepository.RejectGame(game_id);
+    }
+    public void InsertGameTag(int gameId, int tagId)
+    {
+        _developerRepository.InsertGameTag(gameId, tagId);
+    }
+    public Collection<Tag> GetAllTags()
+    {
+        return _developerRepository.GetAllTags();
     }
 }
