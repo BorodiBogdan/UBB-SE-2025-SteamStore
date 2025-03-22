@@ -64,6 +64,45 @@ namespace SteamStore.Pages
             }
         }
 
+        private async void RejectButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is int gameId)
+            {
+                // Set XamlRoot for the dialog
+                RejectGameDialog.XamlRoot = this.Content.XamlRoot;
+                
+                var result = await RejectGameDialog.ShowAsync();
+                
+                if (result == ContentDialogResult.Primary)
+                {
+                    string rejectionReason = RejectReasonTextBox.Text;
+                    
+                    try
+                    {
+                        // If we have a rejection service method with message, use it
+                        if (!string.IsNullOrWhiteSpace(rejectionReason))
+                        {
+                            _viewModel._developerService.RejectGameWithMessage(gameId, rejectionReason);
+                        }
+                        else
+                        {
+                            _viewModel.RejectGame(gameId);
+                        }
+                        
+                        // Clear the rejection reason textbox
+                        RejectReasonTextBox.Text = "";
+                        
+                        // Refresh the unvalidated games list
+                        _viewModel.LoadUnvalidated();
+                    }
+                    catch (Exception ex)
+                    {
+                        await ShowErrorMessage("Error", $"Failed to reject game: {ex.Message}");
+                    }
+                }
+            }
+        }
+
         private async void AddGameButton_Click(object sender, RoutedEventArgs e)
         {
             var result = await AddGameDialog.ShowAsync();
@@ -177,77 +216,31 @@ namespace SteamStore.Pages
         private async void ShowRejectionMessage(string message)
         {
             RejectionMessageText.Text = message;
-            RejectionMessageDialog.XamlRoot = this.Content.XamlRoot;
             await RejectionMessageDialog.ShowAsync();
         }
-
-        private async void ViewRejectionMessageButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.CommandParameter is int gameId)
-            {
-                var game = _viewModel.DeveloperGames.FirstOrDefault(g => g.Id == gameId);
-                if (game != null)
-                {
-                    try
-                    {
-                        if (game.Status != "Rejected")
-                        {
-                            await ShowErrorMessage("Not Rejected", "This game has not been rejected. There is no rejection message to view.");
-                            return;
-                        }
-                        
-                        string rejectionMessage = _viewModel.GetRejectionMessage(gameId);
-                        if (string.IsNullOrEmpty(rejectionMessage))
-                        {
-                            await ShowErrorMessage("No Message", "No rejection message was provided for this game.");
-                            return;
-                        }
-                        
-                        ShowRejectionMessage(rejectionMessage);
-                    }
-                    catch (Exception ex)
-                    {
-                        await ShowErrorMessage("Error", $"Failed to retrieve rejection message: {ex.Message}");
-                    }
-                }
-            }
-        }
-
-        private async void RejectButton_Click(object sender, RoutedEventArgs e)
+        
+        private async void RejectionButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is int gameId)
             {
                 try
                 {
-                    // Clear any previous rejection reason
-                    RejectReasonTextBox.Text = "";
+                    string rejectionMessage = _viewModel._developerService.GetRejectionMessage(gameId);
                     
-                    // Set XamlRoot for the dialog
-                    RejectGameDialog.XamlRoot = this.Content.XamlRoot;
-                    
-                    var result = await RejectGameDialog.ShowAsync();
-                    
-                    if (result == ContentDialogResult.Primary)
+                    if (!string.IsNullOrWhiteSpace(rejectionMessage))
                     {
-                        string rejectionReason = RejectReasonTextBox.Text.Trim();
-                        
-                        // Validate that a rejection reason was provided
-                        if (string.IsNullOrWhiteSpace(rejectionReason))
-                        {
-                            await ShowErrorMessage("Invalid Input", "Please provide a reason for rejecting the game.");
-                            return;
-                        }
-                        
-                        // Call the service to reject the game with a message
-                        _viewModel.RejectGameWithMessage(gameId, rejectionReason);
-                        
-                        // Refresh the unvalidated games list
-                        _viewModel.LoadUnvalidated();
+                        RejectionMessageText.Text = rejectionMessage;
+                        RejectionMessageDialog.XamlRoot = this.Content.XamlRoot;
+                        await RejectionMessageDialog.ShowAsync();
+                    }
+                    else
+                    {
+                        await ShowErrorMessage("Information", "No rejection message available for this game.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    await ShowErrorMessage("Error", $"Failed to reject game: {ex.Message}");
+                    await ShowErrorMessage("Error", $"Failed to retrieve rejection message: {ex.Message}");
                 }
             }
         }
@@ -258,10 +251,27 @@ namespace SteamStore.Pages
             {
                 try
                 {
-                    // Show confirmation dialog
-                    var result = await DeleteConfirmationDialog.ShowAsync();
+                    // Check if the game is owned by any users
+                    int ownerCount = _viewModel.GetGameOwnerCount(gameId);
                     
-                    if (result == ContentDialogResult.Primary) // User clicked Delete
+                    ContentDialogResult result;
+                    
+                    if (ownerCount > 0)
+                    {
+                        // Game is owned by users, show warning dialog
+                        DeleteWarningDialog.XamlRoot = this.Content.XamlRoot;
+                        OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
+                        
+                        result = await DeleteWarningDialog.ShowAsync();
+                    }
+                    else
+                    {
+                        // Game is not owned by any users, show standard confirmation dialog
+                        DeleteConfirmationDialog.XamlRoot = this.Content.XamlRoot;
+                        result = await DeleteConfirmationDialog.ShowAsync();
+                    }
+                    
+                    if (result == ContentDialogResult.Primary) // User clicked Delete/Delete Anyway
                     {
                         _viewModel.DeleteGame(gameId);
                         // Refresh the games list

@@ -91,4 +91,8 @@ public class DeveloperService
     {
         _developerRepository.DeleteGameTags(gameId);
     }
+    public int GetGameOwnerCount(int game_id)
+    {
+        return _developerRepository.GetGameOwnerCount(game_id);
+    }
 }

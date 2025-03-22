@@ -124,6 +124,64 @@ begin
 end
 
 go
+
+DROP PROCEDURE IF EXISTS GetGameOwnerCount;
+GO
+
+CREATE PROCEDURE GetGameOwnerCount
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT COUNT(*) AS OwnerCount
+    FROM games_users
+    WHERE game_id = @game_id;
+END;
+GO 
+
+DROP PROCEDURE IF EXISTS DeleteGameReviews;
+GO
+
+CREATE PROCEDURE DeleteGameReviews
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DELETE FROM game_reviews
+    WHERE game_id = @game_id;
+END;
+GO 
+
+DROP PROCEDURE IF EXISTS DeleteGameTransactions;
+GO
+
+CREATE PROCEDURE DeleteGameTransactions
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DELETE FROM store_transaction
+    WHERE game_id = @game_id;
+END;
+GO 
+
+DROP PROCEDURE IF EXISTS DeleteGameFromUserLibraries;
+GO
+
+CREATE PROCEDURE DeleteGameFromUserLibraries
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DELETE FROM games_users
+    WHERE game_id = @game_id;
+END;
+GO 
+
 DROP PROCEDURE IF EXISTS getAllTags;
 go
 CREATE PROCEDURE getAllTags as
