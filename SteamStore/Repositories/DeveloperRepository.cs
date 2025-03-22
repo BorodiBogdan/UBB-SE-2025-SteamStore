@@ -251,27 +251,60 @@ public class DeveloperRepository
     }
     public bool IsGameIdInUse(int gameId)
     {
+        SqlParameter[] sqlParameters = new SqlParameter[]
+        {
+            new SqlParameter("@game_id", gameId)
+        };
+        
         try
         {
-            SqlParameter[] parameters = new SqlParameter[]
-            {
-                new SqlParameter("@game_id", gameId)
-            };
+            DataTable? result = dataLink.ExecuteReader("IsGameIdInUse", sqlParameters);
             
-            // Use the stored procedure to check if the game ID exists
-            DataTable? result = dataLink.ExecuteReader("IsGameIdInUse", parameters);
-            
-            // The procedure returns 1 if the ID exists, 0 if not
             if (result != null && result.Rows.Count > 0)
             {
-                return Convert.ToInt32(result.Rows[0]["Result"]) == 1;
+                int count = Convert.ToInt32(result.Rows[0]["Count"]);
+                return count > 0;
             }
             
             return false;
         }
         catch (Exception e)
         {
-            throw new Exception($"Error checking game ID: {e.Message}");
+            throw new Exception($"Error checking if game ID is in use: {e.Message}");
         }
+    }
+    
+    public List<Tag> GetGameTags(int gameId)
+    {
+        List<Tag> tags = new List<Tag>();
+        
+        SqlParameter[] sqlParameters = new SqlParameter[]
+        {
+            new SqlParameter("@game_id", gameId)
+        };
+        
+        try
+        {
+            DataTable? result = dataLink.ExecuteReader("GetGameTags", sqlParameters);
+            
+            if (result != null)
+            {
+                foreach (DataRow row in result.Rows)
+                {
+                    Tag tag = new Tag
+                    {
+                        tag_id = (int)row["tag_id"],
+                        tag_name = (string)row["tag_name"]
+                    };
+                    tags.Add(tag);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error getting game tags: {e.Message}");
+        }
+        
+        return tags;
     }
 }
