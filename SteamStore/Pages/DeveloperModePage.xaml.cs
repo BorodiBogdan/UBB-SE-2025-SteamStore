@@ -52,6 +52,16 @@ namespace SteamStore.Pages
             PageTitle.Text = "My Games";
         }
 
+        private void AcceptButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is int gameId)
+            {
+                _viewModel.ValidateGame(gameId);
+                // Refresh the unvalidated games list
+                _viewModel.LoadUnvalidated();
+            }
+        }
+
         private async void AddGameButton_Click(object sender, RoutedEventArgs e)
         {
             await AddGameDialog.ShowAsync();

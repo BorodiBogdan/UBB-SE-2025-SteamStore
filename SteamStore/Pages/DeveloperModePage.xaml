@@ -90,7 +90,9 @@
                         <Button Content="Accept" 
                                 Grid.Column="2" 
                                 Margin="10,0"
-                                Background="Green"/>
+                                Background="Green"
+                                Click="AcceptButton_Click"
+                                CommandParameter="{Binding Id}"/>
                         <Button Content="Reject" 
                                 Grid.Column="3"
                                 Background="Red"/>

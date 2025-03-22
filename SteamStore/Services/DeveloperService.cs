@@ -11,9 +11,9 @@ public class DeveloperService
     {
         _developerRepository = developerRepository;
     }
-    public void ValidateGame(int game_id, bool isValid)
+    public void ValidateGame(int game_id)
     {
-        _developerRepository.ValidateGame(game_id, isValid);
+        _developerRepository.ValidateGame(game_id);
     }
     public void CreateGame(Game game)
     {

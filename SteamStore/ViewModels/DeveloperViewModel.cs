@@ -27,9 +27,9 @@ public class DeveloperViewModel
             DeveloperGames.Add(game);
         }
     }
-    public void ValidateGame(int game_id, bool isValid)
+    public void ValidateGame(int game_id)
     {
-        _developerService.ValidateGame(game_id, isValid);
+        _developerService.ValidateGame(game_id);
 
     }
     public void CreateGame(Game game)

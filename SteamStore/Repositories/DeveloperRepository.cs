@@ -16,7 +16,7 @@ public class DeveloperRepository
         this.dataLink = dataLink;
         this.user = user;
     }
-    public void ValidateGame(int game_id, bool isValid)
+    public void ValidateGame(int game_id)
     {
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
@@ -25,7 +25,6 @@ public class DeveloperRepository
         try
         {
             dataLink.ExecuteNonQuery("validateGame", sqlParameters);
-            isValid = true;
         }
         catch (Exception e)
         {
