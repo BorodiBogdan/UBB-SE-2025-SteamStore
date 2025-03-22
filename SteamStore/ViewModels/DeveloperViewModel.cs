@@ -46,7 +46,7 @@ public class DeveloperViewModel
 
     public void ValidateGame(int game_id)
     {
-        _developerService.ValidateGame(game_id, isValid);
+        _developerService.ValidateGame(game_id);
     }
 
     public void CreateGame(Game game, IList<Tag> selectedTags)
