@@ -249,4 +249,29 @@ public class DeveloperRepository
             throw new Exception($"Error inserting game tag: {e.Message}");
         }
     }
+    public bool IsGameIdInUse(int gameId)
+    {
+        try
+        {
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@game_id", gameId)
+            };
+            
+            // Use the stored procedure to check if the game ID exists
+            DataTable? result = dataLink.ExecuteReader("IsGameIdInUse", parameters);
+            
+            // The procedure returns 1 if the ID exists, 0 if not
+            if (result != null && result.Rows.Count > 0)
+            {
+                return Convert.ToInt32(result.Rows[0]["Result"]) == 1;
+            }
+            
+            return false;
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error checking game ID: {e.Message}");
+        }
+    }
 }
