@@ -7,6 +7,9 @@ public class CartViewModel
     public ObservableCollection<Game> CartGames { get; set; }
 
     public decimal TotalPrice => (decimal)CartGames.Sum(game => (double)game.Price);
+    
+    // Property to track points earned in the last purchase
+    public int LastEarnedPoints { get; private set; }
 
     public CartService _cartService;
     public UserGameService _userGameService;
@@ -16,6 +19,7 @@ public class CartViewModel
         _cartService = cartService;
         _userGameService = userGameService;
         CartGames = new ObservableCollection<Game>();
+        LastEarnedPoints = 0;
         LoadGames();
     }
 
@@ -35,6 +39,10 @@ public class CartViewModel
     public void PurchaseGames()
     {
         _userGameService.purchaseGames(CartGames.ToList());
+        
+        // Get the points earned from the user game service
+        LastEarnedPoints = _userGameService.LastEarnedPoints;
+        
         _cartService.RemoveGamesFromCart(CartGames.ToList());
         CartGames.Clear();
     }

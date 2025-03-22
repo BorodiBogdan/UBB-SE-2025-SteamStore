@@ -16,6 +16,11 @@ using SteamStore.Models;
 using SteamStore.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
+using Windows.UI.Xaml; // For DispatcherTimer
+using Microsoft.UI.Dispatching;
+using System.Diagnostics;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -44,22 +49,10 @@ namespace SteamStore.Pages
             
             try
             {
-                // Create a temporary user for testing - this would normally come from a login service
-                _currentUser = new User(
-                    userId: 1,
-                    name: "TestUser",
-                    email: "test@example.com",
-                    walletBalance: 1000,
-                    pointsBalance: 5000,
-                    userRole: User.Role.User
-                );
-                
                 // Initialize the DataLink with the entire configuration object
                 _dataLink = new DataLink(configuration);
                 
-                // Initialize the ViewModel with the current user
-                ViewModel = new PointShopViewModel(_currentUser, _dataLink);
-                this.DataContext = ViewModel;
+                // The ViewModel will be initialized in OnNavigatedTo when we get the user
             }
             catch (Exception ex)
             {
@@ -77,13 +70,42 @@ namespace SteamStore.Pages
                 if (e.Parameter is User user)
                 {
                     _currentUser = user;
-                    ViewModel = new PointShopViewModel(_currentUser, _dataLink);
-                    this.DataContext = ViewModel;
+                    
+                    // Only create a new ViewModel if one doesn't exist yet or if the user changed
+                    if (ViewModel == null)
+                    {
+                        ViewModel = new PointShopViewModel(_currentUser, _dataLink);
+                        this.DataContext = ViewModel;
+                    }
+                    
+                    // Refresh data when navigating to the page
+                    ViewModel.LoadItems();
+                    ViewModel.LoadUserItems();
+                    
+                    // Check for recently earned points from SessionState
+                    try
+                    {
+                        if (Application.Current.Resources.TryGetValue("RecentEarnedPoints", out object pointsObj) && 
+                            pointsObj is int earnedPoints && 
+                            earnedPoints > 0)
+                        {
+                            // Show notification about recently earned points
+                            ShowPointsEarnedNotification(earnedPoints);
+                            
+                            // Reset the value so it doesn't show again
+                            Application.Current.Resources["RecentEarnedPoints"] = 0;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Silent catch - don't let notification issues break the page
+                        Debug.WriteLine($"Error checking for earned points: {ex.Message}");
+                    }
                 }
-                
-                // Refresh data when navigating to the page
-                ViewModel.LoadItems();
-                ViewModel.LoadUserItems();
+                else
+                {
+                    ShowErrorDialog("User Error", "No user was provided to the PointsShopPage. Points Shop functionality will not work correctly.");
+                }
             }
             catch (Exception ex)
             {
@@ -121,7 +143,7 @@ namespace SteamStore.Pages
                 catch (Exception ex)
                 {
                     // If image fails to load, handle it
-                    System.Diagnostics.Debug.WriteLine($"Failed to load image: {ex.Message}");
+                    Debug.WriteLine($"Failed to load image: {ex.Message}");
                 }
                 
                 // Show the detail panel
@@ -263,6 +285,47 @@ namespace SteamStore.Pages
                 {
                     ViewModel.FilterType = filterType;
                 }
+            }
+        }
+
+        private void CloseNotification_Click(object sender, RoutedEventArgs e)
+        {
+            NotificationBar.Visibility = Visibility.Collapsed;
+        }
+
+        public void ShowPointsEarnedNotification(int pointsEarned)
+        {
+            try
+            {
+                // Update notification text
+                NotificationText.Text = $"You earned {pointsEarned} points from your recent purchase!";
+                
+                // Show notification
+                NotificationBar.Visibility = Visibility.Visible;
+                
+                // Auto-hide after 15 seconds using DispatcherQueue
+                DispatcherQueue.TryEnqueue(() => 
+                {
+                    try 
+                    {
+                        var timer = this.DispatcherQueue.CreateTimer();
+                        timer.Interval = TimeSpan.FromSeconds(15);
+                        timer.Tick += (s, e) => 
+                        {
+                            NotificationBar.Visibility = Visibility.Collapsed;
+                            timer.Stop();
+                        };
+                        timer.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error setting up timer: {ex.Message}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error showing notification: {ex.Message}");
             }
         }
     }
