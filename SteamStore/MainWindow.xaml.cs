@@ -47,12 +47,9 @@ namespace SteamStore
             gameService = new GameService(gameRepository);
             cartService = new CartService(new CartRepository(dataLink, loggedInUser));
             userGameService = new UserGameService(new UserGameRepository(dataLink, loggedInUser),gameRepository);
-            // De aici am inceput
+
             var developerRepository = new DeveloperRepository(dataLink,loggedInUser);
             developerService = new DeveloperService(developerRepository);
-            //DeveloperViewModel devView = new DeveloperViewModel(developerService, userGameService);
-
-            //Aici sa termin
 
 
             if (ContentFrame == null)

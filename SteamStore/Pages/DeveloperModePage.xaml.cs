@@ -32,13 +32,28 @@ namespace SteamStore.Pages
             this.DataContext = _viewModel;
 
             AddGameButton.Click += AddGameButton_Click;
+            ReviewGamesButton.Click += ReviewGamesButton_Click;
+            MyGamesButton.Click += MyGamesButton_Click;
         }
 
-        //Get unvalidated games
+        private void ReviewGamesButton_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.LoadUnvalidated();
+            DeveloperGamesList.Visibility = Visibility.Collapsed;
+            ReviewGamesList.Visibility = Visibility.Visible;
+            PageTitle.Text = "Review Games";
+        }
+
+        private void MyGamesButton_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.LoadGames();
+            DeveloperGamesList.Visibility = Visibility.Visible;
+            ReviewGamesList.Visibility = Visibility.Collapsed;
+            PageTitle.Text = "My Games";
+        }
 
         private async void AddGameButton_Click(object sender, RoutedEventArgs e)
         {
-            // Show the add game dialog
             await AddGameDialog.ShowAsync();
         }
 

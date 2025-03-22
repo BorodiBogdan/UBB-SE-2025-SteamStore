@@ -5,6 +5,8 @@ using System.Linq;
 public class DeveloperViewModel
 {
     public ObservableCollection<Game> DeveloperGames { get; set; }
+    public ObservableCollection<Game> UnvalidatedGames {  get; set; }
+
     public DeveloperService _developerService;
     public UserGameService _userGameService;
 
@@ -13,6 +15,7 @@ public class DeveloperViewModel
         _developerService = developerService;
         _userGameService = userGameService;
         DeveloperGames = new ObservableCollection<Game>();
+        UnvalidatedGames = new ObservableCollection<Game>();
         LoadGames();
     }
     public void LoadGames()
@@ -27,6 +30,7 @@ public class DeveloperViewModel
     public void ValidateGame(int game_id, bool isValid)
     {
         _developerService.ValidateGame(game_id, isValid);
+
     }
     public void CreateGame(Game game)
     {
@@ -48,14 +52,16 @@ public class DeveloperViewModel
     public void RejectGame(int game_id)
     {
         _developerService.RejectGame(game_id);
+        var game = DeveloperGames.FirstOrDefault(x => x.Id == game_id);
+        UnvalidatedGames.Remove(game);
     }
     public void LoadUnvalidated()
     {
-        DeveloperGames.Clear();
+        UnvalidatedGames.Clear();
         var games = _developerService.GetUnvalidated();
         foreach (var game in games)
         {
-            DeveloperGames.Add(game);
+            UnvalidatedGames.Add(game);
         }
     }
 

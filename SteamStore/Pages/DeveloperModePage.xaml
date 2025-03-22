@@ -63,7 +63,7 @@
         </ListView>
 
         <!-- Review Games List -->
-        <ListView ItemsSource="{Binding DeveloperGames}"
+        <ListView ItemsSource="{Binding UnvalidatedGames}"
                 x:Name="ReviewGamesList"
                  Grid.Row="1" 
                  Margin="0,0,0,20"
