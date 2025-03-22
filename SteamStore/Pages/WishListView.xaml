@@ -124,108 +124,108 @@
                        Visibility="{Binding WishListGames.Count, Converter={StaticResource CountToVisibilityConverter}}"/>
 
             <!-- Games Grid -->
-            <ScrollViewer Padding="20"
-                          HorizontalScrollMode="Disabled"
-                          VerticalScrollMode="Auto">
-            <ItemsControl ItemsSource="{Binding WishListGames}">
+            <ScrollViewer Grid.Row="1" 
+                         HorizontalScrollMode="Disabled"
+                         VerticalScrollMode="Auto">
+                <ItemsControl ItemsSource="{Binding WishListGames}"
+                            Margin="20,10">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <VariableSizedWrapGrid ItemWidth="600" 
-                                                 ItemHeight="160"
-                                                 Orientation="Horizontal"
-                                                 HorizontalAlignment="Center"/>
+                            <StackPanel HorizontalAlignment="Center"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderBrush="#444444" BorderThickness="1" Margin="0,0,0,10" 
-                                Background="#2A2A2A" CornerRadius="5">
-                            <Grid Margin="10">
-                                <!-- Game Card -->
-                                <Border Background="#16202d" 
-                                        BorderBrush="#000000" 
-                                        BorderThickness="1" 
-                                        CornerRadius="3">
-                                    <Grid>
-                                <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="280"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#444444" 
+                                    BorderThickness="1" 
+                                    Margin="0,0,0,10" 
+                                    Background="#2A2A2A" 
+                                    CornerRadius="5"
+                                    Width="900">
+                                <Grid>
+                                    <Border Background="#16202d" 
+                                            BorderBrush="#000000" 
+                                            BorderThickness="1" 
+                                            CornerRadius="3">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="300"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
 
-                                <!-- Game Image -->
-                                        <Image Source="{Binding ImagePath}" 
-                                               Stretch="UniformToFill"
-                                               Height="140"/>
+                                            <!-- Game Image -->
+                                            <Image Source="{Binding ImagePath}" 
+                                                   Stretch="UniformToFill"
+                                                   Height="160"/>
 
-                                <!-- Game Details -->
-                                        <StackPanel Grid.Column="1" 
-                                                    Padding="15,10"
-                                                    MaxWidth="300">
-                                            <TextBlock Text="{Binding Name}" 
-                                                       FontSize="18" 
-                                                       FontWeight="SemiBold" 
-                                                       Foreground="#ffffff"
-                                                       TextWrapping="Wrap"/>
-                                            
-                                            <!-- Price and Discount -->
-                                            <Grid Margin="0,10,0,5">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                                            <!-- Game Details -->
+                                            <StackPanel Grid.Column="1" 
+                                                        Padding="20,15">
+                                                <TextBlock Text="{Binding Name}" 
+                                                           FontSize="18" 
+                                                           FontWeight="SemiBold" 
+                                                           Foreground="#ffffff"
+                                                           TextWrapping="Wrap"/>
                                                 
-                                                <!-- Discount Badge -->
-                                                <Border Grid.Column="0" 
-                                                        Background="#4c6b22" 
-                                                        Padding="5,2" 
-                                                        CornerRadius="2"
-                                                        Visibility="{Binding Discount, Converter={StaticResource DiscountVisibilityConverter}}">
-                                                    <TextBlock>
-                                                        <Run Text="-"/>
-                                            <Run Text="{Binding Discount}"/>
-                                            <Run Text="%"/>
-                                        </TextBlock>
-                                                </Border>
+                                                <!-- Price and Discount -->
+                                                <Grid Margin="0,10,0,5">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    
+                                                    <!-- Discount Badge -->
+                                                    <Border Grid.Column="0" 
+                                                            Background="#4c6b22" 
+                                                            Padding="5,2" 
+                                                            CornerRadius="2"
+                                                            Visibility="{Binding Discount, Converter={StaticResource DiscountVisibilityConverter}}">
+                                                        <TextBlock>
+                                                            <Run Text="-"/>
+                                                            <Run Text="{Binding Discount}"/>
+                                                            <Run Text="%"/>
+                                                        </TextBlock>
+                                                    </Border>
+                                                    
+                                                    <!-- Price -->
+                                                    <TextBlock Grid.Column="2" 
+                                                               Foreground="#ffffff" 
+                                                               FontWeight="SemiBold">
+                                                        <Run Text="$"/>
+                                                        <Run Text="{Binding Price}"/>
+                                                    </TextBlock>
+                                                </Grid>
                                                 
-                                                <!-- Price -->
-                                                <TextBlock Grid.Column="2" 
-                                                           Foreground="#ffffff" 
-                                                           FontWeight="SemiBold">
-                                                    <Run Text="$"/>
-                                                    <Run Text="{Binding Price}"/>
-                                                </TextBlock>
-                                            </Grid>
-                                            
-                                            <!-- Rating -->
-                                            <StackPanel Orientation="Horizontal" 
-                                                        Margin="0,5,0,10">
-                                                <TextBlock Text="Rating: " 
-                                                           Foreground="#8f98a0"/>
-                                                <TextBlock Text="{Binding Rating}" 
-                                                           Foreground="#66c0f4"/>
-                                </StackPanel>
+                                                <!-- Rating -->
+                                                <StackPanel Orientation="Horizontal" 
+                                                            Margin="0,5,0,10">
+                                                    <TextBlock Text="Rating: " 
+                                                               Foreground="#8f98a0"/>
+                                                    <TextBlock Text="{Binding Rating}" 
+                                                               Foreground="#66c0f4"/>
+                                                </StackPanel>
 
-                                <!-- Action Buttons -->
-                                            <StackPanel Orientation="Horizontal" 
-                                                        Spacing="10">
-                                                <Button Content="View Details" 
-                                                        Click="ViewDetails_Click"
-                                                        Style="{StaticResource SteamButtonStyle}"/>
-                                                <Button Content="Remove" 
-                                                        Click="RemoveFromWishlist_Click"
-                                                        Style="{StaticResource SteamDangerButtonStyle}"/>
+                                                <!-- Action Buttons -->
+                                                <StackPanel Orientation="Horizontal" 
+                                                            Spacing="10">
+                                                    <Button Content="View Details" 
+                                                            Click="ViewDetails_Click"
+                                                            Style="{StaticResource SteamButtonStyle}"/>
+                                                    <Button Content="Remove" 
+                                                            Click="RemoveFromWishlist_Click"
+                                                            Style="{StaticResource SteamDangerButtonStyle}"/>
+                                                </StackPanel>
                                             </StackPanel>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                            </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-    </Grid>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Page> 
