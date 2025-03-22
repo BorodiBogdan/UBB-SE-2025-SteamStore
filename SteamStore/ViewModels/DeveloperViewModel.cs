@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using SteamStore.Models;
 
 public class DeveloperViewModel
 {
     public ObservableCollection<Game> DeveloperGames { get; set; }
     public ObservableCollection<Game> UnvalidatedGames {  get; set; }
+    public ObservableCollection<Tag> Tags { get; set; }
 
     public DeveloperService _developerService;
     public UserGameService _userGameService;
@@ -16,8 +19,21 @@ public class DeveloperViewModel
         _userGameService = userGameService;
         DeveloperGames = new ObservableCollection<Game>();
         UnvalidatedGames = new ObservableCollection<Game>();
+        Tags = new ObservableCollection<Tag>();
         LoadGames();
+        LoadTags();
     }
+
+    private void LoadTags()
+    {
+        Tags.Clear();
+        var tags = _developerService.GetAllTags();
+        foreach (var tag in tags)
+        {
+            Tags.Add(tag);
+        }
+    }
+
     public void LoadGames()
     {
         DeveloperGames.Clear();
@@ -27,34 +43,49 @@ public class DeveloperViewModel
             DeveloperGames.Add(game);
         }
     }
-    public void ValidateGame(int game_id, bool isValid)
-    {
-        _developerService.ValidateGame(game_id, isValid);
 
+    public void ValidateGame(int game_id)
+    {
+        _developerService.ValidateGame(game_id);
     }
-    public void CreateGame(Game game)
+
+    public void CreateGame(Game game, IList<Tag> selectedTags)
     {
         _developerService.CreateGame(game);
+        
+        // Add tags to the game
+        if (selectedTags != null && selectedTags.Count > 0)
+        {
+            foreach (var tag in selectedTags)
+            {
+                _developerService.InsertGameTag(game.Id, tag.tag_id);
+            }
+        }
+        
         DeveloperGames.Add(game);
     }
+
     public void UpdateGame(Game game)
     {
         DeveloperGames.Remove(DeveloperGames.FirstOrDefault(g => g.Id == game.Id));
         _developerService.UpdateGame(game);
         DeveloperGames.Add(game);
     }
+
     public void DeleteGame(int game_id)
     {
         var game = DeveloperGames.FirstOrDefault(g => g.Id == game_id);
         DeveloperGames.Remove(game);
         _developerService.DeleteGame(game_id);
     }
+
     public void RejectGame(int game_id)
     {
         _developerService.RejectGame(game_id);
         var game = DeveloperGames.FirstOrDefault(x => x.Id == game_id);
         UnvalidatedGames.Remove(game);
     }
+
     public void LoadUnvalidated()
     {
         UnvalidatedGames.Clear();
@@ -64,6 +95,4 @@ public class DeveloperViewModel
             UnvalidatedGames.Add(game);
         }
     }
-
-
 }

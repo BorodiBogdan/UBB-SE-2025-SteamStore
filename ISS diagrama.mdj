@@ -1309,7 +1309,7 @@
 											"top": 743,
 											"width": 367,
 											"height": 13,
-											"text": "+validateGame(game: Game, isValid: boolean)",
+											"text": "+validateGame(game: Game)",
 											"horizontalAlignment": 0
 										}
 									],
@@ -1535,7 +1535,7 @@
 											"top": 589,
 											"width": 351,
 											"height": 13,
-											"text": "+validateGame(game_id, isValid)",
+											"text": "+validateGame(game_id)",
 											"horizontalAlignment": 0
 										},
 										{
@@ -8650,7 +8650,7 @@
 											"top": 532,
 											"width": 245.6005859375,
 											"height": 13,
-											"text": "+validateGame(game_id, isValid)",
+											"text": "+validateGame(game_id)",
 											"horizontalAlignment": 0
 										},
 										{
@@ -22474,15 +22474,6 @@
 									"type": {
 										"$ref": "AAAAAAGVbPl7Z2X+22g="
 									}
-								},
-								{
-									"_type": "UMLParameter",
-									"_id": "AAAAAAGVhvwbgLhL4NU=",
-									"_parent": {
-										"$ref": "AAAAAAGVhvwVb7ZLJB0="
-									},
-									"name": "isValid",
-									"type": "boolean"
 								}
 							]
 						}
@@ -22707,17 +22698,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGVbQsWKniYzlU="
 									},
-									"name": "game_id",
-									"type": ""
-								},
-								{
-									"_type": "UMLParameter",
-									"_id": "AAAAAAGVbQt24HmiLz0=",
-									"_parent": {
-										"$ref": "AAAAAAGVbQsWKniYzlU="
-									},
-									"name": "isValid",
-									"type": ""
+									"name": "game_id"
 								}
 							]
 						},
@@ -25275,17 +25256,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGVhbdqw9X3FXs="
 									},
-									"name": "game_id",
-									"type": ""
-								},
-								{
-									"_type": "UMLParameter",
-									"_id": "AAAAAAGVhbecJdwa9aI=",
-									"_parent": {
-										"$ref": "AAAAAAGVhbdqw9X3FXs="
-									},
-									"name": "isValid",
-									"type": ""
+									"name": "game_id"
 								}
 							]
 						},
@@ -25343,7 +25314,8 @@
 									"_parent": {
 										"$ref": "AAAAAAGVhwROkEAxcKU="
 									},
-									"name": "game_id"
+									"name": "game_id",
+									"type": ""
 								}
 							]
 						},

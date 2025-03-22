@@ -31,7 +31,9 @@ public class Game
 
     public float tagScore { get; set; }
 
-    public Game(int id, string name, string description, string imagePath, string trailerPath, string gameplayPath, double price, string minimumRequirements, string recommendedRequirements, string status, string[] tags, float rating, float discount)
+    public int PublisherId { get; set; }
+
+    public Game(int id, string name, string description, string imagePath, string trailerPath, string gameplayPath, double price, string minimumRequirements, string recommendedRequirements, string status, string[] tags, float rating, float discount, int publisherId)
     {
         Id = id;
         Name = name;
@@ -46,6 +48,7 @@ public class Game
         Tags = tags;
         Rating = rating;
         Discount = discount;
+        PublisherId = publisherId;
     }
     public Game()
     {

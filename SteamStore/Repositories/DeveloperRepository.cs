@@ -16,7 +16,7 @@ public class DeveloperRepository
         this.dataLink = dataLink;
         this.user = user;
     }
-    public void ValidateGame(int game_id, bool isValid)
+    public void ValidateGame(int game_id)
     {
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
@@ -25,7 +25,6 @@ public class DeveloperRepository
         try
         {
             dataLink.ExecuteNonQuery("validateGame", sqlParameters);
-            isValid = true;
         }
         catch (Exception e)
         {
@@ -35,15 +34,18 @@ public class DeveloperRepository
     }
     public void CreateGame(Game game)
     {
+        game.PublisherId = user.UserId;
         
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
             new SqlParameter("@game_id", game.Id),
             new SqlParameter("@name", game.Name),
             new SqlParameter("@price", game.Price),
-            new SqlParameter("@publisher_id", user.UserId),
+            new SqlParameter("@publisher_id", game.PublisherId),
             new SqlParameter("@description", game.Description),
             new SqlParameter("@image_url", game.ImagePath),
+            new SqlParameter("@trailer_url", game.TrailerPath ?? ""),
+            new SqlParameter("@gameplay_url", game.GameplayPath ?? ""),
             new SqlParameter("@minimum_requirements", game.MinimumRequirements),
             new SqlParameter("@recommended_requirements", game.RecommendedRequirements),
             new SqlParameter("@status", game.Status),
@@ -62,7 +64,7 @@ public class DeveloperRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-                new SqlParameter("@publisher_id", user.UserId)
+            new SqlParameter("@publisher_id", user.UserId)
         };
 
         DataTable? result = dataLink.ExecuteReader("GetAllUnvalidated", parameters);
@@ -74,7 +76,6 @@ public class DeveloperRepository
             {
                 Game game = new Game
                 {
-
                     Id = (int)row["game_id"],
                     Name = (string)row["name"],
                     Price = Convert.ToDouble(row["price"]),
@@ -85,14 +86,15 @@ public class DeveloperRepository
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
-                    Discount = Convert.ToSingle(row["discount"])
+                    Discount = Convert.ToSingle(row["discount"]),
+                    PublisherId = (int)row["publisher_id"]
                 };
                 games.Add(game);
             }
         }
         return games;
     }
-    public void DeleteGame(int game_id)
+    public void DeleteGameTags(int game_id)
     {
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
@@ -100,6 +102,25 @@ public class DeveloperRepository
         };
         try
         {
+            dataLink.ExecuteNonQuery("DeleteGameTags", sqlParameters);
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error deleting game tags: {e.Message}");
+        }
+    }
+    public void DeleteGame(int game_id)
+    {
+        try
+        {
+            // First delete the game tags to avoid foreign key constraint violation
+            DeleteGameTags(game_id);
+            
+            // Then delete the game
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@game_id", game_id)
+            };
             dataLink.ExecuteNonQuery("DeleteGameDeveloper", sqlParameters);
         }
         catch (Exception e)
@@ -111,7 +132,7 @@ public class DeveloperRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-                new SqlParameter("@publisher_id", user.UserId)
+            new SqlParameter("@publisher_id", user.UserId)
         };
         DataTable? result = dataLink.ExecuteReader("GetDeveloperGames", parameters);
         List<Game> games = new List<Game>();
@@ -131,7 +152,8 @@ public class DeveloperRepository
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
-                    Discount = Convert.ToSingle(row["discount"])
+                    Discount = Convert.ToSingle(row["discount"]),
+                    PublisherId = (int)row["publisher_id"]
                 };
                 games.Add(game);
             }
@@ -140,6 +162,8 @@ public class DeveloperRepository
     }
     public void UpdateGame(int game_id, Game game)
     {
+        game.PublisherId = user.UserId;
+        
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
             new SqlParameter("@game_id", game_id),
@@ -152,7 +176,8 @@ public class DeveloperRepository
             new SqlParameter("@minimum_requirements", game.MinimumRequirements),
             new SqlParameter("@recommended_requirements", game.RecommendedRequirements),
             new SqlParameter("@status", game.Status),
-            new SqlParameter("@discount", game.Discount)
+            new SqlParameter("@discount", game.Discount),
+            new SqlParameter("@publisher_id", game.PublisherId)
         };
         try
         {
@@ -176,6 +201,52 @@ public class DeveloperRepository
         catch (Exception e)
         {
             throw new Exception(e.Message);
+        }
+    }
+    public Collection<Tag> GetAllTags()
+    {
+        Collection<Tag> tags = new Collection<Tag>();
+        
+        try
+        {
+            DataTable? result = dataLink.ExecuteReader("GetAllTags", null);
+            
+            if (result != null)
+            {
+                foreach (DataRow row in result.Rows)
+                {
+                    Tag tag = new Tag
+                    {
+                        tag_id = (int)row["tag_id"],
+                        tag_name = (string)row["tag_name"]
+                    };
+                    tags.Add(tag);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error getting tags: {e.Message}");
+        }
+        
+        return tags;
+    }
+    
+    public void InsertGameTag(int gameId, int tagId)
+    {
+        SqlParameter[] sqlParameters = new SqlParameter[]
+        {
+            new SqlParameter("@game_id", gameId),
+            new SqlParameter("@tag_id", tagId)
+        };
+        
+        try
+        {
+            dataLink.ExecuteNonQuery("InsertGameTags", sqlParameters);
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Error inserting game tag: {e.Message}");
         }
     }
 }
