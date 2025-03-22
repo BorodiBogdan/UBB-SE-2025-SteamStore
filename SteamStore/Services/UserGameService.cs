@@ -32,7 +32,16 @@ public class UserGameService
         {
             _userGameRepository.addGameToWishlist(game);
         }
-        catch (Exception e) { throw new Exception(e.Message); }
+        catch (Exception e) 
+        { 
+            // Clean up the error message
+            string message = e.Message;
+            if (message.Contains("ExecuteNonQuery"))
+            {
+                message = $"Failed to add {game.Name} to your wishlist: Already in wishlist";
+            }
+            throw new Exception(message);
+        }
     }
     public void purchaseGames(List<Game> games)
     {
