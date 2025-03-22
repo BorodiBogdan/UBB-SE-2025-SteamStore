@@ -64,13 +64,92 @@ namespace SteamStore.Pages
 
         private async void AddGameButton_Click(object sender, RoutedEventArgs e)
         {
-            await AddGameDialog.ShowAsync();
+            var result = await AddGameDialog.ShowAsync();
+            
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    var game = new Game
+                    {
+                        Id = int.Parse(AddGameId.Text),
+                        Name = AddGameName.Text,
+                        Price = double.Parse(AddGamePrice.Text),
+                        Description = AddGameDescription.Text,
+                        ImagePath = AddGameImageUrl.Text,
+                        GameplayPath = AddGameplayUrl.Text,
+                        TrailerPath = AddTrailerUrl.Text,
+                        MinimumRequirements = AddGameMinReq.Text,
+                        RecommendedRequirements = AddGameRecReq.Text,
+                        Status = "Pending",
+                        Discount = float.Parse(AddGameDiscount.Text)
+                    };
+
+                    _viewModel.CreateGame(game);
+
+                    // Clear all fields after successful addition
+                    AddGameId.Text = "";
+                    AddGameName.Text = "";
+                    AddGamePrice.Text = "";
+                    AddGameDescription.Text = "";
+                    AddGameImageUrl.Text = "";
+                    AddGameplayUrl.Text = "";
+                    AddTrailerUrl.Text = "";
+                    AddGameMinReq.Text = "";
+                    AddGameRecReq.Text = "";
+                    AddGameDiscount.Text = "";
+
+                    // Refresh the games list
+                    _viewModel.LoadGames();
+                }
+                catch (Exception ex)
+                {
+                    ContentDialog errorDialog = new ContentDialog
+                    {
+                        Title = "Error",
+                        Content = $"Failed to add game: {ex.Message}",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.Content.XamlRoot
+                    };
+                    await errorDialog.ShowAsync();
+                }
+            }
         }
 
         private async void ShowRejectionMessage(string message)
         {
             RejectionMessageText.Text = message;
             await RejectionMessageDialog.ShowAsync();
+        }
+
+        private async void RemoveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is int gameId)
+            {
+                try
+                {
+                    // Show confirmation dialog
+                    var result = await DeleteConfirmationDialog.ShowAsync();
+                    
+                    if (result == ContentDialogResult.Primary) // User clicked Delete
+                    {
+                        _viewModel.DeleteGame(gameId);
+                        // Refresh the games list
+                        _viewModel.LoadGames();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ContentDialog errorDialog = new ContentDialog
+                    {
+                        Title = "Error",
+                        Content = $"Failed to delete game: {ex.Message}",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.Content.XamlRoot
+                    };
+                    await errorDialog.ShowAsync();
+                }
+            }
         }
     }
 }

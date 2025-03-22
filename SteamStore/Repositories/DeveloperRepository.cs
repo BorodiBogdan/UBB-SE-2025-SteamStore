@@ -34,15 +34,18 @@ public class DeveloperRepository
     }
     public void CreateGame(Game game)
     {
+        game.PublisherId = user.UserId;
         
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
             new SqlParameter("@game_id", game.Id),
             new SqlParameter("@name", game.Name),
             new SqlParameter("@price", game.Price),
-            new SqlParameter("@publisher_id", user.UserId),
+            new SqlParameter("@publisher_id", game.PublisherId),
             new SqlParameter("@description", game.Description),
             new SqlParameter("@image_url", game.ImagePath),
+            new SqlParameter("@trailer_url", game.TrailerPath ?? ""),
+            new SqlParameter("@gameplay_url", game.GameplayPath ?? ""),
             new SqlParameter("@minimum_requirements", game.MinimumRequirements),
             new SqlParameter("@recommended_requirements", game.RecommendedRequirements),
             new SqlParameter("@status", game.Status),
@@ -61,7 +64,7 @@ public class DeveloperRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-                new SqlParameter("@publisher_id", user.UserId)
+            new SqlParameter("@publisher_id", user.UserId)
         };
 
         DataTable? result = dataLink.ExecuteReader("GetAllUnvalidated", parameters);
@@ -73,7 +76,6 @@ public class DeveloperRepository
             {
                 Game game = new Game
                 {
-
                     Id = (int)row["game_id"],
                     Name = (string)row["name"],
                     Price = Convert.ToDouble(row["price"]),
@@ -84,7 +86,8 @@ public class DeveloperRepository
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
-                    Discount = Convert.ToSingle(row["discount"])
+                    Discount = Convert.ToSingle(row["discount"]),
+                    PublisherId = (int)row["publisher_id"]
                 };
                 games.Add(game);
             }
@@ -110,7 +113,7 @@ public class DeveloperRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-                new SqlParameter("@publisher_id", user.UserId)
+            new SqlParameter("@publisher_id", user.UserId)
         };
         DataTable? result = dataLink.ExecuteReader("GetDeveloperGames", parameters);
         List<Game> games = new List<Game>();
@@ -130,7 +133,8 @@ public class DeveloperRepository
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
-                    Discount = Convert.ToSingle(row["discount"])
+                    Discount = Convert.ToSingle(row["discount"]),
+                    PublisherId = (int)row["publisher_id"]
                 };
                 games.Add(game);
             }
@@ -139,6 +143,8 @@ public class DeveloperRepository
     }
     public void UpdateGame(int game_id, Game game)
     {
+        game.PublisherId = user.UserId;
+        
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
             new SqlParameter("@game_id", game_id),
@@ -151,7 +157,8 @@ public class DeveloperRepository
             new SqlParameter("@minimum_requirements", game.MinimumRequirements),
             new SqlParameter("@recommended_requirements", game.RecommendedRequirements),
             new SqlParameter("@status", game.Status),
-            new SqlParameter("@discount", game.Discount)
+            new SqlParameter("@discount", game.Discount),
+            new SqlParameter("@publisher_id", game.PublisherId)
         };
         try
         {
