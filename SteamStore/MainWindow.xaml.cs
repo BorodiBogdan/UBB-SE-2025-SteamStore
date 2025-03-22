@@ -82,7 +82,7 @@ namespace SteamStore
                         ContentFrame.Navigate(typeof(PointsShopPage), user);
                         break;
                     case "WishlistPage":
-                        ContentFrame.Navigate(typeof(WishListPage));
+                        ContentFrame.Content = new WishListView(userGameService, gameService, cartService);
                         break;
                     case "DeveloperModePage":
                         ContentFrame.Content = new DeveloperModePage(developerService, userGameService);

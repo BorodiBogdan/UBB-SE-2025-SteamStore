@@ -118,4 +118,47 @@ public class UserGameService
                 .Take(10)
                 .ToList());
     }
+
+    public Collection<Game> getWishListGames()
+    {
+        return _userGameRepository.getWishlistGames();
+    }
+
+    public Collection<Game> searchWishListByName(string searchText)
+    {
+        return new Collection<Game>(_userGameRepository.getWishlistGames()
+            .Where(game => game.Name.ToLower().Contains(searchText.ToLower()))
+            .ToList());
+    }
+
+    public Collection<Game> filterWishListGames(string criteria)
+    {
+        var games = _userGameRepository.getWishlistGames();
+        switch (criteria)
+        {
+            case "overwhelmingly_positive":
+                return new Collection<Game>(games.Where(g => g.Rating >= 9).ToList());
+            case "very_positive":
+                return new Collection<Game>(games.Where(g => g.Rating >= 8 && g.Rating < 9).ToList());
+            case "mixed":
+                return new Collection<Game>(games.Where(g => g.Rating >= 4 && g.Rating < 8).ToList());
+            case "negative":
+                return new Collection<Game>(games.Where(g => g.Rating < 4).ToList());
+            default:
+                return games;
+        }
+    }
+
+    public Collection<Game> sortWishListGames(string criteria, bool ascending)
+    {
+        var games = _userGameRepository.getWishlistGames();
+        IOrderedEnumerable<Game> orderedGames = criteria switch
+        {
+            "price" => ascending ? games.OrderBy(g => g.Price) : games.OrderByDescending(g => g.Price),
+            "rating" => ascending ? games.OrderBy(g => g.Rating) : games.OrderByDescending(g => g.Rating),
+            "discount" => ascending ? games.OrderBy(g => g.Discount) : games.OrderByDescending(g => g.Discount),
+            _ => ascending ? games.OrderBy(g => g.Name) : games.OrderByDescending(g => g.Name)
+        };
+        return new Collection<Game>(orderedGames.ToList());
+    }
 }

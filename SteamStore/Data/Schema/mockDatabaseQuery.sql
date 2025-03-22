@@ -500,6 +500,25 @@ BEGIN
 END;
 GO 
 
+DROP PROCEDURE IF EXISTS GetWishlistGames;
+GO
+
+CREATE PROCEDURE GetWishlistGames
+    @user_id INT
+AS
+BEGIN
+    SELECT g.game_id, g.name, g.price, g.description, g.image_url, 
+           g.minimum_requirements, g.recommended_requirements, g.status,
+           g.discount, AVG(gr.rating) as rating
+    FROM games g
+    INNER JOIN games_users gu ON g.game_id = gu.game_id
+    LEFT JOIN game_reviews gr ON g.game_id = gr.game_id
+    WHERE gu.user_id = @user_id AND gu.isInWishlist = 1 AND g.status = 'Approved'
+    GROUP BY g.game_id, g.name, g.price, g.description, g.image_url, 
+             g.minimum_requirements, g.recommended_requirements, g.status,
+             g.discount;
+END;
+GO
 
 -- Insert mock users
 -- NOTE: This is now commented out because we already inserted users at the beginning of the script
