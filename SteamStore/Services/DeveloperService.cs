@@ -95,4 +95,8 @@ public class DeveloperService
     {
         return _developerRepository.GetGameOwnerCount(game_id);
     }
+    public User GetCurrentUser()
+    {
+        return _developerRepository.GetCurrentUser();
+    }
 }
