@@ -53,7 +53,6 @@ public class DeveloperViewModel
     {
         _developerService.CreateGame(game);
         
-        // Add tags to the game
         if (selectedTags != null && selectedTags.Count > 0)
         {
             foreach (var tag in selectedTags)
