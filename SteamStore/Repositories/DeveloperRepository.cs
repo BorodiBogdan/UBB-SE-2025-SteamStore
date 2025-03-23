@@ -395,4 +395,10 @@ public class DeveloperRepository
             throw new Exception($"Error checking game ownership: {e.Message}");
         }
     }
+    
+    public User GetCurrentUser()
+    {
+        // Return the current user instance
+        return user;
+    }
 }

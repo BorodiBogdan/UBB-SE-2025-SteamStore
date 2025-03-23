@@ -38,7 +38,7 @@ namespace SteamStore
             this.InitializeComponent();
 
             //initiate the user
-            User loggedInUser = new User(1, "John Doe", "johnyDoe@gmail.com", 999999.99f, 6000f, User.Role.Developer);
+            User loggedInUser = new User(1, "John Doe", "johnyDoe@gmail.com", 999999.99f, 6000f, User.Role.User);
             
             // Assign to the class field so it can be used in navigation
             this.user = loggedInUser;

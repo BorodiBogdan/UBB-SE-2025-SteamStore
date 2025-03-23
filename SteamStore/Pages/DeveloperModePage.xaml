@@ -52,11 +52,13 @@
                                 Grid.Column="2" 
                                 Margin="10,0"
                                 Click="EditButton_Click"
+                                Background="DarkGray"
                                 CommandParameter="{Binding Id}"/>
                         <Button Content="Remove" 
                                 Grid.Column="3"
                                 Margin="10,0"
                                 Click="RemoveButton_Click"
+                                Background="Red"
                                 CommandParameter="{Binding Id}"/>
                         <Button Content="Reject Message" 
                                 Grid.Column="4"
