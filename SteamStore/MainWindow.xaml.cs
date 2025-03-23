@@ -19,8 +19,6 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using System.Collections.ObjectModel;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace SteamStore
 {
@@ -38,7 +36,7 @@ namespace SteamStore
             this.InitializeComponent();
 
             //initiate the user
-            User loggedInUser = new User(1, "John Doe", "johnyDoe@gmail.com", 999999.99f, 6000f, User.Role.User);
+            User loggedInUser = new User(1, "John Doe", "johnyDoe@gmail.com", 999999.99f, 6000f, User.Role.Developer);
             
             // Assign to the class field so it can be used in navigation
             this.user = loggedInUser;

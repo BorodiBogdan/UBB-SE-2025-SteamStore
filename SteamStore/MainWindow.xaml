@@ -25,7 +25,7 @@
                 </NavigationViewItem>
                 <NavigationViewItem Content="Points Shop" Tag="PointsShopPage">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE1CF;" />
+                        <FontIcon Glyph="&#xE1CB;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem Content="Wishlist" Tag="WishlistPage" Icon="Favorite" />

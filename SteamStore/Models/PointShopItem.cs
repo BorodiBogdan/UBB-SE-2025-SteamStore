@@ -31,4 +31,22 @@ namespace SteamStore.Models
         {
         }
     }
+    
+    public class PointShopTransaction
+    {
+        public int Id { get; set; }
+        public string ItemName { get; set; }
+        public double PointsSpent { get; set; }
+        public DateTime PurchaseDate { get; set; }
+        public string ItemType { get; set; }
+
+        public PointShopTransaction(int id, string itemName, double pointsSpent, string itemType)
+        {
+            Id = id;
+            ItemName = itemName;
+            PointsSpent = pointsSpent;
+            PurchaseDate = DateTime.Now;
+            ItemType = itemType;
+        }
+    }
 } 
