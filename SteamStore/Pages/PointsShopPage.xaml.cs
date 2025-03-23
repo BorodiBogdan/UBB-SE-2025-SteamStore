@@ -118,11 +118,33 @@ namespace SteamStore.Pages
                 }
                 
                 string itemName = ViewModel.SelectedItem.Name;
+                double pointPrice = ViewModel.SelectedItem.PointPrice;
+                string itemType = ViewModel.SelectedItem.ItemType;
                 
                 bool success = await ViewModel.PurchaseSelectedItem();
                 
                 if (success)
                 {
+                    // Make sure the transaction was added (fallback)
+                    if (ViewModel.TransactionHistory == null)
+                    {
+                        ViewModel.TransactionHistory = new ObservableCollection<PointShopTransaction>();
+                    }
+                    
+                    // Check if we need to manually add a transaction (should already be added in the ViewModel)
+                    bool transactionExists = ViewModel.TransactionHistory.Any(t => t.ItemName == itemName && Math.Abs(t.PointsSpent - pointPrice) < 0.01);
+                    
+                    if (!transactionExists)
+                    {
+                        Debug.WriteLine("Transaction wasn't added in ViewModel - adding it manually");
+                        var transaction = new PointShopTransaction(
+                            ViewModel.TransactionHistory.Count + 1,
+                            itemName,
+                            pointPrice,
+                            itemType);
+                        ViewModel.TransactionHistory.Add(transaction);
+                    }
+                    
                     ContentDialog successDialog = new ContentDialog();
                     successDialog.Title = "Purchase Successful";
                     successDialog.Content = $"You have successfully purchased {itemName}. Check your inventory to view it.";
@@ -291,6 +313,28 @@ namespace SteamStore.Pages
                 // Silent catch - don't let notification issues break the page
                 Debug.WriteLine($"Error checking for earned points: {ex.Message}");
             }
+        }
+
+        private void ViewTransactionHistoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Debug the transaction history
+            int transactionCount = ViewModel?.TransactionHistory?.Count ?? 0;
+            Debug.WriteLine($"Transaction history count: {transactionCount}");
+            
+            if (ViewModel?.TransactionHistory != null)
+            {
+                foreach (var transaction in ViewModel.TransactionHistory)
+                {
+                    Debug.WriteLine($"Transaction: {transaction.ItemName}, {transaction.PointsSpent} points, {transaction.PurchaseDate}");
+                }
+            }
+            
+            TransactionHistoryPanel.Visibility = Visibility.Visible;
+        }
+
+        private void CloseTransactionHistoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            TransactionHistoryPanel.Visibility = Visibility.Collapsed;
         }
     }
 }

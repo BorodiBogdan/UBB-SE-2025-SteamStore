@@ -19,6 +19,7 @@ namespace SteamStore.ViewModels
         // Collections
         private ObservableCollection<PointShopItem> _shopItems;
         private ObservableCollection<PointShopItem> _userItems;
+        private ObservableCollection<PointShopTransaction> _transactionHistory;
 
         // Filter properties
         private string _filterType = "All";
@@ -30,6 +31,7 @@ namespace SteamStore.ViewModels
         private PointShopItem _selectedItem;
 
         private CancellationTokenSource _searchCancellationTokenSource;
+        private int _nextTransactionId = 1;
 
         public PointShopViewModel(User currentUser, DataLink dataLink)
         {
@@ -40,6 +42,7 @@ namespace SteamStore.ViewModels
             _pointShopService = new PointShopService(currentUser, dataLink);
             ShopItems = new ObservableCollection<PointShopItem>();
             UserItems = new ObservableCollection<PointShopItem>();
+            TransactionHistory = new ObservableCollection<PointShopTransaction>();
             
             // Load initial data
             LoadItems();
@@ -57,6 +60,7 @@ namespace SteamStore.ViewModels
             // Initialize collections
             ShopItems = new ObservableCollection<PointShopItem>();
             UserItems = new ObservableCollection<PointShopItem>();
+            TransactionHistory = new ObservableCollection<PointShopTransaction>();
             
             // Load initial data
             LoadItems();
@@ -79,6 +83,16 @@ namespace SteamStore.ViewModels
             set
             {
                 _userItems = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<PointShopTransaction> TransactionHistory
+        {
+            get => _transactionHistory;
+            set
+            {
+                _transactionHistory = value;
                 OnPropertyChanged();
             }
         }
@@ -237,6 +251,14 @@ namespace SteamStore.ViewModels
                 var itemToPurchase = SelectedItem;
                 
                 _pointShopService.PurchaseItem(itemToPurchase);
+                
+                // Add transaction to history
+                var transaction = new PointShopTransaction(
+                    _nextTransactionId++, 
+                    itemToPurchase.Name, 
+                    itemToPurchase.PointPrice, 
+                    itemToPurchase.ItemType);
+                TransactionHistory.Add(transaction);
                 
                 // Point balance is updated in the repository
                 OnPropertyChanged(nameof(UserPointBalance));
