@@ -46,6 +46,23 @@ namespace SteamStore.ViewModels
             LoadUserItems();
         }
 
+        public PointShopViewModel(PointShopService pointShopService)
+        {
+            // Initialize with existing service
+            _pointShopService = pointShopService;
+            
+            // Get the user reference from the service's internal repository
+            _user = _pointShopService.GetCurrentUser();
+            
+            // Initialize collections
+            ShopItems = new ObservableCollection<PointShopItem>();
+            UserItems = new ObservableCollection<PointShopItem>();
+            
+            // Load initial data
+            LoadItems();
+            LoadUserItems();
+        }
+
         public ObservableCollection<PointShopItem> ShopItems
         {
             get => _shopItems;

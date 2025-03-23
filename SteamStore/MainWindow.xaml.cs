@@ -6,7 +6,10 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using SteamStore.Models;
 using SteamStore.Pages;
+using SteamStore.Repositories;
+using SteamStore.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,7 +18,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using System.Collections.ObjectModel;
-using System.Collections.Generic;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -28,7 +30,8 @@ namespace SteamStore
         private CartService cartService;
         private UserGameService userGameService;
         private DeveloperService developerService;
-        private User user;
+        private PointShopService pointShopService;
+        public User user;
 
         public MainWindow()
         {
@@ -50,6 +53,7 @@ namespace SteamStore
             gameService = new GameService(gameRepository);
             cartService = new CartService(new CartRepository(dataLink, loggedInUser));
             userGameService = new UserGameService(new UserGameRepository(dataLink, loggedInUser),gameRepository);
+            pointShopService = new PointShopService(loggedInUser, dataLink);
 
             var developerRepository = new DeveloperRepository(dataLink,loggedInUser);
             developerService = new DeveloperService(developerRepository);
@@ -79,7 +83,7 @@ namespace SteamStore
                         ContentFrame.Content = new CartPage(cartService, userGameService);
                         break;
                     case "PointsShopPage":
-                        ContentFrame.Navigate(typeof(PointsShopPage), user);
+                        ContentFrame.Content = new PointsShopPage(pointShopService);
                         break;
                     case "WishlistPage":
                         ContentFrame.Content = new WishListView(userGameService, gameService, cartService);
