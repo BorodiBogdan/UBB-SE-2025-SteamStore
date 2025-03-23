@@ -139,7 +139,7 @@ public class DeveloperRepository
             };
             dataLink.ExecuteNonQuery("DeleteGameFromUserLibraries", libraryParams);
             
-            // 5. Finally delete the game itself
+            // 5. delete the game itself
             SqlParameter[] gameParams = new SqlParameter[]
             {
                 new SqlParameter("@game_id", game_id)
@@ -398,7 +398,6 @@ public class DeveloperRepository
     
     public User GetCurrentUser()
     {
-        // Return the current user instance
         return user;
     }
 }

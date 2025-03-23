@@ -36,12 +36,12 @@ namespace SteamStore
             this.InitializeComponent();
 
             //initiate the user
+            // this will need to be changed when we conenct with a database query to get the user
             User loggedInUser = new User(1, "John Doe", "johnyDoe@gmail.com", 999999.99f, 6000f, User.Role.Developer);
             
             // Assign to the class field so it can be used in navigation
             this.user = loggedInUser;
 
-            // Resolve dependencies (e.g., GameRepository and DataLink)
             var dataLink = new DataLink(new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json")
