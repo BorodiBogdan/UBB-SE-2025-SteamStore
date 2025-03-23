@@ -33,9 +33,29 @@ namespace SteamStore.Pages
             _viewModel = new DeveloperViewModel(developerService, userGameService);
             this.DataContext = _viewModel;
 
+            // Register the Loaded event to check user role after the page is fully loaded
+            this.Loaded += DeveloperModePage_Loaded;
+
             AddGameButton.Click += AddGameButton_Click;
             ReviewGamesButton.Click += ReviewGamesButton_Click;
             MyGamesButton.Click += MyGamesButton_Click;
+        }
+
+        private void DeveloperModePage_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Check if user is a developer
+            if (_viewModel._developerService.GetCurrentUser().UserRole != User.Role.Developer)
+            {
+                // Show error message dialog
+                ShowNotDeveloperMessage();
+                
+                // Disable all interactive elements
+                AddGameButton.IsEnabled = false;
+                ReviewGamesButton.IsEnabled = false;
+                MyGamesButton.IsEnabled = false;
+                DeveloperGamesList.IsEnabled = false;
+                ReviewGamesList.IsEnabled = false;
+            }
         }
 
         private void ReviewGamesButton_Click(object sender, RoutedEventArgs e)
@@ -211,6 +231,32 @@ namespace SteamStore.Pages
                 XamlRoot = this.Content.XamlRoot
             };
             await errorDialog.ShowAsync();
+        }
+        
+        private async void ShowNotDeveloperMessage()
+        {
+            if (this.Content == null || this.Content.XamlRoot == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Cannot show developer access dialog: XamlRoot is null");
+                return;
+            }
+            
+            ContentDialog notDeveloperDialog = new ContentDialog
+            {
+                Title = "Access Denied",
+                Content = "You need to be a registered developer to access this page.",
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+            
+            try
+            {
+                await notDeveloperDialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error showing developer access dialog: {ex.Message}");
+            }
         }
 
         private async void ShowRejectionMessage(string message)
