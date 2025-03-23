@@ -15,8 +15,6 @@ using Windows.Foundation.Collections;
 using SteamStore.Models;
 using System.Threading.Tasks;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace SteamStore.Pages
 {
@@ -33,7 +31,6 @@ namespace SteamStore.Pages
             _viewModel = new DeveloperViewModel(developerService, userGameService);
             this.DataContext = _viewModel;
 
-            // Register the Loaded event to check user role after the page is fully loaded
             this.Loaded += DeveloperModePage_Loaded;
 
             AddGameButton.Click += AddGameButton_Click;
@@ -88,7 +85,7 @@ namespace SteamStore.Pages
         {
             if (sender is Button button && button.CommandParameter is int gameId)
             {
-                // Set XamlRoot for the dialog
+
                 RejectGameDialog.XamlRoot = this.Content.XamlRoot;
                 
                 var result = await RejectGameDialog.ShowAsync();
@@ -99,7 +96,6 @@ namespace SteamStore.Pages
                     
                     try
                     {
-                        // If we have a rejection service method with message, use it
                         if (!string.IsNullOrWhiteSpace(rejectionReason))
                         {
                             _viewModel._developerService.RejectGameWithMessage(gameId, rejectionReason);
@@ -109,7 +105,6 @@ namespace SteamStore.Pages
                             _viewModel.RejectGame(gameId);
                         }
                         
-                        // Clear the rejection reason textbox
                         RejectReasonTextBox.Text = "";
                         
                         // Refresh the unvalidated games list
@@ -145,14 +140,12 @@ namespace SteamStore.Pages
                         return;
                     }
                     
-                    // Validate game ID (must be an integer and not already in use)
                     if (!int.TryParse(AddGameId.Text, out int gameId))
                     {
                         await ShowErrorMessage("Validation Error", "Game ID must be a valid integer.");
                         return;
                     }
                     
-                    // Check if game ID is already in use
                     if (_viewModel.IsGameIdInUse(gameId))
                     {
                         await ShowErrorMessage("Validation Error", "Game ID is already in use. Please choose another ID.");
@@ -317,7 +310,7 @@ namespace SteamStore.Pages
                         result = await DeleteConfirmationDialog.ShowAsync();
                     }
                     
-                    if (result == ContentDialogResult.Primary) // User clicked Delete/Delete Anyway
+                    if (result == ContentDialogResult.Primary) 
                     {
                         _viewModel.DeleteGame(gameId);
                         // Refresh the games list
@@ -349,7 +342,7 @@ namespace SteamStore.Pages
                 {
                     // Populate edit form with game data
                     EditGameId.Text = game.Id.ToString();
-                    EditGameId.IsEnabled = false; // Cannot change game ID
+                    EditGameId.IsEnabled = false;
                     EditGameName.Text = game.Name;
                     EditGameDescription.Text = game.Description;
                     EditGamePrice.Text = game.Price.ToString();
@@ -366,7 +359,6 @@ namespace SteamStore.Pages
                     try {
                         var gameTags = _viewModel._developerService.GetGameTags(game.Id);
                         
-                        // Ensure EditGameTagList has items
                         if (EditGameTagList.Items != null && EditGameTagList.Items.Count > 0)
                         {
                             foreach (var tag in EditGameTagList.Items)
@@ -387,7 +379,7 @@ namespace SteamStore.Pages
                         System.Diagnostics.Debug.WriteLine($"Error loading game tags: {ex.Message}");
                     }
                     
-                    // Set XamlRoot for the dialog
+
                     EditGameDialog.XamlRoot = this.Content.XamlRoot;
                     
                     var result = await EditGameDialog.ShowAsync();

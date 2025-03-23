@@ -1,6 +1,5 @@
 ﻿USE SteamStore
 
----Run this to use the mock database of the SteamStore project
 
 DROP TABLE IF EXISTS users_items;
 DROP TABLE IF EXISTS point_items;
@@ -658,9 +657,9 @@ END
 delete from games
 INSERT INTO games (game_id, name, price, publisher_id, description, image_url, trailer_url, gameplay_url, minimum_requirements, recommended_requirements, status, discount, reject_message)
 VALUES 
-(1, 'Risk of Rain 2', 24.99, 1, 'A rogue-like third-person shooter where players fight through hordes of monsters to escape an alien planet.', 'https://upload.wikimedia.org/wikipedia/en/c/c1/Risk_of_Rain_2.jpg', 'https://www.youtube.com/watch?v=pJ-aR--gScM', 'https://www.youtube.com/watch?v=Cwk3qmD28CE', '4GB RAM, 2.5GHz Processor, GTX 580', '8GB RAM, 3.0GHz Processor, GTX 680', 'Rejected',20,'test idk noob'),
+(1, 'Risk of Rain 2', 24.99, 1, 'A rogue-like third-person shooter where players fight through hordes of monsters to escape an alien planet.', 'https://upload.wikimedia.org/wikipedia/en/c/c1/Risk_of_Rain_2.jpg', 'https://www.youtube.com/watch?v=pJ-aR--gScM', 'https://www.youtube.com/watch?v=Cwk3qmD28CE', '4GB RAM, 2.5GHz Processor, GTX 580', '8GB RAM, 3.0GHz Processor, GTX 680', 'Rejected',20,'Minimum requirements are too high'),
 (2, 'Dead by Daylight', 19.99, 1, 'A multiplayer horror game where survivors must evade a killer.', 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/11986720-4999-4524-9809-1a25313ee2e5/dg8ii9d-d3f5eb42-9041-4ddc-954a-c3f9359e914e.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzExOTg2NzIwLTQ5OTktNDUyNC05ODA5LTFhMjUzMTNlZTJlNVwvZGc4aWk5ZC1kM2Y1ZWI0Mi05MDQxLTRkZGMtOTU0YS1jM2Y5MzU5ZTkxNGUucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.XGf2I0nx7hyCw6EFGJ5lEdexo3Uj5emUoC6texzl3A4', 'https://www.youtube.com/watch?v=JGhIXLO3ul8', 'https://www.youtube.com/watch?v=3wUHKO0ieyY', '8GB RAM, i3-4170, GTX 760', '16GB RAM, i5-6500, GTX 1060', 'Pending',40,NULL),
-(3, 'Counter-Strike 2', 0.00, 1, 'A tactical first-person shooter featuring team-based gameplay.', 'https://sm.ign.com/ign_nordic/cover/c/counter-st/counter-strike-2_jc2d.jpg', 'https://www.youtube.com/watch?v=c80dVYcL69E', 'https://www.youtube.com/watch?v=P22HqM9w500', '8GB RAM, i5-2500K, GTX 660', '16GB RAM, i7-7700K, GTX 1060', 'Approved',50,NULL),
+(3, 'Counter-Strike 2', 20.99, 1, 'A tactical first-person shooter featuring team-based gameplay.', 'https://sm.ign.com/ign_nordic/cover/c/counter-st/counter-strike-2_jc2d.jpg', 'https://www.youtube.com/watch?v=c80dVYcL69E', 'https://www.youtube.com/watch?v=P22HqM9w500', '8GB RAM, i5-2500K, GTX 660', '16GB RAM, i7-7700K, GTX 1060', 'Approved',50,NULL),
 (4, 'Half-Life 2', 9.99, 1, 'A story-driven first-person shooter that revolutionized the genre.', 'https://media.moddb.com/images/mods/1/47/46951/d1jhx20-dc797b78-5feb-4005-b206-.1.jpg', 'https://www.youtube.com/watch?v=UKA7JkV51Jw', 'https://www.youtube.com/watch?v=jElU1mD8JnI', '512MB RAM, 1.7GHz Processor, DirectX 8 GPU', '1GB RAM, 3.0GHz Processor, DirectX 9 GPU', 'Approved',60,NULL),
 (5, 'Mario', 59.99, 1, 'A classic platformer adventure with iconic characters and worlds.', 'https://play-lh.googleusercontent.com/3ZKfMRp_QrdN-LzsZTbXdXBH-LS1iykSg9ikNq_8T2ppc92ltNbFxS-tORxw2-6kGA', 'https://www.youtube.com/watch?v=TnGl01FkMMo', 'https://www.youtube.com/watch?v=rLl9XBg7wSs', 'N/A', 'N/A', 'Approved',70,NULL),
 (6, 'The Legend of Zelda', 59.99, 1, 'An epic adventure game where heroes save the kingdom of Hyrule.', 'https://m.media-amazon.com/images/I/71oHNyzdN1L.jpg', 'https://www.youtube.com/watch?v=_X2h3SF7gd4', 'https://www.youtube.com/watch?v=wW7jkBJ_yK0', 'N/A', 'N/A', 'Approved',30,NULL),
@@ -819,7 +818,7 @@ GO
 -- Then insert mock transactions
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES 
--- 🏆 TRENDING GAME: Counter-Strike 2
+-- Counter-Strike 2
 (3, 1, GETDATE(), 19.99, 1),
 (3, 2, DATEADD(DAY, -1, GETDATE()), 19.99, 1),
 (3, 3, GETDATE(), 19.99, 1);
@@ -838,7 +837,7 @@ GO
 -- More transactions in batches
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- 🏆 TRENDING GAME: Minecraft
+--Minecraft
 (10, 1, GETDATE(), 29.99, 1),
 (10, 2, GETDATE(), 29.99, 1),
 (10, 3, DATEADD(DAY, -1, GETDATE()), 29.99, 1),
@@ -847,7 +846,7 @@ VALUES
 (10, 6, DATEADD(DAY, -10, GETDATE()), 29.99, 1);
 GO
 
--- 🏆 TRENDING GAME: Dead by Daylight
+--Dead by Daylight
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
 (2, 1, GETDATE(), 29.99, 1),
@@ -861,11 +860,11 @@ GO
 -- Other games transactions - batch 1
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- ⚖️ BALANCED GAME: Risk of Rain 2
+-- Risk of Rain 2
 (1, 1, DATEADD(DAY, -10, GETDATE()), 9.99, 1),
 (1, 2, DATEADD(DAY, -12, GETDATE()), 9.99, 1),
 (1, 3, GETDATE(), 9.99, 1),
--- ⏳ LESS TRENDING: Half-Life 2
+--Half-Life 2
 (4, 1, DATEADD(DAY, -20, GETDATE()), 39.99, 1),
 (4, 2, DATEADD(DAY, -9, GETDATE()), 39.99, 1);
 GO
@@ -873,10 +872,10 @@ GO
 -- Other games transactions - batch 2
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- ⏳ LESS TRENDING: The Legend of Zelda
+-- The Legend of Zelda
 (6, 1, DATEADD(DAY, -13, GETDATE()), 59.99, 1),
 (6, 2, DATEADD(DAY, -8, GETDATE()), 59.99, 1),
--- ⚖️ BALANCED: Portal 2
+-- Portal 2
 (8, 1, GETDATE(), 9.99, 1),
 (8, 2, DATEADD(DAY, -11, GETDATE()), 9.99, 1),
 (8, 3, DATEADD(DAY, -14, GETDATE()), 9.99, 1);
@@ -885,10 +884,10 @@ GO
 -- Other games transactions - batch 3
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- ⏳ LESS TRENDING: Baba Is You
+-- Baba Is You
 (7, 1, DATEADD(DAY, -22, GETDATE()), 14.99, 1),
 (7, 2, DATEADD(DAY, -9, GETDATE()), 14.99, 1),
--- ⚖️ BALANCED: Outer Wilds
+-- Outer Wilds
 (9, 1, DATEADD(DAY, -18, GETDATE()), 24.99, 1),
 (9, 2, GETDATE(), 24.99, 1);
 GO
@@ -896,10 +895,10 @@ GO
 -- Other games transactions - batch 4
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- ⏳ LESS TRENDING: Subnautica
+-- Subnautica
 (11, 1, DATEADD(DAY, -16, GETDATE()), 29.99, 1),
 (11, 2, GETDATE(), 29.99, 1),
--- ⏳ LESS TRENDING: Space Invaders
+--Space Invaders
 (12, 1, DATEADD(DAY, -19, GETDATE()), 9.99, 1),
 (12, 2, DATEADD(DAY, -1, GETDATE()), 9.99, 1);
 GO
@@ -907,10 +906,10 @@ GO
 -- Other games transactions - batch 5
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- ⏳ LESS TRENDING: Fantasy Quest
+--  Fantasy Quest
 (13, 1, DATEADD(DAY, -14, GETDATE()), 29.99, 1),
 (13, 2, GETDATE(), 29.99, 1),
--- ⏳ LESS TRENDING: Racing Turbo
+--  Racing Turbo
 (14, 1, DATEADD(DAY, -11, GETDATE()), 19.99, 1),
 (14, 2, DATEADD(DAY, -1, GETDATE()), 19.99, 1),
 (14, 3, GETDATE(), 19.99, 1);
@@ -944,9 +943,6 @@ VALUES
 (5, 1, GETDATE(), 24.99, 1);
 GO
 
--- =============================================
--- Point Shop Extension
--- =============================================
 -- Drop existing Point Shop tables if they exist
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'UserInventoryItems')
     DROP TABLE UserInventoryItems;
@@ -1125,7 +1121,7 @@ GO
 --EXEC getGameTags @gid = "133";
 --EXEC getGameTags @gid = "4142";
 
---EXEC ValidateGame @game_id = "2";
+--EXEC ValidateGame @game_id = "45";
 
 --EXEC getAllTags;
 --EXEC RejectGameWithMessage @game_id = "", @rejection_message = "Test test test";
