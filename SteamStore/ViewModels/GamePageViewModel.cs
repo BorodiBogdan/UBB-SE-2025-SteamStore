@@ -1,21 +1,23 @@
-﻿using System;
+﻿using SteamStore.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 public class GamePageViewModel : INotifyPropertyChanged
 {
-    // Make services accessible to the view
     internal readonly CartService _cartService;
     internal readonly UserGameService _userGameService;
     internal readonly GameService _gameService;
 
     private Game _game;
     private ObservableCollection<Game> _similarGames;
+    private bool _isOwned;
+    private ObservableCollection<string> _gameTags;
     
-    // Game properties
     public Game Game
     {
         get => _game;
@@ -23,10 +25,34 @@ public class GamePageViewModel : INotifyPropertyChanged
         {
             _game = value;
             OnPropertyChanged();
+            UpdateIsOwnedStatus();
+            UpdateGameTags();
         }
     }
     
-    // Similar games collection
+    public ObservableCollection<string> GameTags
+    {
+        get => _gameTags;
+        private set
+        {
+            _gameTags = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    public bool IsOwned
+    {
+        get => _isOwned;
+        private set
+        {
+            if (_isOwned != value)
+            {
+                _isOwned = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public ObservableCollection<Game> SimilarGames
     {
         get => _similarGames;
@@ -37,23 +63,21 @@ public class GamePageViewModel : INotifyPropertyChanged
         }
     }
     
-    // Constructor - inject services
     public GamePageViewModel(GameService gameService, CartService cartService, UserGameService userGameService)
     {
         _cartService = cartService;
         _userGameService = userGameService;
         _gameService = gameService; 
         SimilarGames = new ObservableCollection<Game>();
+        GameTags = new ObservableCollection<string>();
     }
     
-    // Load game and related data
     public void LoadGame(Game game)
     {
         Game = game;
         LoadSimilarGames();
     }
     
-    // Load game by ID
     public void LoadGameById(int gameId)
     {
         if (_gameService == null) return;
@@ -67,6 +91,48 @@ public class GamePageViewModel : INotifyPropertyChanged
         }
     }
     
+    private void UpdateIsOwnedStatus()
+    {
+        if (Game == null || _userGameService == null)
+        {
+            IsOwned = false;
+            return;
+        }
+
+        try
+        {
+            IsOwned = _userGameService.isGamePurchased(Game);
+        }
+        catch (Exception)
+        {
+            IsOwned = false;
+        }
+    }
+    
+    private void UpdateGameTags()
+    {
+        if (Game == null || _gameService == null)
+        {
+            GameTags.Clear();
+            return;
+        }
+
+        try
+        {
+            var tags = _gameService.getAllGameTags(Game);
+            
+            GameTags.Clear();
+            foreach (var tag in tags)
+            {
+                GameTags.Add(tag.tag_name);
+            }
+        }
+        catch (Exception ex)
+        {
+            GameTags.Clear();
+        }
+    }
+    
     // Load similar games based on current game
     private void LoadSimilarGames()
     {
@@ -74,8 +140,6 @@ public class GamePageViewModel : INotifyPropertyChanged
         
         var allGames = _gameService.getAllGames();
         
-        // In a real implementation, we would filter by genre
-        // For now we'll just exclude the current game
         var similarGames = allGames
             .Where(g => g.Id != Game.Id)
             .OrderBy(g => Guid.NewGuid()) // Random order for demonstration
@@ -122,7 +186,6 @@ public class GamePageViewModel : INotifyPropertyChanged
         }
     }
     
-    // INotifyPropertyChanged implementation
     public event PropertyChangedEventHandler PropertyChanged;
     
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

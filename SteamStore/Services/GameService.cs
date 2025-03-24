@@ -20,6 +20,14 @@ public class GameService
         return _gameRepository.getAllTags();
     }
 
+    public Collection<Tag> getAllGameTags(Game game)
+    {
+        return new Collection<Tag>(_gameRepository
+                       .getAllTags()
+                                  .Where(tag => game.Tags.Contains(tag.tag_name))
+                                             .ToList());
+    }
+
     public Collection<Game> searchGames(String search_query)
     {
         return new Collection<Game>(_gameRepository
