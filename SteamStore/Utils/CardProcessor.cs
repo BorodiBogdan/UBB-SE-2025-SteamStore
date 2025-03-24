@@ -11,7 +11,7 @@ public class CreditCardProcessor
             IsValidCvv(cvv) &&
             IsValidOwnerName(ownerName))
         {
-            await Task.Delay(2000); 
+            await Task.Delay(200); 
             return true; 
         }
 
