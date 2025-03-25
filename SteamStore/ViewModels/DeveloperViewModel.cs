@@ -85,10 +85,6 @@ public class DeveloperViewModel
         UnvalidatedGames.Remove(game);
     }
 
-    public string GetRejectionMessage(int game_id)
-    {
-        return _developerService.GetRejectionMessage(game_id);
-    }
 
     public void LoadUnvalidated()
     {

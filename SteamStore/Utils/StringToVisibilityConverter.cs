@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 using System;
 
-namespace SteamStore.Pages
+namespace SteamStore.Utils
 {
     public class StringToVisibilityConverter : IValueConverter
     {
@@ -14,8 +14,8 @@ namespace SteamStore.Pages
             string status = value.ToString();
             string targetStatus = parameter.ToString();
 
-            return status.Equals(targetStatus, StringComparison.OrdinalIgnoreCase) 
-                ? Visibility.Visible 
+            return status.Equals(targetStatus, StringComparison.OrdinalIgnoreCase)
+                ? Visibility.Visible
                 : Visibility.Collapsed;
         }
 

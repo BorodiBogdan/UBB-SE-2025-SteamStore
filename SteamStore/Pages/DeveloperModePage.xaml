@@ -6,6 +6,7 @@
     xmlns:local="using:SteamStore.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:utils="using:SteamStore.Utils"
     mc:Ignorable="d">
 
     <Grid Padding="20">
@@ -317,6 +318,6 @@
     </Grid>
 
     <Page.Resources>
-        <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <utils:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
     </Page.Resources>
 </Page>
