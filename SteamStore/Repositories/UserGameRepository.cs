@@ -20,6 +20,22 @@ public class UserGameRepository
         this.data = data;
     }
 
+    public bool isGamePurchased(Game game)
+    {
+        SqlParameter[] parameters = new SqlParameter[]
+        {
+            new SqlParameter("@game_id", game.Id),
+            new SqlParameter("@user_id", user.UserId),
+        };
+        try
+        {
+            return data.ExecuteScalar<int>("IsGamePurchased", parameters) > 0;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
     public void removeGameFromWishlist(Game game)
     {
         SqlParameter[] parameters = new SqlParameter[]
