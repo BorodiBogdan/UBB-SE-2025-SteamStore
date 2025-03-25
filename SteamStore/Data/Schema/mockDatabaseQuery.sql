@@ -360,6 +360,12 @@ CREATE PROCEDURE addGameToWishlist
     @game_id INT
 AS
 BEGIN
+    IF EXISTS (SELECT 1 FROM games_users WHERE user_id = @user_id AND game_id = @game_id AND is_purchased = 1)
+    BEGIN
+        RAISERROR('Failed to add game to your wishlist: Game already owned', 16, 1);
+        RETURN;
+    END
+
     IF EXISTS (SELECT 1 FROM games_users WHERE user_id = @user_id AND game_id = @game_id AND isInWishlist = 1)
     BEGIN
         RAISERROR('Failed to add game to your wishlist: Already in wishlist', 16, 1);

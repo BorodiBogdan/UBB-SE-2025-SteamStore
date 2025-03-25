@@ -30,6 +30,12 @@ public class UserGameService
     {
         try
         {
+            // Check if game is already purchased
+            if (isGamePurchased(game))
+            {
+                throw new Exception($"Failed to add {game.Name} to your wishlist: Game already owned");
+            }
+            
             _userGameRepository.addGameToWishlist(game);
         }
         catch (Exception e) 
@@ -146,13 +152,13 @@ public class UserGameService
         switch (criteria)
         {
             case "overwhelmingly_positive":
-                return new Collection<Game>(games.Where(g => g.Rating >= 9).ToList());
+                return new Collection<Game>(games.Where(g => g.Rating >= 4.5).ToList());
             case "very_positive":
-                return new Collection<Game>(games.Where(g => g.Rating >= 8 && g.Rating < 9).ToList());
+                return new Collection<Game>(games.Where(g => g.Rating >= 4 && g.Rating < 4.5).ToList());
             case "mixed":
-                return new Collection<Game>(games.Where(g => g.Rating >= 4 && g.Rating < 8).ToList());
+                return new Collection<Game>(games.Where(g => g.Rating >= 2 && g.Rating < 4).ToList());
             case "negative":
-                return new Collection<Game>(games.Where(g => g.Rating < 4).ToList());
+                return new Collection<Game>(games.Where(g => g.Rating < 2).ToList());
             default:
                 return games;
         }
