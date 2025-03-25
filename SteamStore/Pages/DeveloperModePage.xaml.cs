@@ -252,12 +252,6 @@ namespace SteamStore.Pages
             }
         }
 
-        private async void ShowRejectionMessage(string message)
-        {
-            RejectionMessageText.Text = message;
-            await RejectionMessageDialog.ShowAsync();
-        }
-        
         private async void RejectionButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is int gameId)
