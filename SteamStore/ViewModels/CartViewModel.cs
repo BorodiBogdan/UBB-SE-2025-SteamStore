@@ -1,13 +1,38 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
-public class CartViewModel
+public class CartViewModel : INotifyPropertyChanged
 {
-    public ObservableCollection<Game> CartGames { get; set; }
+    private ObservableCollection<Game> _cartGames;
+    private decimal _totalPrice;
 
-    public decimal TotalPrice => (decimal)CartGames.Sum(game => (double)game.Price);
-    
+    public ObservableCollection<Game> CartGames
+    {
+        get => _cartGames;
+        set
+        {
+            _cartGames = value;
+            OnPropertyChanged();
+            UpdateTotalPrice();
+        }
+    }
+
+    public decimal TotalPrice
+    {
+        get => _totalPrice;
+        private set
+        {
+            if (_totalPrice != value)
+            {
+                _totalPrice = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     // Property to track points earned in the last purchase
     public int LastEarnedPoints { get; private set; }
 
@@ -30,24 +55,42 @@ public class CartViewModel
         {
             CartGames.Add(game);
         }
+        UpdateTotalPrice();
     }
+
+    private void UpdateTotalPrice()
+    {
+        TotalPrice = (decimal)CartGames.Sum(game => (double)game.Price);
+    }
+
     public void RemoveGameFromCart(Game game)
     {
         _cartService.RemoveGameFromCart(game);
         CartGames.Remove(game);
+        UpdateTotalPrice();
     }
+
     public void PurchaseGames()
     {
         _userGameService.purchaseGames(CartGames.ToList());
-        
+
         // Get the points earned from the user game service
         LastEarnedPoints = _userGameService.LastEarnedPoints;
-        
+
         _cartService.RemoveGamesFromCart(CartGames.ToList());
         CartGames.Clear();
+        UpdateTotalPrice();
     }
+
     public float showUserFunds()
     {
         return _cartService.getUserFunds();
-    }   
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }
