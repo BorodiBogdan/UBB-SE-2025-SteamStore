@@ -13,17 +13,15 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using SteamStore.Models;
+using SteamStore.Services;
 using SteamStore.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
-using Windows.UI.Xaml; // For DispatcherTimer
 using Microsoft.UI.Dispatching;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace SteamStore.Pages
 {
@@ -33,83 +31,27 @@ namespace SteamStore.Pages
     public sealed partial class PointsShopPage : Page
     {
         private PointShopViewModel ViewModel { get; set; }
-        private User _currentUser;
-        private DataLink _dataLink;
+        private PointShopService _pointShopService;
 
-        public PointsShopPage()
+        public PointsShopPage(PointShopService pointShopService)
         {
             this.InitializeComponent();
             
-            // Configure the DataLink using ConfigurationBuilder
-            var configBuilder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            
-            var configuration = configBuilder.Build();
-            
             try
             {
-                // Initialize the DataLink with the entire configuration object
-                _dataLink = new DataLink(configuration);
+                _pointShopService = pointShopService;
                 
-                // The ViewModel will be initialized in OnNavigatedTo when we get the user
+                // Initialize the ViewModel with the PointShopService
+                ViewModel = new PointShopViewModel(_pointShopService);
+                this.DataContext = ViewModel;
+                
+                // Check for earned points
+                CheckForEarnedPoints();
             }
             catch (Exception ex)
             {
-                ShowErrorDialog("Failed to initialize PointsShopPage", ex.Message);
-            }
-        }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-
-            try
-            {
-                // If a user is passed through navigation, use it
-                if (e.Parameter is User user)
-                {
-                    _currentUser = user;
-                    
-                    // Only create a new ViewModel if one doesn't exist yet or if the user changed
-                    if (ViewModel == null)
-                    {
-                        ViewModel = new PointShopViewModel(_currentUser, _dataLink);
-                        this.DataContext = ViewModel;
-                    }
-                    
-                    // Refresh data when navigating to the page
-                    ViewModel.LoadItems();
-                    ViewModel.LoadUserItems();
-                    
-                    // Check for recently earned points from SessionState
-                    try
-                    {
-                        if (Application.Current.Resources.TryGetValue("RecentEarnedPoints", out object pointsObj) && 
-                            pointsObj is int earnedPoints && 
-                            earnedPoints > 0)
-                        {
-                            // Show notification about recently earned points
-                            ShowPointsEarnedNotification(earnedPoints);
-                            
-                            // Reset the value so it doesn't show again
-                            Application.Current.Resources["RecentEarnedPoints"] = 0;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // Silent catch - don't let notification issues break the page
-                        Debug.WriteLine($"Error checking for earned points: {ex.Message}");
-                    }
-                }
-                else
-                {
-                    ShowErrorDialog("User Error", "No user was provided to the PointsShopPage. Points Shop functionality will not work correctly.");
-                }
-            }
-            catch (Exception ex)
-            {
-                ShowErrorDialog("Failed to load data", ex.Message);
+                Debug.WriteLine($"Error initializing PointsShopPage: {ex.Message}");
+                ShowErrorDialog("Failed to initialize Points Shop", ex.Message);
             }
         }
 
@@ -176,11 +118,33 @@ namespace SteamStore.Pages
                 }
                 
                 string itemName = ViewModel.SelectedItem.Name;
+                double pointPrice = ViewModel.SelectedItem.PointPrice;
+                string itemType = ViewModel.SelectedItem.ItemType;
                 
                 bool success = await ViewModel.PurchaseSelectedItem();
                 
                 if (success)
                 {
+                    // Make sure the transaction was added (fallback)
+                    if (ViewModel.TransactionHistory == null)
+                    {
+                        ViewModel.TransactionHistory = new ObservableCollection<PointShopTransaction>();
+                    }
+                    
+                    // Check if we need to manually add a transaction (should already be added in the ViewModel)
+                    bool transactionExists = ViewModel.TransactionHistory.Any(t => t.ItemName == itemName && Math.Abs(t.PointsSpent - pointPrice) < 0.01);
+                    
+                    if (!transactionExists)
+                    {
+                        Debug.WriteLine("Transaction wasn't added in ViewModel - adding it manually");
+                        var transaction = new PointShopTransaction(
+                            ViewModel.TransactionHistory.Count + 1,
+                            itemName,
+                            pointPrice,
+                            itemType);
+                        ViewModel.TransactionHistory.Add(transaction);
+                    }
+                    
                     ContentDialog successDialog = new ContentDialog();
                     successDialog.Title = "Purchase Successful";
                     successDialog.Content = $"You have successfully purchased {itemName}. Check your inventory to view it.";
@@ -327,6 +291,50 @@ namespace SteamStore.Pages
             {
                 Debug.WriteLine($"Error showing notification: {ex.Message}");
             }
+        }
+
+        private void CheckForEarnedPoints()
+        {
+            try
+            {
+                if (Application.Current.Resources.TryGetValue("RecentEarnedPoints", out object pointsObj) && 
+                    pointsObj is int earnedPoints && 
+                    earnedPoints > 0)
+                {
+                    // Show notification about recently earned points
+                    ShowPointsEarnedNotification(earnedPoints);
+                    
+                    // Reset the value so it doesn't show again
+                    Application.Current.Resources["RecentEarnedPoints"] = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Silent catch - don't let notification issues break the page
+                Debug.WriteLine($"Error checking for earned points: {ex.Message}");
+            }
+        }
+
+        private void ViewTransactionHistoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Debug the transaction history
+            int transactionCount = ViewModel?.TransactionHistory?.Count ?? 0;
+            Debug.WriteLine($"Transaction history count: {transactionCount}");
+            
+            if (ViewModel?.TransactionHistory != null)
+            {
+                foreach (var transaction in ViewModel.TransactionHistory)
+                {
+                    Debug.WriteLine($"Transaction: {transaction.ItemName}, {transaction.PointsSpent} points, {transaction.PurchaseDate}");
+                }
+            }
+            
+            TransactionHistoryPanel.Visibility = Visibility.Visible;
+        }
+
+        private void CloseTransactionHistoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            TransactionHistoryPanel.Visibility = Visibility.Collapsed;
         }
     }
 }

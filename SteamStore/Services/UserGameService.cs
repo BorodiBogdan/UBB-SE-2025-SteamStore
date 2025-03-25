@@ -158,6 +158,10 @@ public class UserGameService
         }
     }
 
+    public bool isGamePurchased(Game game)
+    {
+        return _userGameRepository.isGamePurchased(game);
+    }
     public Collection<Game> sortWishListGames(string criteria, bool ascending)
     {
         var games = _userGameRepository.getWishlistGames();

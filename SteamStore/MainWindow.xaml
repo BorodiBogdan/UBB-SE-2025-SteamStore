@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="MainWindow">
+    Title="Steam Store">
 
     <Grid>
         <NavigationView x:Name="NavView"
@@ -18,10 +18,22 @@
                         SelectionChanged="NavView_SelectionChanged">
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Homepage" Tag="HomePage" Icon="Home" />
-                <NavigationViewItem Content="Cart" Tag="CartPage"  />
-                <NavigationViewItem Content="Points Shop" Tag="PointsShopPage" />
-                <NavigationViewItem Content="Wishlist" Tag="WishlistPage" />
-                <NavigationViewItem Content="Developer Mode" Tag="DeveloperModePage" />
+                <NavigationViewItem Content="Cart" Tag="CartPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7BF;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Points Shop" Tag="PointsShopPage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE1CB;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Wishlist" Tag="WishlistPage" Icon="Favorite" />
+                <NavigationViewItem Content="Developer Mode" Tag="DeveloperModePage">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE943;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
 
             <Frame x:Name="ContentFrame" />

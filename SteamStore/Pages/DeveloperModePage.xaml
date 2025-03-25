@@ -52,15 +52,19 @@
                                 Grid.Column="2" 
                                 Margin="10,0"
                                 Click="EditButton_Click"
+                                Background="DarkGray"
                                 CommandParameter="{Binding Id}"/>
                         <Button Content="Remove" 
                                 Grid.Column="3"
                                 Margin="10,0"
                                 Click="RemoveButton_Click"
+                                Background="Red"
                                 CommandParameter="{Binding Id}"/>
                         <Button Content="Reject Message" 
                                 Grid.Column="4"
-                                Background="Orange"/>
+                                Background="Orange"
+                                Click="RejectionButton_Click"
+                                CommandParameter="{Binding Id}"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -99,7 +103,9 @@
                                 CommandParameter="{Binding Id}"/>
                         <Button Content="Reject" 
                                 Grid.Column="3"
-                                Background="Red"/>
+                                Background="Red"
+                                Click="RejectButton_Click"
+                                CommandParameter="{Binding Id}"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -263,6 +269,24 @@
                       TextWrapping="Wrap"/>
         </ContentDialog>
 
+        <!-- Delete Warning Dialog -->
+        <ContentDialog x:Name="DeleteWarningDialog"
+                      Title="Warning: Game Owned by Users" 
+                      CloseButtonText="Cancel"
+                      PrimaryButtonText="Delete Anyway"
+                      DefaultButton="Close">
+            <StackPanel Spacing="10">
+                <TextBlock Text="Warning: This game is currently owned by users. Deleting it will remove it from their libraries and transaction history." 
+                         TextWrapping="Wrap"
+                         Foreground="Red"/>
+                <TextBlock x:Name="OwnerCountText"
+                         TextWrapping="Wrap"/>
+                <TextBlock Text="Are you sure you want to proceed with deletion?" 
+                         TextWrapping="Wrap"
+                         FontWeight="SemiBold"/>
+            </StackPanel>
+        </ContentDialog>
+
         <!-- Rejection Message Dialog -->
         <ContentDialog x:Name="RejectionMessageDialog"
                       Title="Rejection Message" 
@@ -273,6 +297,22 @@
                           TextWrapping="Wrap"
                           FontSize="14"/>
             </ScrollViewer>
+        </ContentDialog>
+
+        <!-- Reject Game Dialog -->
+        <ContentDialog x:Name="RejectGameDialog"
+                      Title="Reject Game" 
+                      CloseButtonText="Cancel"
+                      PrimaryButtonText="Reject"
+                      DefaultButton="Close">
+            <StackPanel Spacing="10">
+                <TextBlock Text="Enter rejection reason:" FontSize="14"/>
+                <TextBox x:Name="RejectReasonTextBox"
+                       Height="100"
+                       AcceptsReturn="True"
+                       TextWrapping="Wrap"
+                       PlaceholderText="Explain why this game is being rejected..."/>
+            </StackPanel>
         </ContentDialog>
     </Grid>
 

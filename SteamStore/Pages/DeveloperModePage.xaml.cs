@@ -15,8 +15,6 @@ using Windows.Foundation.Collections;
 using SteamStore.Models;
 using System.Threading.Tasks;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace SteamStore.Pages
 {
@@ -33,9 +31,28 @@ namespace SteamStore.Pages
             _viewModel = new DeveloperViewModel(developerService, userGameService);
             this.DataContext = _viewModel;
 
+            this.Loaded += DeveloperModePage_Loaded;
+
             AddGameButton.Click += AddGameButton_Click;
             ReviewGamesButton.Click += ReviewGamesButton_Click;
             MyGamesButton.Click += MyGamesButton_Click;
+        }
+
+        private void DeveloperModePage_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Check if user is a developer
+            if (_viewModel._developerService.GetCurrentUser().UserRole != User.Role.Developer)
+            {
+                // Show error message dialog
+                ShowNotDeveloperMessage();
+                
+                // Disable all interactive elements
+                AddGameButton.IsEnabled = false;
+                ReviewGamesButton.IsEnabled = false;
+                MyGamesButton.IsEnabled = false;
+                DeveloperGamesList.IsEnabled = false;
+                ReviewGamesList.IsEnabled = false;
+            }
         }
 
         private void ReviewGamesButton_Click(object sender, RoutedEventArgs e)
@@ -64,6 +81,43 @@ namespace SteamStore.Pages
             }
         }
 
+        private async void RejectButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is int gameId)
+            {
+
+                RejectGameDialog.XamlRoot = this.Content.XamlRoot;
+                
+                var result = await RejectGameDialog.ShowAsync();
+                
+                if (result == ContentDialogResult.Primary)
+                {
+                    string rejectionReason = RejectReasonTextBox.Text;
+                    
+                    try
+                    {
+                        if (!string.IsNullOrWhiteSpace(rejectionReason))
+                        {
+                            _viewModel._developerService.RejectGameWithMessage(gameId, rejectionReason);
+                        }
+                        else
+                        {
+                            _viewModel.RejectGame(gameId);
+                        }
+                        
+                        RejectReasonTextBox.Text = "";
+                        
+                        // Refresh the unvalidated games list
+                        _viewModel.LoadUnvalidated();
+                    }
+                    catch (Exception ex)
+                    {
+                        await ShowErrorMessage("Error", $"Failed to reject game: {ex.Message}");
+                    }
+                }
+            }
+        }
+
         private async void AddGameButton_Click(object sender, RoutedEventArgs e)
         {
             var result = await AddGameDialog.ShowAsync();
@@ -86,14 +140,12 @@ namespace SteamStore.Pages
                         return;
                     }
                     
-                    // Validate game ID (must be an integer and not already in use)
                     if (!int.TryParse(AddGameId.Text, out int gameId))
                     {
                         await ShowErrorMessage("Validation Error", "Game ID must be a valid integer.");
                         return;
                     }
                     
-                    // Check if game ID is already in use
                     if (_viewModel.IsGameIdInUse(gameId))
                     {
                         await ShowErrorMessage("Validation Error", "Game ID is already in use. Please choose another ID.");
@@ -173,11 +225,63 @@ namespace SteamStore.Pages
             };
             await errorDialog.ShowAsync();
         }
+        
+        private async void ShowNotDeveloperMessage()
+        {
+            if (this.Content == null || this.Content.XamlRoot == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Cannot show developer access dialog: XamlRoot is null");
+                return;
+            }
+            
+            ContentDialog notDeveloperDialog = new ContentDialog
+            {
+                Title = "Access Denied",
+                Content = "You need to be a registered developer to access this page.",
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            };
+            
+            try
+            {
+                await notDeveloperDialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error showing developer access dialog: {ex.Message}");
+            }
+        }
 
         private async void ShowRejectionMessage(string message)
         {
             RejectionMessageText.Text = message;
             await RejectionMessageDialog.ShowAsync();
+        }
+        
+        private async void RejectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is int gameId)
+            {
+                try
+                {
+                    string rejectionMessage = _viewModel._developerService.GetRejectionMessage(gameId);
+                    
+                    if (!string.IsNullOrWhiteSpace(rejectionMessage))
+                    {
+                        RejectionMessageText.Text = rejectionMessage;
+                        RejectionMessageDialog.XamlRoot = this.Content.XamlRoot;
+                        await RejectionMessageDialog.ShowAsync();
+                    }
+                    else
+                    {
+                        await ShowErrorMessage("Information", "No rejection message available for this game.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await ShowErrorMessage("Error", $"Failed to retrieve rejection message: {ex.Message}");
+                }
+            }
         }
 
         private async void RemoveButton_Click(object sender, RoutedEventArgs e)
@@ -186,10 +290,27 @@ namespace SteamStore.Pages
             {
                 try
                 {
-                    // Show confirmation dialog
-                    var result = await DeleteConfirmationDialog.ShowAsync();
+                    // Check if the game is owned by any users
+                    int ownerCount = _viewModel.GetGameOwnerCount(gameId);
                     
-                    if (result == ContentDialogResult.Primary) // User clicked Delete
+                    ContentDialogResult result;
+                    
+                    if (ownerCount > 0)
+                    {
+                        // Game is owned by users, show warning dialog
+                        DeleteWarningDialog.XamlRoot = this.Content.XamlRoot;
+                        OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
+                        
+                        result = await DeleteWarningDialog.ShowAsync();
+                    }
+                    else
+                    {
+                        // Game is not owned by any users, show standard confirmation dialog
+                        DeleteConfirmationDialog.XamlRoot = this.Content.XamlRoot;
+                        result = await DeleteConfirmationDialog.ShowAsync();
+                    }
+                    
+                    if (result == ContentDialogResult.Primary) 
                     {
                         _viewModel.DeleteGame(gameId);
                         // Refresh the games list
@@ -221,7 +342,7 @@ namespace SteamStore.Pages
                 {
                     // Populate edit form with game data
                     EditGameId.Text = game.Id.ToString();
-                    EditGameId.IsEnabled = false; // Cannot change game ID
+                    EditGameId.IsEnabled = false;
                     EditGameName.Text = game.Name;
                     EditGameDescription.Text = game.Description;
                     EditGamePrice.Text = game.Price.ToString();
@@ -238,7 +359,6 @@ namespace SteamStore.Pages
                     try {
                         var gameTags = _viewModel._developerService.GetGameTags(game.Id);
                         
-                        // Ensure EditGameTagList has items
                         if (EditGameTagList.Items != null && EditGameTagList.Items.Count > 0)
                         {
                             foreach (var tag in EditGameTagList.Items)
@@ -259,7 +379,7 @@ namespace SteamStore.Pages
                         System.Diagnostics.Debug.WriteLine($"Error loading game tags: {ex.Message}");
                     }
                     
-                    // Set XamlRoot for the dialog
+
                     EditGameDialog.XamlRoot = this.Content.XamlRoot;
                     
                     var result = await EditGameDialog.ShowAsync();

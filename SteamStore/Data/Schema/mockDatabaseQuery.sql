@@ -1,6 +1,5 @@
 ﻿USE SteamStore
 
----Run this to use the mock database of the SteamStore project
 
 DROP TABLE IF EXISTS users_items;
 DROP TABLE IF EXISTS point_items;
@@ -55,7 +54,8 @@ CREATE TABLE games (
 	minimum_requirements NVARCHAR(MAX),
 	recommended_requirements NVARCHAR(MAX),
 	status NVARCHAR(MAX),
-	discount INT
+	discount INT,
+	reject_message NVARCHAR(MAX) NULL
 );
 
 CREATE TABLE game_reviews (
@@ -123,6 +123,64 @@ begin
 end
 
 go
+
+DROP PROCEDURE IF EXISTS GetGameOwnerCount;
+GO
+
+CREATE PROCEDURE GetGameOwnerCount
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT COUNT(*) AS OwnerCount
+    FROM games_users
+    WHERE game_id = @game_id;
+END;
+GO 
+
+DROP PROCEDURE IF EXISTS DeleteGameReviews;
+GO
+
+CREATE PROCEDURE DeleteGameReviews
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DELETE FROM game_reviews
+    WHERE game_id = @game_id;
+END;
+GO 
+
+DROP PROCEDURE IF EXISTS DeleteGameTransactions;
+GO
+
+CREATE PROCEDURE DeleteGameTransactions
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DELETE FROM store_transaction
+    WHERE game_id = @game_id;
+END;
+GO 
+
+DROP PROCEDURE IF EXISTS DeleteGameFromUserLibraries;
+GO
+
+CREATE PROCEDURE DeleteGameFromUserLibraries
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DELETE FROM games_users
+    WHERE game_id = @game_id;
+END;
+GO 
+
 DROP PROCEDURE IF EXISTS getAllTags;
 go
 CREATE PROCEDURE getAllTags as
@@ -329,13 +387,16 @@ CREATE PROCEDURE ValidateGame
     @game_id INT
 AS
 BEGIN
+    SET NOCOUNT ON;
     UPDATE games
-    SET status = 'Approved'
+    SET status = 'Approved',
+        reject_message = NULL
     WHERE game_id = @game_id AND status = 'Pending';
 END;
 GO
 
-DROP PROCEDURE IF EXISTS InsertGame
+
+DROP PROCEDURE IF EXISTS InsertGame;
 GO
 
 CREATE PROCEDURE InsertGame
@@ -345,19 +406,22 @@ CREATE PROCEDURE InsertGame
     @publisher_id INT,
     @description NVARCHAR(MAX),
     @image_url NVARCHAR(MAX),
-	@trailer_url NVARCHAR(MAX),
-	@gameplay_url NVARCHAR(MAX),
+    @trailer_url NVARCHAR(MAX),
+    @gameplay_url NVARCHAR(MAX),
     @minimum_requirements NVARCHAR(MAX),
     @recommended_requirements NVARCHAR(MAX),
     @status NVARCHAR(MAX),
     @discount INT
 AS
 BEGIN
+    SET NOCOUNT ON;
     
-    INSERT INTO games (game_id, name, price, publisher_id, description, image_url, trailer_url, gameplay_url, 
-                       minimum_requirements, recommended_requirements, status, discount)
-    VALUES (@game_id, @name, @price, @publisher_id, @description, @image_url, @trailer_url, @gameplay_url, 
-            @minimum_requirements, @recommended_requirements, @status, @discount);
+    INSERT INTO games (game_id, name, price, publisher_id, description, image_url, 
+                      trailer_url, gameplay_url, minimum_requirements, 
+                      recommended_requirements, status, discount, reject_message)
+    VALUES (@game_id, @name, @price, @publisher_id, @description, @image_url, 
+            @trailer_url, @gameplay_url, @minimum_requirements, 
+            @recommended_requirements, @status, @discount, NULL);
 END;
 GO
 
@@ -450,10 +514,12 @@ BEGIN
         minimum_requirements = @minimum_requirements,
         recommended_requirements = @recommended_requirements,
         status = @status,
-        discount = @discount
+        discount = @discount,
+        reject_message = NULL
     WHERE game_id = @game_id;
 END;
 GO
+
 
 DROP PROCEDURE IF EXISTS RejectGame
 GO
@@ -469,6 +535,54 @@ BEGIN
     WHERE game_id = @game_id;
 END;
 GO
+
+DROP PROCEDURE IF EXISTS RejectGameWithMessage
+GO
+
+CREATE PROCEDURE RejectGameWithMessage
+    @game_id INT,
+    @rejection_message NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    UPDATE games
+    SET status = 'Rejected',
+        reject_message = @rejection_message
+    WHERE game_id = @game_id;
+END;
+GO
+
+DROP PROCEDURE IF EXISTS GetRejectionMessage
+GO
+
+CREATE PROCEDURE GetRejectionMessage
+    @game_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT reject_message
+    FROM games
+    WHERE game_id = @game_id;
+END;
+GO
+
+DROP PROCEDURE IF EXISTS isGamePurchased
+GO
+
+CREATE PROCEDURE isGamePurchased
+@game_id INT,
+@user_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+	
+	IF EXISTS (SELECT 1 FROM games_users WHERE game_id = @game_id AND user_id = @user_id AND is_purchased = 1)
+		SELECT 1 AS Result;
+	ELSE
+		SELECT 0 AS Result;
+END;
 
 DROP PROCEDURE IF EXISTS DeleteGameTags;
 GO
@@ -555,22 +669,22 @@ END
 
 -- Insert mock games
 delete from games
-INSERT INTO games (game_id, name, price, publisher_id, description, image_url, trailer_url, gameplay_url, minimum_requirements, recommended_requirements, status, discount)
+INSERT INTO games (game_id, name, price, publisher_id, description, image_url, trailer_url, gameplay_url, minimum_requirements, recommended_requirements, status, discount, reject_message)
 VALUES 
-(1, 'Risk of Rain 2', 24.99, 1, 'A rogue-like third-person shooter where players fight through hordes of monsters to escape an alien planet.', 'https://upload.wikimedia.org/wikipedia/en/c/c1/Risk_of_Rain_2.jpg', 'https://www.youtube.com/watch?v=pJ-aR--gScM', 'https://www.youtube.com/watch?v=Cwk3qmD28CE', '4GB RAM, 2.5GHz Processor, GTX 580', '8GB RAM, 3.0GHz Processor, GTX 680', 'Pending',20),
-(2, 'Dead by Daylight', 19.99, 1, 'A multiplayer horror game where survivors must evade a killer.', 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/11986720-4999-4524-9809-1a25313ee2e5/dg8ii9d-d3f5eb42-9041-4ddc-954a-c3f9359e914e.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzExOTg2NzIwLTQ5OTktNDUyNC05ODA5LTFhMjUzMTNlZTJlNVwvZGc4aWk5ZC1kM2Y1ZWI0Mi05MDQxLTRkZGMtOTU0YS1jM2Y5MzU5ZTkxNGUucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.XGf2I0nx7hyCw6EFGJ5lEdexo3Uj5emUoC6texzl3A4', 'https://www.youtube.com/watch?v=JGhIXLO3ul8', 'https://www.youtube.com/watch?v=3wUHKO0ieyY', '8GB RAM, i3-4170, GTX 760', '16GB RAM, i5-6500, GTX 1060', 'Pending',40),
-(3, 'Counter-Strike 2', 0.00, 1, 'A tactical first-person shooter featuring team-based gameplay.', 'https://sm.ign.com/ign_nordic/cover/c/counter-st/counter-strike-2_jc2d.jpg', 'https://www.youtube.com/watch?v=c80dVYcL69E', 'https://www.youtube.com/watch?v=P22HqM9w500', '8GB RAM, i5-2500K, GTX 660', '16GB RAM, i7-7700K, GTX 1060', 'Approved',50),
-(4, 'Half-Life 2', 9.99, 1, 'A story-driven first-person shooter that revolutionized the genre.', 'https://media.moddb.com/images/mods/1/47/46951/d1jhx20-dc797b78-5feb-4005-b206-.1.jpg', 'https://www.youtube.com/watch?v=UKA7JkV51Jw', 'https://www.youtube.com/watch?v=jElU1mD8JnI', '512MB RAM, 1.7GHz Processor, DirectX 8 GPU', '1GB RAM, 3.0GHz Processor, DirectX 9 GPU', 'Approved',60),
-(5, 'Mario', 59.99, 1, 'A classic platformer adventure with iconic characters and worlds.', 'https://play-lh.googleusercontent.com/3ZKfMRp_QrdN-LzsZTbXdXBH-LS1iykSg9ikNq_8T2ppc92ltNbFxS-tORxw2-6kGA', 'https://www.youtube.com/watch?v=TnGl01FkMMo', 'https://www.youtube.com/watch?v=rLl9XBg7wSs', 'N/A', 'N/A', 'Approved',70),
-(6, 'The Legend of Zelda', 59.99, 1, 'An epic adventure game where heroes save the kingdom of Hyrule.', 'https://m.media-amazon.com/images/I/71oHNyzdN1L.jpg', 'https://www.youtube.com/watch?v=_X2h3SF7gd4', 'https://www.youtube.com/watch?v=wW7jkBJ_yK0', 'N/A', 'N/A', 'Approved',30),
-(7, 'Baba Is You', 14.99, 2, 'A puzzle game where you change the rules to solve challenges.', 'https://is5-ssl.mzstatic.com/image/thumb/Purple113/v4/9e/30/61/9e3061a5-b2f0-87ad-9e90-563f37729be5/source/256x256bb.jpg', 'https://www.youtube.com/watch?v=z3_yA4HTJfs', 'https://www.youtube.com/watch?v=dAiX8s-Eu7w', '2GB RAM, 1.0GHz Processor', '4GB RAM, 2.0GHz Processor', 'Pending',20),
-(8, 'Portal 2', 9.99, 2, 'A mind-bending puzzle-platformer with a dark sense of humor.', 'https://steamuserimages-a.akamaihd.net/ugc/789750822988419716/AB9DA751B588ADA1597DB3318BFED932F994683F/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', 'https://www.youtube.com/watch?v=tax4e4hBBZc', 'https://www.youtube.com/watch?v=ts-j0nFf2e0', '2GB RAM, 1.7GHz Processor, DirectX 9 GPU', '4GB RAM, 3.0GHz Processor, GTX 760', 'Pending',10),
-(9, 'Outer Wilds', 24.99, 2, 'An exploration-based game where you unravel cosmic mysteries.', 'https://img-eshop.cdn.nintendo.net/i/bc850a322c0b2e2b410bf462993fffa602a32803eafd1805ef22774ac634c779.jpg', 'https://www.youtube.com/watch?v=d9u6KYVq5kw', 'https://www.youtube.com/watch?v=huL_TawYrMs', '6GB RAM, i5-2300, GTX 560', '8GB RAM, i7-6700, GTX 970', 'Pending',15),
-(10, 'Minecraft', 29.99, 2, 'A sandbox game that lets you build and explore infinite worlds.', 'https://cdn2.steamgriddb.com/icon/f0b57183da91a7972b2b3c06b0db5542/32/512x512.png', 'https://www.youtube.com/watch?v=MmB9b5njVbA', 'https://www.youtube.com/watch?v=ANgI2o_Jinc', '4GB RAM, Intel HD 4000', '8GB RAM, GTX 1060', 'Pending',14),
-(11, 'Subnautica', 29.99, 2, 'An underwater survival adventure set on an alien ocean planet.', 'https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_Subnautica_image500w.jpg', 'https://www.youtube.com/watch?v=Rz2SNm8VguE', 'https://www.youtube.com/watch?v=diS8RCYwSCg', '8GB RAM, i5-4590, GTX 550', '16GB RAM, i7-7700K, GTX 1060', 'Pending',13),
-(12, 'Space Invaders', 9.99, 2, 'A classic arcade shooter where you defend Earth from alien invaders.', 'https://static.wikia.nocookie.net/classics/images/a/a1/Space_Invaders_Logo.jpeg/revision/latest?cb=20210725054724', 'https://www.youtube.com/watch?v=5a2sRVL3fIY', 'https://www.youtube.com/watch?v=MU4psw3ccUI', '2GB RAM, 1.2GHz Processor', '4GB RAM, 2.4GHz Processor', 'Pending',13),
-(13, 'Fantasy Quest', 29.99, 2, 'An epic adventure RPG set in a magical world.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPRuOKdjy9y8-lChDfNMqrurbqEBzs0oGYvw&s', 'https://www.youtube.com/watch?v=1_rYK41w988', 'https://www.youtube.com/watch?v=0Jt5ASpS-9w', '4GB RAM, 2.0GHz Processor', '8GB RAM, 3.0GHz Processor', 'Pending',20),
-(14, 'Racing Turbo', 19.99, 2, 'A fast-paced racing game with stunning graphics and intense action.', 'https://play-lh.googleusercontent.com/QUM3PMNJvBPb0J5ovrt1WYefhq4ik3LNhIhBDWCSZ_qthzm5F7ODHqfkBoLVhiS0Rdau', 'https://www.youtube.com/watch?v=vyok9RcFBxI', 'https://www.youtube.com/watch?v=azWAsEuILlk&list=PLPrREYqN5Wqb1rEcMUsRNhpOGD74-fR8d', '2GB RAM, 1.5GHz Processor', '4GB RAM, 2.5GHz Processor', 'Pending',20);
+(1, 'Risk of Rain 2', 24.99, 1, 'A rogue-like third-person shooter where players fight through hordes of monsters to escape an alien planet.', 'https://upload.wikimedia.org/wikipedia/en/c/c1/Risk_of_Rain_2.jpg', 'https://www.youtube.com/watch?v=pJ-aR--gScM', 'https://www.youtube.com/watch?v=Cwk3qmD28CE', '4GB RAM, 2.5GHz Processor, GTX 580', '8GB RAM, 3.0GHz Processor, GTX 680', 'Rejected',20,'Minimum requirements are too high'),
+(2, 'Dead by Daylight', 19.99, 1, 'A multiplayer horror game where survivors must evade a killer.', 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/11986720-4999-4524-9809-1a25313ee2e5/dg8ii9d-d3f5eb42-9041-4ddc-954a-c3f9359e914e.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzExOTg2NzIwLTQ5OTktNDUyNC05ODA5LTFhMjUzMTNlZTJlNVwvZGc4aWk5ZC1kM2Y1ZWI0Mi05MDQxLTRkZGMtOTU0YS1jM2Y5MzU5ZTkxNGUucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.XGf2I0nx7hyCw6EFGJ5lEdexo3Uj5emUoC6texzl3A4', 'https://www.youtube.com/watch?v=JGhIXLO3ul8', 'https://www.youtube.com/watch?v=3wUHKO0ieyY', '8GB RAM, i3-4170, GTX 760', '16GB RAM, i5-6500, GTX 1060', 'Pending',40,NULL),
+(3, 'Counter-Strike 2', 20.99, 1, 'A tactical first-person shooter featuring team-based gameplay.', 'https://sm.ign.com/ign_nordic/cover/c/counter-st/counter-strike-2_jc2d.jpg', 'https://www.youtube.com/watch?v=c80dVYcL69E', 'https://www.youtube.com/watch?v=P22HqM9w500', '8GB RAM, i5-2500K, GTX 660', '16GB RAM, i7-7700K, GTX 1060', 'Approved',50,NULL),
+(4, 'Half-Life 2', 9.99, 1, 'A story-driven first-person shooter that revolutionized the genre.', 'https://media.moddb.com/images/mods/1/47/46951/d1jhx20-dc797b78-5feb-4005-b206-.1.jpg', 'https://www.youtube.com/watch?v=UKA7JkV51Jw', 'https://www.youtube.com/watch?v=jElU1mD8JnI', '512MB RAM, 1.7GHz Processor, DirectX 8 GPU', '1GB RAM, 3.0GHz Processor, DirectX 9 GPU', 'Approved',60,NULL),
+(5, 'Mario', 59.99, 1, 'A classic platformer adventure with iconic characters and worlds.', 'https://play-lh.googleusercontent.com/3ZKfMRp_QrdN-LzsZTbXdXBH-LS1iykSg9ikNq_8T2ppc92ltNbFxS-tORxw2-6kGA', 'https://www.youtube.com/watch?v=TnGl01FkMMo', 'https://www.youtube.com/watch?v=rLl9XBg7wSs', 'N/A', 'N/A', 'Approved',70,NULL),
+(6, 'The Legend of Zelda', 59.99, 1, 'An epic adventure game where heroes save the kingdom of Hyrule.', 'https://m.media-amazon.com/images/I/71oHNyzdN1L.jpg', 'https://www.youtube.com/watch?v=_X2h3SF7gd4', 'https://www.youtube.com/watch?v=wW7jkBJ_yK0', 'N/A', 'N/A', 'Approved',30,NULL),
+(7, 'Baba Is You', 14.99, 2, 'A puzzle game where you change the rules to solve challenges.', 'https://is5-ssl.mzstatic.com/image/thumb/Purple113/v4/9e/30/61/9e3061a5-b2f0-87ad-9e90-563f37729be5/source/256x256bb.jpg', 'https://www.youtube.com/watch?v=z3_yA4HTJfs', 'https://www.youtube.com/watch?v=dAiX8s-Eu7w', '2GB RAM, 1.0GHz Processor', '4GB RAM, 2.0GHz Processor', 'Pending',20,NULL),
+(8, 'Portal 2', 9.99, 2, 'A mind-bending puzzle-platformer with a dark sense of humor.', 'https://steamuserimages-a.akamaihd.net/ugc/789750822988419716/AB9DA751B588ADA1597DB3318BFED932F994683F/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', 'https://www.youtube.com/watch?v=tax4e4hBBZc', 'https://www.youtube.com/watch?v=ts-j0nFf2e0', '2GB RAM, 1.7GHz Processor, DirectX 9 GPU', '4GB RAM, 3.0GHz Processor, GTX 760', 'Pending',10,NULL),
+(9, 'Outer Wilds', 24.99, 2, 'An exploration-based game where you unravel cosmic mysteries.', 'https://img-eshop.cdn.nintendo.net/i/bc850a322c0b2e2b410bf462993fffa602a32803eafd1805ef22774ac634c779.jpg', 'https://www.youtube.com/watch?v=d9u6KYVq5kw', 'https://www.youtube.com/watch?v=huL_TawYrMs', '6GB RAM, i5-2300, GTX 560', '8GB RAM, i7-6700, GTX 970', 'Pending',15,NULL),
+(10, 'Minecraft', 29.99, 2, 'A sandbox game that lets you build and explore infinite worlds.', 'https://cdn2.steamgriddb.com/icon/f0b57183da91a7972b2b3c06b0db5542/32/512x512.png', 'https://www.youtube.com/watch?v=MmB9b5njVbA', 'https://www.youtube.com/watch?v=ANgI2o_Jinc', '4GB RAM, Intel HD 4000', '8GB RAM, GTX 1060', 'Pending',14,NULL),
+(11, 'Subnautica', 29.99, 2, 'An underwater survival adventure set on an alien ocean planet.', 'https://www.nintendo.com/eu/media/images/11_square_images/games_18/nintendo_switch_5/SQ_NSwitch_Subnautica_image500w.jpg', 'https://www.youtube.com/watch?v=Rz2SNm8VguE', 'https://www.youtube.com/watch?v=diS8RCYwSCg', '8GB RAM, i5-4590, GTX 550', '16GB RAM, i7-7700K, GTX 1060', 'Pending',13,NULL),
+(12, 'Space Invaders', 9.99, 2, 'A classic arcade shooter where you defend Earth from alien invaders.', 'https://static.wikia.nocookie.net/classics/images/a/a1/Space_Invaders_Logo.jpeg/revision/latest?cb=20210725054724', 'https://www.youtube.com/watch?v=5a2sRVL3fIY', 'https://www.youtube.com/watch?v=MU4psw3ccUI', '2GB RAM, 1.2GHz Processor', '4GB RAM, 2.4GHz Processor', 'Pending',13,NULL),
+(13, 'Fantasy Quest', 29.99, 2, 'An epic adventure RPG set in a magical world.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPRuOKdjy9y8-lChDfNMqrurbqEBzs0oGYvw&s', 'https://www.youtube.com/watch?v=1_rYK41w988', 'https://www.youtube.com/watch?v=0Jt5ASpS-9w', '4GB RAM, 2.0GHz Processor', '8GB RAM, 3.0GHz Processor', 'Pending',20,NULL),
+(14, 'Racing Turbo', 19.99, 2, 'A fast-paced racing game with stunning graphics and intense action.', 'https://play-lh.googleusercontent.com/QUM3PMNJvBPb0J5ovrt1WYefhq4ik3LNhIhBDWCSZ_qthzm5F7ODHqfkBoLVhiS0Rdau', 'https://www.youtube.com/watch?v=vyok9RcFBxI', 'https://www.youtube.com/watch?v=azWAsEuILlk&list=PLPrREYqN5Wqb1rEcMUsRNhpOGD74-fR8d', '2GB RAM, 1.5GHz Processor', '4GB RAM, 2.5GHz Processor', 'Pending',20,NULL);
 GO
 
 -- Insert tags into the tags table
@@ -718,7 +832,7 @@ GO
 -- Then insert mock transactions
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES 
--- 🏆 TRENDING GAME: Counter-Strike 2
+-- Counter-Strike 2
 (3, 1, GETDATE(), 19.99, 1),
 (3, 2, DATEADD(DAY, -1, GETDATE()), 19.99, 1),
 (3, 3, GETDATE(), 19.99, 1);
@@ -737,7 +851,7 @@ GO
 -- More transactions in batches
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- 🏆 TRENDING GAME: Minecraft
+--Minecraft
 (10, 1, GETDATE(), 29.99, 1),
 (10, 2, GETDATE(), 29.99, 1),
 (10, 3, DATEADD(DAY, -1, GETDATE()), 29.99, 1),
@@ -746,7 +860,7 @@ VALUES
 (10, 6, DATEADD(DAY, -10, GETDATE()), 29.99, 1);
 GO
 
--- 🏆 TRENDING GAME: Dead by Daylight
+--Dead by Daylight
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
 (2, 1, GETDATE(), 29.99, 1),
@@ -760,11 +874,11 @@ GO
 -- Other games transactions - batch 1
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- ⚖️ BALANCED GAME: Risk of Rain 2
+-- Risk of Rain 2
 (1, 1, DATEADD(DAY, -10, GETDATE()), 9.99, 1),
 (1, 2, DATEADD(DAY, -12, GETDATE()), 9.99, 1),
 (1, 3, GETDATE(), 9.99, 1),
--- ⏳ LESS TRENDING: Half-Life 2
+--Half-Life 2
 (4, 1, DATEADD(DAY, -20, GETDATE()), 39.99, 1),
 (4, 2, DATEADD(DAY, -9, GETDATE()), 39.99, 1);
 GO
@@ -772,10 +886,10 @@ GO
 -- Other games transactions - batch 2
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- ⏳ LESS TRENDING: The Legend of Zelda
+-- The Legend of Zelda
 (6, 1, DATEADD(DAY, -13, GETDATE()), 59.99, 1),
 (6, 2, DATEADD(DAY, -8, GETDATE()), 59.99, 1),
--- ⚖️ BALANCED: Portal 2
+-- Portal 2
 (8, 1, GETDATE(), 9.99, 1),
 (8, 2, DATEADD(DAY, -11, GETDATE()), 9.99, 1),
 (8, 3, DATEADD(DAY, -14, GETDATE()), 9.99, 1);
@@ -784,10 +898,10 @@ GO
 -- Other games transactions - batch 3
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- ⏳ LESS TRENDING: Baba Is You
+-- Baba Is You
 (7, 1, DATEADD(DAY, -22, GETDATE()), 14.99, 1),
 (7, 2, DATEADD(DAY, -9, GETDATE()), 14.99, 1),
--- ⚖️ BALANCED: Outer Wilds
+-- Outer Wilds
 (9, 1, DATEADD(DAY, -18, GETDATE()), 24.99, 1),
 (9, 2, GETDATE(), 24.99, 1);
 GO
@@ -795,10 +909,10 @@ GO
 -- Other games transactions - batch 4
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- ⏳ LESS TRENDING: Subnautica
+-- Subnautica
 (11, 1, DATEADD(DAY, -16, GETDATE()), 29.99, 1),
 (11, 2, GETDATE(), 29.99, 1),
--- ⏳ LESS TRENDING: Space Invaders
+--Space Invaders
 (12, 1, DATEADD(DAY, -19, GETDATE()), 9.99, 1),
 (12, 2, DATEADD(DAY, -1, GETDATE()), 9.99, 1);
 GO
@@ -806,10 +920,10 @@ GO
 -- Other games transactions - batch 5
 INSERT INTO store_transaction (game_id, user_id, date, amount, withMoney)
 VALUES
--- ⏳ LESS TRENDING: Fantasy Quest
+--  Fantasy Quest
 (13, 1, DATEADD(DAY, -14, GETDATE()), 29.99, 1),
 (13, 2, GETDATE(), 29.99, 1),
--- ⏳ LESS TRENDING: Racing Turbo
+--  Racing Turbo
 (14, 1, DATEADD(DAY, -11, GETDATE()), 19.99, 1),
 (14, 2, DATEADD(DAY, -1, GETDATE()), 19.99, 1),
 (14, 3, GETDATE(), 19.99, 1);
@@ -843,9 +957,6 @@ VALUES
 (5, 1, GETDATE(), 24.99, 1);
 GO
 
--- =============================================
--- Point Shop Extension
--- =============================================
 -- Drop existing Point Shop tables if they exist
 IF EXISTS (SELECT * FROM sys.tables WHERE name = 'UserInventoryItems')
     DROP TABLE UserInventoryItems;
@@ -1024,6 +1135,8 @@ GO
 --EXEC getGameTags @gid = "133";
 --EXEC getGameTags @gid = "4142";
 
---EXEC ValidateGame @game_id = "133";
+--EXEC ValidateGame @game_id = "45";
 
 --EXEC getAllTags;
+--EXEC RejectGameWithMessage @game_id = "", @rejection_message = "Test test test";
+

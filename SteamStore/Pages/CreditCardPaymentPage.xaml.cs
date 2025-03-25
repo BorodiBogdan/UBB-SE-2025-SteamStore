@@ -54,7 +54,28 @@ namespace SteamStore.Pages
                 cartService.RemoveGamesFromCart(purchasedGames);
                 userGameService.purchaseGames(purchasedGames);
 
-                await ShowNotification("Payment Successful", "Your purchase has been completed successfully.");
+                // Get points earned from the purchase
+                int pointsEarned = userGameService.LastEarnedPoints;
+
+                // Store points in App resources for PointsShopPage to access
+                try
+                {
+                    Application.Current.Resources["RecentEarnedPoints"] = pointsEarned;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error storing points: {ex.Message}");
+                }
+
+                // Show points earned notification if points were earned
+                if (pointsEarned > 0)
+                {
+                    await ShowNotification("Payment Successful", $"Your purchase has been completed successfully. You earned {pointsEarned} points!");
+                }
+                else
+                {
+                    await ShowNotification("Payment Successful", "Your purchase has been completed successfully.");
+                }
 
                 if (this.Parent is Frame frame)
                 {

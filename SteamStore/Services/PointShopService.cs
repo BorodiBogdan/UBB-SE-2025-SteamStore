@@ -9,10 +9,17 @@ namespace SteamStore.Services
     public class PointShopService
     {
         private readonly PointShopRepository _repository;
+        private readonly User _currentUser;
 
         public PointShopService(User currentUser, DataLink dataLink)
         {
+            _currentUser = currentUser;
             _repository = new PointShopRepository(currentUser, dataLink);
+        }
+
+        public User GetCurrentUser()
+        {
+            return _currentUser;
         }
 
         public List<PointShopItem> GetAllItems()

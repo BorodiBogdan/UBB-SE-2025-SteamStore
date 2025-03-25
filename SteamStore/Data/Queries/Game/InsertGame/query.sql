@@ -20,9 +20,9 @@ BEGIN
     
     INSERT INTO games (game_id, name, price, publisher_id, description, image_url, 
                       trailer_url, gameplay_url, minimum_requirements, 
-                      recommended_requirements, status, discount)
+                      recommended_requirements, status, discount, reject_message)
     VALUES (@game_id, @name, @price, @publisher_id, @description, @image_url, 
             @trailer_url, @gameplay_url, @minimum_requirements, 
-            @recommended_requirements, @status, @discount);
+            @recommended_requirements, @status, @discount, NULL);
 END;
 GO

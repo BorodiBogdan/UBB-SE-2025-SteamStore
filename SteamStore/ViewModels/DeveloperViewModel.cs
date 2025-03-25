@@ -53,7 +53,6 @@ public class DeveloperViewModel
     {
         _developerService.CreateGame(game);
         
-        // Add tags to the game
         if (selectedTags != null && selectedTags.Count > 0)
         {
             foreach (var tag in selectedTags)
@@ -86,6 +85,11 @@ public class DeveloperViewModel
         UnvalidatedGames.Remove(game);
     }
 
+    public string GetRejectionMessage(int game_id)
+    {
+        return _developerService.GetRejectionMessage(game_id);
+    }
+
     public void LoadUnvalidated()
     {
         UnvalidatedGames.Clear();
@@ -111,5 +115,10 @@ public class DeveloperViewModel
         }
         
         return _developerService.IsGameIdInUse(gameId);
+    }
+
+    public int GetGameOwnerCount(int game_id)
+    {
+        return _developerService.GetGameOwnerCount(game_id);
     }
 }
