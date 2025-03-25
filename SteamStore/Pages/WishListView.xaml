@@ -31,24 +31,24 @@
         </Style>
 
         <Style x:Key="SteamSearchBox" TargetType="TextBox">
-            <Setter Property="Background" Value="#1a1a1a"/>
-            <Setter Property="BorderBrush" Value="#000000"/>
-            <Setter Property="Foreground" Value="#ffffff"/>
-            <Setter Property="PlaceholderForeground" Value="#666666"/>
+            <Setter Property="Background" Value="{ThemeResource SystemChromeMediumLowColor}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource SystemBaseMediumLowColor}"/>
+            <Setter Property="Foreground" Value="{ThemeResource SystemBaseHighColor}"/>
+            <Setter Property="PlaceholderForeground" Value="{ThemeResource SystemBaseMediumColor}"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="CornerRadius" Value="2"/>
         </Style>
         
         <Style x:Key="SteamComboBox" TargetType="ComboBox">
-            <Setter Property="Background" Value="#1a1a1a"/>
-            <Setter Property="BorderBrush" Value="#000000"/>
-            <Setter Property="Foreground" Value="#ffffff"/>
+            <Setter Property="Background" Value="{ThemeResource SystemChromeMediumLowColor}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource SystemBaseMediumLowColor}"/>
+            <Setter Property="Foreground" Value="{ThemeResource SystemBaseHighColor}"/>
             <Setter Property="Height" Value="32"/>
             <Setter Property="CornerRadius" Value="2"/>
         </Style>
     </Page.Resources>
     
-    <Grid Background="#1b2838">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -56,7 +56,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header with Search and Filter Controls -->
-        <Grid Grid.Row="0" Background="#2a475e">
+        <Grid Grid.Row="0" Background="{ThemeResource SystemChromeMediumColor}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -92,11 +92,11 @@
                          PlaceholderText="Filter by Rating"
                          MinWidth="150">
                     <ComboBoxItem Content="All Games"/>
-                    <ComboBoxItem Content="Overwhelmingly Positive (9+)"/>
-                    <ComboBoxItem Content="Very Positive (8-9)"/>
-                    <ComboBoxItem Content="Mixed (4-8)"/>
-                    <ComboBoxItem Content="Negative (&lt;4)"/>
-            </ComboBox>
+                    <ComboBoxItem Content="Overwhelmingly Positive (4.5+★)"/>
+                    <ComboBoxItem Content="Very Positive (4-4.5★)"/>
+                    <ComboBoxItem Content="Mixed (2-4★)"/>
+                    <ComboBoxItem Content="Negative (&lt;2★)"/>
+                </ComboBox>
             
                 <ComboBox x:Name="SortComboBox"
                          Style="{StaticResource SteamComboBox}"
@@ -118,8 +118,8 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        FontSize="24"
-                FontWeight="SemiBold"
-                       Foreground="#66c0f4"
+                       FontWeight="SemiBold"
+                       Foreground="{ThemeResource SystemAccentColor}"
                        TextAlignment="Center"
                        Visibility="{Binding WishListGames.Count, Converter={StaticResource CountToVisibilityConverter}}"/>
 
@@ -137,15 +137,15 @@
                     
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border BorderBrush="#444444" 
+                            <Border BorderBrush="{ThemeResource SystemBaseMediumLowColor}" 
                                     BorderThickness="1" 
                                     Margin="0,0,0,10" 
-                                    Background="#2A2A2A" 
+                                    Background="{ThemeResource SystemChromeLowColor}" 
                                     CornerRadius="5"
                                     Width="900">
                                 <Grid>
-                                    <Border Background="#16202d" 
-                                            BorderBrush="#000000" 
+                                    <Border Background="{ThemeResource SystemChromeMediumLowColor}" 
+                                            BorderBrush="{ThemeResource SystemBaseMediumLowColor}" 
                                             BorderThickness="1" 
                                             CornerRadius="3">
                                         <Grid>
@@ -155,9 +155,17 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Game Image -->
-                                            <Image Source="{Binding ImagePath}" 
-                                                   Stretch="UniformToFill"
-                                                   Height="160"/>
+                                            <Border Grid.Column="0" 
+                                                    Background="Black" 
+                                                    Width="300" 
+                                                    Height="160">
+                                                <Image Source="{Binding ImagePath}" 
+                                                       Stretch="Uniform"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Width="300"
+                                                       Height="160"/>
+                                            </Border>
 
                                             <!-- Game Details -->
                                             <StackPanel Grid.Column="1" 
@@ -165,7 +173,7 @@
                                                 <TextBlock Text="{Binding Name}" 
                                                            FontSize="18" 
                                                            FontWeight="SemiBold" 
-                                                           Foreground="#ffffff"
+                                                           Foreground="{ThemeResource SystemBaseHighColor}"
                                                            TextWrapping="Wrap"/>
                                                 
                                                 <!-- Price and Discount -->
@@ -182,7 +190,7 @@
                                                             Padding="5,2" 
                                                             CornerRadius="2"
                                                             Visibility="{Binding Discount, Converter={StaticResource DiscountVisibilityConverter}}">
-                                                        <TextBlock>
+                                                        <TextBlock Foreground="White">
                                                             <Run Text="-"/>
                                                             <Run Text="{Binding Discount}"/>
                                                             <Run Text="%"/>
@@ -191,7 +199,7 @@
                                                     
                                                     <!-- Price -->
                                                     <TextBlock Grid.Column="2" 
-                                                               Foreground="#ffffff" 
+                                                               Foreground="{ThemeResource SystemBaseHighColor}" 
                                                                FontWeight="SemiBold">
                                                         <Run Text="$"/>
                                                         <Run Text="{Binding Price}"/>
@@ -202,9 +210,9 @@
                                                 <StackPanel Orientation="Horizontal" 
                                                             Margin="0,5,0,10">
                                                     <TextBlock Text="Rating: " 
-                                                               Foreground="#8f98a0"/>
+                                                               Foreground="{ThemeResource SystemBaseMediumColor}"/>
                                                     <TextBlock Text="{Binding Rating}" 
-                                                               Foreground="#66c0f4"/>
+                                                               Foreground="{ThemeResource SystemAccentColor}"/>
                                                 </StackPanel>
 
                                                 <!-- Action Buttons -->

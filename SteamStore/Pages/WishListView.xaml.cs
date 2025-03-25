@@ -28,10 +28,10 @@ namespace SteamStore.Pages
             string criteria = selectedItem switch
             {
                 "All Games" => "all",
-                "Overwhelmingly Positive (9+)" => "overwhelmingly_positive",
-                "Very Positive (8-9)" => "very_positive",
-                "Mixed (4-8)" => "mixed",
-                "Negative (<4)" => "negative",
+                "Overwhelmingly Positive (4.5+★)" => "overwhelmingly_positive",
+                "Very Positive (4-4.5★)" => "very_positive",
+                "Mixed (2-4★)" => "mixed",
+                "Negative (<2★)" => "negative",
                 _ => "all"
             };
 
