@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
     x:Class="SteamStore.Pages.CartPage"
+    x:Name="CartPageRoot"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:SteamStore.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+   
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
@@ -67,6 +69,7 @@
 
                         <!-- Remove Button -->
                         <Button Grid.Column="2"
+                                
                                 Content="Remove"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
@@ -74,7 +77,10 @@
                                 Padding="10,5"
                                 Background="Red"
                                 Foreground="White"
-                                Click="RemoveButton_Click"/>
+                                Command="{Binding DataContext.RemoveGameCommand, ElementName=CartPageRoot}"
+                                CommandParameter="{Binding}"
+                               
+                                />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -95,7 +101,10 @@
                 <ComboBox x:Name="PaymentMethodComboBox"
                           Header="Select Payment Method"
                           Width="200"
-                          SelectedIndex="0">
+                          SelectedIndex="0"
+                          SelectedItem="{Binding SelectedPaymentMethod,Mode=TwoWay}"
+                          
+                         >
                     <ComboBoxItem Content="Steam Wallet"/>
                     <ComboBoxItem Content="PayPal"/>
                     <ComboBoxItem Content="Credit Card"/>
@@ -117,7 +126,8 @@
                         Foreground="White"
                         FontSize="16"
                         FontWeight="Bold"
-                        Click="CheckoutButton_Click"/>
+                        Click="CheckoutButton_Click"
+                        />
             </StackPanel>
         </Grid>
     </Grid>

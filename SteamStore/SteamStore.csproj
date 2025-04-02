@@ -61,6 +61,7 @@
     <CustomAdditionalCompileInputs Remove="Pages\HomePage.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="appsettings.json" />
     <None Remove="Pages\CartPage.xaml" />
     <None Remove="Pages\CreditCardPaymentPage.xaml" />
     <None Remove="Pages\DeveloperModePage.xaml" />
@@ -70,6 +71,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Remove="Pages\HomePage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\DeveloperModePage.xaml">
