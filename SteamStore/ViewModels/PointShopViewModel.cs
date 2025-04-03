@@ -15,6 +15,13 @@ namespace SteamStore.ViewModels
     {
         private readonly PointShopService _pointShopService;
         private User _user;
+        private const string FILTER_TYPE_ALL = "All";
+        private const string INITIAL_SEARCH_STRING = "";
+        private const int MIN_PRICE = 0;
+        private const int MAX_PRICE = 10000;
+        private const int TRANSACTION_ID = 1;
+        private const double MINMAL_DIFFERENCE_VALUE_COMPARISON = 0.01;
+        private const int DELAY_TIME_SEARCH = 300;
 
         // Collections
         private ObservableCollection<PointShopItem> _shopItems;
@@ -22,16 +29,16 @@ namespace SteamStore.ViewModels
         private ObservableCollection<PointShopTransaction> _transactionHistory;
 
         // Filter properties
-        private string _filterType = "All";
-        private string _searchText = "";
-        private double _minPrice = 0;
-        private double _maxPrice = 10000;
+        private string _filterType = FILTER_TYPE_ALL;
+        private string _searchText = INITIAL_SEARCH_STRING;
+        private double _minPrice = MIN_PRICE;
+        private double _maxPrice = MAX_PRICE;
 
         // Selected item
         private PointShopItem _selectedItem;
 
         private CancellationTokenSource _searchCancellationTokenSource;
-        private int _nextTransactionId = 1;
+        private int _nextTransactionId = TRANSACTION_ID;
 
         public PointShopViewModel(User currentUser, DataLink dataLink)
         {
@@ -320,55 +327,15 @@ namespace SteamStore.ViewModels
                 throw new Exception($"Failed to deactivate item: {ex.Message}", ex);
             }
         }
-
         private void ApplyFilters()
         {
             try
             {
-                // Get all available items (filtering out owned items)
-                var allItems = _pointShopService.GetAllItems();
-                var userItems = _pointShopService.GetUserItems();
-                
-                // Filter out items the user already owns
-                var availableItems = allItems.Where(item => 
-                    !userItems.Any(userItem => userItem.ItemId == item.ItemId)).ToList();
-                    
-                var filteredItems = availableItems;
-
-                // Apply type filter
-                if (!string.IsNullOrEmpty(_filterType) && _filterType != "All")
-                {
-                    filteredItems = filteredItems.Where(item => 
-                        item.ItemType.Equals(_filterType, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                }
-
-                // Apply price filter
-                filteredItems = filteredItems.Where(item => 
-                    item.PointPrice >= _minPrice && item.PointPrice <= _maxPrice)
-                    .ToList();
-
-                // Apply search filter if there's a search term
-                if (!string.IsNullOrWhiteSpace(_searchText))
-                {
-                    filteredItems = filteredItems.Where(item => 
-                        item.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase) || 
-                        item.Description.Contains(_searchText, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                }
-
-                // Update the observable collection
+                var filteredItems = _pointShopService.GetFilteredItems(_filterType, _searchText, _minPrice, _maxPrice);
                 ShopItems.Clear();
-                foreach (var item in filteredItems)
-                {
-                    ShopItems.Add(item);
-                }
+                foreach (var item in filteredItems) ShopItems.Add(item);
             }
-            catch (Exception ex)
-            {
-                // Log the error
-                System.Diagnostics.Debug.WriteLine($"Error applying filters: {ex.Message}");
-            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Error applying filters: {ex.Message}"); }
         }
 
         private async void DelayedSearch(CancellationToken cancellationToken)
@@ -376,7 +343,7 @@ namespace SteamStore.ViewModels
             try
             {
                 // Wait a bit before searching to avoid excessive updates while typing
-                await Task.Delay(300, cancellationToken);
+                await Task.Delay(DELAY_TIME_SEARCH, cancellationToken);
                 
                 // Only apply if not cancelled
                 if (!cancellationToken.IsCancellationRequested)
@@ -489,7 +456,7 @@ namespace SteamStore.ViewModels
 
                     bool transactionExists = TransactionHistory.Any(t =>
                         t.ItemName == itemName &&
-                        Math.Abs(t.PointsSpent - pointPrice) < 0.01);
+                        Math.Abs(t.PointsSpent - pointPrice) < MINMAL_DIFFERENCE_VALUE_COMPARISON);
 
                     if (!transactionExists)
                     {

@@ -33,6 +33,7 @@ namespace SteamStore
 
         public MainWindow()
         {
+            
             this.InitializeComponent();
 
             //initiate the user
