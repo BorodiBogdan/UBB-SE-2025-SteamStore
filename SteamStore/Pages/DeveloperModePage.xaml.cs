@@ -89,32 +89,34 @@ namespace SteamStore.Pages
                 RejectGameDialog.XamlRoot = this.Content.XamlRoot;
                 
                 var result = await RejectGameDialog.ShowAsync();
-                
+
                 if (result == ContentDialogResult.Primary)
                 {
                     string rejectionReason = RejectReasonTextBox.Text;
-                    
-                    try
-                    {
-                        if (!string.IsNullOrWhiteSpace(rejectionReason))
-                        {
-                            _viewModel._developerService.RejectGameWithMessage(gameId, rejectionReason);
-                        }
-                        else
-                        {
-                            _viewModel.RejectGame(gameId);
-                        }
-                        
-                        RejectReasonTextBox.Text = "";
-                        
-                        // Refresh the unvalidated games list
-                        _viewModel.LoadUnvalidated();
-                    }
-                    catch (Exception ex)
-                    {
-                        await ShowErrorMessage("Error", $"Failed to reject game: {ex.Message}");
-                    }
+                    await _viewModel.HandleRejectGameAsync(gameId, rejectionReason);
                 }
+                    
+                    //try
+                    //{
+                    //    if (!string.IsNullOrWhiteSpace(rejectionReason))
+                    //    {
+                    //        _viewModel._developerService.RejectGameWithMessage(gameId, rejectionReason);
+                    //    }
+                    //    else
+                    //    {
+                    //        _viewModel.RejectGame(gameId);
+                    //    }
+                        
+                    //    RejectReasonTextBox.Text = "";
+                        
+                    //    // Refresh the unvalidated games list
+                    //    _viewModel.LoadUnvalidated();
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    await ShowErrorMessage("Error", $"Failed to reject game: {ex.Message}");
+                    //}
+                //}
             }
         }
 
@@ -126,91 +128,49 @@ namespace SteamStore.Pages
             {
                 try
                 {
-                    // Validation
-                    if (string.IsNullOrWhiteSpace(AddGameId.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameName.Text) ||
-                        string.IsNullOrWhiteSpace(AddGamePrice.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameDescription.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameImageUrl.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameMinReq.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameRecReq.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameDiscount.Text))
-                    {
-                        await ShowErrorMessage("Validation Error", "All fields are required.");
-                        return;
-                    }
-                    
-                    if (!int.TryParse(AddGameId.Text, out int gameId))
-                    {
-                        await ShowErrorMessage("Validation Error", "Game ID must be a valid integer.");
-                        return;
-                    }
-                    
-                    if (_viewModel.IsGameIdInUse(gameId))
-                    {
-                        await ShowErrorMessage("Validation Error", "Game ID is already in use. Please choose another ID.");
-                        return;
-                    }
-                    
-                    // Validate price (must be a positive number)
-                    if (!double.TryParse(AddGamePrice.Text, out double price) || price < 0)
-                    {
-                        await ShowErrorMessage("Validation Error", "Price must be a positive number.");
-                        return;
-                    }
-                    
-                    // Validate discount (must be between 0 and 100)
-                    if (!float.TryParse(AddGameDiscount.Text, out float discount) || discount < 0 || discount > 100)
-                    {
-                        await ShowErrorMessage("Validation Error", "Discount must be between 0 and 100.");
-                        return;
-                    }
-                    
-                    // Validate at least one tag is selected
-                    var selectedTags = AddGameTagList.SelectedItems.Cast<Tag>().ToList();
-                    if (selectedTags.Count == 0)
-                    {
-                        await ShowErrorMessage("Validation Error", "Please select at least one tag for the game.");
-                        return;
-                    }
-                    
-                    var game = new Game
-                    {
-                        Id = gameId,
-                        Name = AddGameName.Text,
-                        Price = price,
-                        Description = AddGameDescription.Text,
-                        ImagePath = AddGameImageUrl.Text,
-                        GameplayPath = AddGameplayUrl.Text,
-                        TrailerPath = AddTrailerUrl.Text,
-                        MinimumRequirements = AddGameMinReq.Text,
-                        RecommendedRequirements = AddGameRecReq.Text,
-                        Status = "Pending",
-                        Discount = discount
-                    };
-                    
-                    _viewModel.CreateGame(game, selectedTags);
+                    string rejectionMessage = null;
 
-                    // Clear all fields after successful addition
-                    AddGameId.Text = "";
-                    AddGameName.Text = "";
-                    AddGamePrice.Text = "";
-                    AddGameDescription.Text = "";
-                    AddGameImageUrl.Text = "";
-                    AddGameplayUrl.Text = "";
-                    AddTrailerUrl.Text = "";
-                    AddGameMinReq.Text = "";
-                    AddGameRecReq.Text = "";
-                    AddGameDiscount.Text = "";
-                    AddGameTagList.SelectedItems.Clear();
+                    var validationMessage = await _viewModel.CreateGameAsync(
+                                    AddGameId.Text,
+                                    AddGameName.Text,
+                                    AddGamePrice.Text,
+                                    AddGameDescription.Text,
+                                    AddGameImageUrl.Text,
+                                    AddGameplayUrl.Text,
+                                    AddTrailerUrl.Text,
+                                    AddGameMinReq.Text,
+                                    AddGameRecReq.Text,
+                                    AddGameDiscount.Text,
+                                    AddGameTagList.SelectedItems.Cast<Tag>().ToList()
+                                    );
+                    if (validationMessage != null)
+                    {
+                        // Show the validation error message
+                        await ShowErrorMessage("Validation Error", validationMessage);
+                    }
+                    else
+                    {
+                        AddGameId.Text = "";
+                        AddGameName.Text = "";
+                        AddGamePrice.Text = "";
+                        AddGameDescription.Text = "";
+                        AddGameImageUrl.Text = "";
+                        AddGameplayUrl.Text = "";
+                        AddTrailerUrl.Text = "";
+                        AddGameMinReq.Text = "";
+                        AddGameRecReq.Text = "";
+                        AddGameDiscount.Text = "";
+                        AddGameTagList.SelectedItems.Clear();
 
-                    // Refresh the games list
-                    _viewModel.LoadGames();
+                        // Refresh the games list
+                        //_viewModel.LoadGames();
+                    }
                 }
                 catch (Exception ex)
                 {
-                    await ShowErrorMessage("Error", $"Failed to add game: {ex.Message}");
+                    await ShowErrorMessage("Error", ex.Message);
                 }
+                
             }
         }
 

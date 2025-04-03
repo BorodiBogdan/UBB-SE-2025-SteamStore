@@ -16,6 +16,13 @@ public class CartViewModel : INotifyPropertyChanged
     private decimal _totalPrice;
     private string _selectedPaymentMethod;
 
+    private static readonly string PayPalPaymentMethod = "PayPal";
+    private static readonly string CreditCardPaymentMethod = "Credit Card";
+    private static readonly string SteamWalletPaymentMethod = "Steam Wallet";
+
+    private const int ThresholdForNotEarningPoints = 0;
+
+
     public ObservableCollection<Game> CartGames
     {
         get => _cartGames;
@@ -108,17 +115,17 @@ public class CartViewModel : INotifyPropertyChanged
 
     public async void ChangeToPaymentPage(Frame frame)
     {
-        if (SelectedPaymentMethod == "PayPal")
+        if (SelectedPaymentMethod == PayPalPaymentMethod)
         {
             PaypalPaymentPage paypalPaymentPage = new PaypalPaymentPage(_cartService, _userGameService);
             frame.Content = paypalPaymentPage;
         }
-        else if (SelectedPaymentMethod == "Credit Card")
+        else if (SelectedPaymentMethod == CreditCardPaymentMethod)
         {
             CreditCardPaymentPage creditCardPaymentPage = new CreditCardPaymentPage(_cartService, _userGameService);
             frame.Content = creditCardPaymentPage;
         }
-        else
+        else if(SelectedPaymentMethod == SteamWalletPaymentMethod)
         {
             float totalPrice = CartGames.Sum(game => (float)game.Price);
             float userFunds = showUserFunds();
@@ -131,7 +138,7 @@ public class CartViewModel : INotifyPropertyChanged
                 return;
 
             PurchaseGames();
-            if (LastEarnedPoints > 0)
+            if (LastEarnedPoints > ThresholdForNotEarningPoints)
             {
                 // Store the points in App resources for PointsShopPage to access
                 try
