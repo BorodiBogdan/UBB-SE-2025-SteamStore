@@ -13,11 +13,22 @@ namespace SteamStore.ViewModels
 {
     public class WishListViewModel : INotifyPropertyChanged
     {
+        private const string INITIAL_SEARCH_STRING = "";
+        private const string FILTER_ALL = "All Games";
+        private const string FILTER_OVERWHELMINGLY_POSITIVE = "Overwhelmingly Positive (4.5+★)";
+        private const string FILTER_VERY_POSITIVE = "Very Positive (4-4.5★)";
+        private const string FILTER_MIXED = "Mixed (2-4★)";
+        private const string FILTER_NEGATIVE = "Negative (<2★)";
+        private const string SORT_PRICE_ASC = "Price (Low to High)";
+        private const string SORT_PRICE_DESC = "Price (High to Low)";
+        private const string SORT_RATING_DESC = "Rating (High to Low)";
+        private const string SORT_DISCOUNT_DESC = "Discount (High to Low)";
+
         private readonly UserGameService _userGameService;
         private readonly GameService _gameService;
         private readonly CartService _cartService;
         private ObservableCollection<Game> _wishListGames = new ObservableCollection<Game>();
-        private string _searchText = "";
+        private string _searchText = INITIAL_SEARCH_STRING;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -53,13 +64,13 @@ namespace SteamStore.ViewModels
 
         public List<string> FilterOptions { get; } = new()
     {
-        "All Games", "Overwhelmingly Positive (4.5+★)", "Very Positive (4-4.5★)",
-        "Mixed (2-4★)", "Negative (<2★)"
+        FILTER_ALL, FILTER_OVERWHELMINGLY_POSITIVE, FILTER_VERY_POSITIVE,
+        FILTER_MIXED, FILTER_NEGATIVE
     };
 
         public List<string> SortOptions { get; } = new()
     {
-        "Price (Low to High)", "Price (High to Low)", "Rating (High to Low)", "Discount (High to Low)"
+        SORT_PRICE_ASC, SORT_PRICE_DESC, SORT_RATING_DESC, SORT_DISCOUNT_DESC
     };
 
         private string _selectedFilter;
@@ -99,10 +110,10 @@ namespace SteamStore.ViewModels
         {
             string criteria = SelectedFilter switch
             {
-                "Overwhelmingly Positive (4.5+★)" => "overwhelmingly_positive",
-                "Very Positive (4-4.5★)" => "very_positive",
-                "Mixed (2-4★)" => "mixed",
-                "Negative (<2★)" => "negative",
+                FILTER_OVERWHELMINGLY_POSITIVE => "overwhelmingly_positive",
+                FILTER_VERY_POSITIVE => "very_positive",
+                FILTER_MIXED => "mixed",
+                FILTER_NEGATIVE => "negative",
                 _ => "all"
             };
 
