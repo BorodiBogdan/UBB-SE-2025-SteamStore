@@ -389,6 +389,40 @@ namespace SteamStore.ViewModels
                 // Search was cancelled, do nothing
             }
         }
+        public bool HandleItemSelection()
+        {
+            if (SelectedItem != null)
+            {
+                SelectedItemImageUri = SelectedItem.ImagePath;
+                IsDetailPanelVisible = true;
+            }
+            else
+            {
+                IsDetailPanelVisible = false;
+            }
+
+            OnPropertyChanged(nameof(SelectedItemImageUri));
+            OnPropertyChanged(nameof(IsDetailPanelVisible));
+            return IsDetailPanelVisible;
+        }
+        public void ClearSelection()
+        {
+            SelectedItem = null;
+            IsDetailPanelVisible = false;
+
+            OnPropertyChanged(nameof(IsDetailPanelVisible));
+        }
+        public string SelectedItemImageUri { get; private set; }
+        private bool _isDetailPanelVisible;
+        public bool IsDetailPanelVisible
+        {
+            get => _isDetailPanelVisible;
+            set
+            {
+                _isDetailPanelVisible = value;
+                OnPropertyChanged();
+            }
+        }
 
         #region INotifyPropertyChanged
 
@@ -398,6 +432,138 @@ namespace SteamStore.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        public (string Name, string Type, string Description, string Price, string ImageUri) GetSelectedItemDetails()
+        {
+            try
+            {
+                if (SelectedItem == null)
+                    return (string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
+
+                return (
+                    Name: SelectedItem.Name,
+                    Type: SelectedItem.ItemType,
+                    Description: SelectedItem.Description,
+                    Price: $"{SelectedItem.PointPrice} Points",
+                    ImageUri: SelectedItem.ImagePath
+                );
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error preparing item details: {ex.Message}");
+                return (string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
+            }
+        }
+        private async System.Threading.Tasks.Task ShowDialog(string title, string message)
+        {
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = App.m_window.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+        public async Task<bool> TryPurchaseSelectedItemAsync()
+        {
+            if (SelectedItem == null)
+            {
+                await ShowDialog("Error","No item selected");
+                return false;
+            }
+                
+
+            string itemName = SelectedItem.Name;
+            double pointPrice = SelectedItem.PointPrice;
+            string itemType = SelectedItem.ItemType;
+
+            try
+            {
+                bool success = await PurchaseSelectedItem();
+
+                if (success)
+                {
+                    TransactionHistory ??= new ObservableCollection<PointShopTransaction>();
+
+                    bool transactionExists = TransactionHistory.Any(t =>
+                        t.ItemName == itemName &&
+                        Math.Abs(t.PointsSpent - pointPrice) < 0.01);
+
+                    if (!transactionExists)
+                    {
+                        var transaction = new PointShopTransaction(
+                            TransactionHistory.Count + 1,
+                            itemName,
+                            pointPrice,
+                            itemType);
+                        TransactionHistory.Add(transaction);
+                    }
+
+                    LoadUserItems();
+                    LoadItems();
+
+                    await ShowDialog("Congrats!", $"You have successfully purchased {itemName}. Check your inventory to view it.");
+                    return true;
+                }
+                await ShowDialog("Error", "Purchase failed. Please try again.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                await ShowDialog("Error", $"Purchase Failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task ToggleActivationForItemWithMessage(int itemId)
+        {
+            try
+            {
+                var item = UserItems.FirstOrDefault(i => i.ItemId == itemId);
+                if (item == null)
+                {
+                    await ShowDialog("Item Not Found", "The selected item could not be found.");
+                }
+
+                if (item.IsActive)
+                {
+                    await DeactivateItem(item);
+                    await ShowDialog("Item Deactivated", $"{item.Name} has been deactivated.");
+                }
+                else
+                {
+                    await ActivateItem(item);
+                    await ShowDialog("Item Activated", $"{item.Name} has been activated.");
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowDialog("Error", $"An error occurred while updating the item: {ex.Message}");
+            }
+        }
+        public bool ShouldShowPointsEarnedNotification()
+        {
+            return Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue("RecentEarnedPoints", out object pointsObj)
+                && pointsObj is int earnedPoints && earnedPoints > 0;
+        }
+
+        public string GetPointsEarnedMessage()
+        {
+            if (Microsoft.UI.Xaml.Application.Current.Resources["RecentEarnedPoints"] is int earnedPoints && earnedPoints > 0)
+            {
+                return $"You earned {earnedPoints} points from your recent purchase!";
+            }
+            return string.Empty;
+        }
+
+        public void ResetEarnedPoints()
+        {
+            Microsoft.UI.Xaml.Application.Current.Resources["RecentEarnedPoints"] = 0;
+        }
+
+
 
         #endregion
     }
