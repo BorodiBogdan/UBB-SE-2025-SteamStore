@@ -87,10 +87,11 @@
                         Spacing="10"
                         HorizontalAlignment="Right">
                 <ComboBox x:Name="FilterComboBox"
-                         Style="{StaticResource SteamComboBox}"
-                      SelectionChanged="FilterComboBox_SelectionChanged" 
-                         PlaceholderText="Filter by Rating"
-                         MinWidth="150">
+                          ItemsSource="{Binding FilterOptions}" 
+                          SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                          Style="{StaticResource SteamComboBox}" 
+                          PlaceholderText="Filter by Rating"
+                          MinWidth="150">
                     <ComboBoxItem Content="All Games"/>
                     <ComboBoxItem Content="Overwhelmingly Positive (4.5+★)"/>
                     <ComboBoxItem Content="Very Positive (4-4.5★)"/>
@@ -100,7 +101,8 @@
             
                 <ComboBox x:Name="SortComboBox"
                          Style="{StaticResource SteamComboBox}"
-                      SelectionChanged="SortComboBox_SelectionChanged"
+                         ItemsSource="{Binding SortOptions}" 
+                         SelectedItem="{Binding SelectedSort, Mode=TwoWay}" 
                          PlaceholderText="Sort by"
                          MinWidth="150">
                     <ComboBoxItem Content="Price (Low to High)"/>
@@ -127,7 +129,8 @@
             <ScrollViewer Grid.Row="1" 
                          HorizontalScrollMode="Disabled"
                          VerticalScrollMode="Auto">
-                <ItemsControl ItemsSource="{Binding WishListGames}"
+                <ItemsControl x:Name="WishListItemsControl"
+                            ItemsSource="{Binding WishListGames}"
                             Margin="20,10">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -222,7 +225,8 @@
                                                             Click="ViewDetails_Click"
                                                             Style="{StaticResource SteamButtonStyle}"/>
                                                     <Button Content="Remove" 
-                                                            Click="RemoveFromWishlist_Click"
+                                                            Command="{Binding DataContext.RemoveFromWishlistCommand, ElementName=WishListItemsControl}"
+                                                            CommandParameter="{Binding}"
                                                             Style="{StaticResource SteamDangerButtonStyle}"/>
                                                 </StackPanel>
                                             </StackPanel>

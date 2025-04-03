@@ -10,10 +10,11 @@ public class DataLink
 
     public DataLink(IConfiguration configuration)
     {
-        string? localDataSource = configuration["LocalDataSource"];
-        connectionString = "Data Source=" + localDataSource + ";" +
-                        "Initial Catalog=SteamStore;" +
-                        "Integrated Security=True;";
+        //string? localDataSource = configuration["LocalDataSource"];
+        //connectionString = "Data Source=" + localDataSource + ";" +
+        //                "Initial Catalog=SteamStore;" +
+        //                "Integrated Security=True;";
+        connectionString = "Server=MARA-DELL\\SQLEXPRESS01;Initial Catalog=Steam;Integrated Security=True;TrustServerCertificate=True";
 
         try
         {

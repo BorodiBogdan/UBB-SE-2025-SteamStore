@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 public class CartViewModel : INotifyPropertyChanged
 {
@@ -93,4 +94,33 @@ public class CartViewModel : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+    public async Task<(bool success, string message, int earnedPoints)> TryCheckoutAsync(string paymentMethod)
+    {
+        if (!CartGames.Any())
+            return (false, "No games in the cart.", 0);
+
+        float totalPrice = CartGames.Sum(g => (float)g.Price);
+        float userFunds = _cartService.getUserFunds();
+
+        if (paymentMethod == "Steam Wallet")
+        {
+            if (userFunds < totalPrice)
+            {
+                return (false, "You do not have enough funds in your Steam Wallet to complete this purchase.", 0);
+            }
+
+            _userGameService.purchaseGames(CartGames.ToList());
+            LastEarnedPoints = _userGameService.LastEarnedPoints;
+
+            _cartService.RemoveGamesFromCart(CartGames.ToList());
+            CartGames.Clear();
+            UpdateTotalPrice();
+
+            return (true, null, LastEarnedPoints);
+        }
+
+        // PayPal / Credit Card logic would likely redirect or be handled outside ViewModel.
+        return (true, null, 0);
+    }
+
 }
