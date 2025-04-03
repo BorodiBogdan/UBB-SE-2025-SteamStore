@@ -102,9 +102,11 @@
                           Header="Select Payment Method"
                           Width="200"
                           SelectedIndex="0"
-                          SelectedItem="{Binding SelectedPaymentMethod,Mode=TwoWay}"
+                          SelectedValue="{Binding SelectedPaymentMethod, Mode=TwoWay}"
+                          SelectedValuePath="Content">
                           
-                         >
+                          
+                         
                     <ComboBoxItem Content="Steam Wallet"/>
                     <ComboBoxItem Content="PayPal"/>
                     <ComboBoxItem Content="Credit Card"/>

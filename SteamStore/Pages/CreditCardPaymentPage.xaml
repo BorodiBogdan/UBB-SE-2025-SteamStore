@@ -14,10 +14,12 @@
             <!-- Display Total Price -->
             <TextBlock x:Name="TotalPriceTextBlock" FontSize="16" Margin="0,0,0,10" />
 
-            <TextBox x:Name="CardNumberTextBox" Header="Card Number" PlaceholderText="Enter card number" />
-            <TextBox x:Name="ExpirationDateTextBox" Header="Expiration Date (MM/YY)" PlaceholderText="MM/YY" />
-            <TextBox x:Name="CvvTextBox" Header="CVV" PlaceholderText="Enter CVV" />
-            <TextBox x:Name="OwnerNameTextBox" Header="Card Owner Name" PlaceholderText="Enter owner name" />
+            
+
+            <TextBox Header="Card Number" Text="{Binding CardNumber, Mode=TwoWay}" PlaceholderText="Enter card number"/>
+            <TextBox Header="Expiration Date (MM/YY)" Text="{Binding ExpirationDate, Mode=TwoWay}" PlaceholderText="MM/YY"/>
+            <TextBox Header="CVV" Text="{Binding CVV, Mode=TwoWay}" PlaceholderText="Enter CVV"/>
+            <TextBox Header="Card Owner Name" Text="{Binding OwnerName, Mode=TwoWay}" PlaceholderText="Enter owner name"/>
 
             <Button x:Name="ProcessPaymentButton" Content="Process Payment" Click="ProcessPaymentButton_Click" Margin="0,20,0,0" />
         </StackPanel>

@@ -106,14 +106,14 @@ public class CartViewModel : INotifyPropertyChanged
         UpdateTotalPrice();
     }
 
-    public async void ChangeToPaymentPage(Frame frame,string selectedMethod)
+    public async void ChangeToPaymentPage(Frame frame)
     {
-        if (selectedMethod == "PayPal")
+        if (SelectedPaymentMethod == "PayPal")
         {
             PaypalPaymentPage paypalPaymentPage = new PaypalPaymentPage(_cartService, _userGameService);
             frame.Content = paypalPaymentPage;
         }
-        else if (selectedMethod == "Credit Card")
+        else if (SelectedPaymentMethod == "Credit Card")
         {
             CreditCardPaymentPage creditCardPaymentPage = new CreditCardPaymentPage(_cartService, _userGameService);
             frame.Content = creditCardPaymentPage;
