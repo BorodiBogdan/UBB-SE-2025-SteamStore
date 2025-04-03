@@ -103,8 +103,9 @@ namespace SteamStore.ViewModels
             _gameService = gameService;
             _cartService = cartService;
             _wishListGames = new ObservableCollection<Game>();
-            LoadWishListGames();
             RemoveFromWishlistCommand = new RelayCommand<Game>(async (game) => await ConfirmAndRemoveFromWishlist(game));
+            LoadWishListGames();
+            
         }
         private void HandleFilterChange()
         {
@@ -124,13 +125,13 @@ namespace SteamStore.ViewModels
         {
             switch (SelectedSort)
             {
-                case "Price (Low to High)":
+                case SORT_PRICE_ASC:
                     SortWishListGames("price", true); break;
-                case "Price (High to Low)":
+                case SORT_PRICE_DESC:
                     SortWishListGames("price", false); break;
-                case "Rating (High to Low)":
+                case SORT_RATING_DESC:
                     SortWishListGames("rating", false); break;
-                case "Discount (High to Low)":
+                case SORT_DISCOUNT_DESC:
                     SortWishListGames("discount", false); break;
             }
         }
