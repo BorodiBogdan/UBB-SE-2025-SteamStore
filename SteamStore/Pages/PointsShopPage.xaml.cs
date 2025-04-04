@@ -32,7 +32,6 @@ namespace SteamStore.Pages
     public sealed partial class PointsShopPage : Page
     {
         private PointShopViewModel ViewModel { get; set; }
-        private PointShopService _pointShopService;
 
         public PointsShopPage(PointShopService pointShopService)
         {
@@ -40,10 +39,9 @@ namespace SteamStore.Pages
             
             try
             {
-                _pointShopService = pointShopService;
                 
                 // Initialize the ViewModel with the PointShopService
-                ViewModel = new PointShopViewModel(_pointShopService);
+                ViewModel = new PointShopViewModel(pointShopService);
                 this.DataContext = ViewModel;
 
                 // Check for earned points
@@ -56,20 +54,8 @@ namespace SteamStore.Pages
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error initializing PointsShopPage: {ex.Message}");
-                //ShowErrorDialog("Failed to initialize Points Shop", ex.Message);
             }
         }
-
-        //private async void ShowErrorDialog(string title, string message)
-        //{
-        //    ContentDialog errorDialog = new ContentDialog();
-        //    errorDialog.Title = title;
-        //    errorDialog.Content = message;
-        //    errorDialog.CloseButtonText = "OK";
-        //    errorDialog.XamlRoot = this.XamlRoot;
-
-        //    await errorDialog.ShowAsync();
-        //}
 
         private void ItemsGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -177,28 +163,6 @@ namespace SteamStore.Pages
             };
             timer.Start();
         }
-
-        //private void CheckForEarnedPoints()
-        //{
-        //    try
-        //    {
-        //        if (Application.Current.Resources.TryGetValue("RecentEarnedPoints", out object pointsObj) && 
-        //            pointsObj is int earnedPoints && 
-        //            earnedPoints > 0)
-        //        {
-        //            // Show notification about recently earned points
-        //            ShowPointsEarnedNotification(earnedPoints);
-                    
-        //            // Reset the value so it doesn't show again
-        //            Application.Current.Resources["RecentEarnedPoints"] = 0;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Silent catch - don't let notification issues break the page
-        //        Debug.WriteLine($"Error checking for earned points: {ex.Message}");
-        //    }
-        //}
 
         private void ViewTransactionHistoryButton_Click(object sender, RoutedEventArgs e)
         {

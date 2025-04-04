@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 public class CreditCardProcessor
 {
+    private const int DELAY_FOR_PAYMENT = 200;
+    private const int MINIMUM_LENGTH_CARDNUMBER = 13;
+    private const int MAXIMUM_LENGTH_CARDNUMBER = 19;
     public async Task<bool> ProcessPaymentAsync(string cardNumber, string expirationDate, string cvv, string ownerName)
     {
         if (IsValidCardNumber(cardNumber) &&
@@ -11,7 +14,7 @@ public class CreditCardProcessor
             IsValidCvv(cvv) &&
             IsValidOwnerName(ownerName))
         {
-            await Task.Delay(200); 
+            await Task.Delay(DELAY_FOR_PAYMENT); 
             return true; 
         }
 
@@ -25,7 +28,7 @@ public class CreditCardProcessor
 
         cardNumber = Regex.Replace(cardNumber, @"[^\d]", "");
 
-        if (cardNumber.Length < 13 || cardNumber.Length > 19)
+        if (cardNumber.Length < MINIMUM_LENGTH_CARDNUMBER || cardNumber.Length > MAXIMUM_LENGTH_CARDNUMBER)
             return false;
 
         return true;

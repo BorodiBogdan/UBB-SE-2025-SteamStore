@@ -25,16 +25,16 @@ namespace SteamStore.Pages
     /// </summary>
     public sealed partial class HomePage : Page
     {
-        private UserGameService _userGameService;
-        private CartService _cartService;
+        private const int MIN_PRICE_FILTER_VALUE = 0;
+        private const int MAX_PRICE_FILTER_VALUE = 200;
+        private const int RATING_FILTER_VALUE = 0;
 
+        private HomePageViewModel HomePageViewModel { get; set; }
         public HomePage(GameService _gameService, CartService _cartService, UserGameService _userGameService)
         {
             this.InitializeComponent();
-
-            this.DataContext = new HomePageViewModel(_gameService,_userGameService);
-            this._userGameService = _userGameService;
-            this._cartService = _cartService;
+            HomePageViewModel = new HomePageViewModel(_gameService, _userGameService, _cartService);
+            this.DataContext = HomePageViewModel;
 
         }
 
@@ -72,9 +72,9 @@ namespace SteamStore.Pages
 
         private void ResetFilters_Click(object sender, RoutedEventArgs e)
         {
-            PopupRatingSlider.Value = 0;
-            MinPriceSlider.Value = 0;
-            MaxPriceSlider.Value = 200;
+            PopupRatingSlider.Value = RATING_FILTER_VALUE;
+            MinPriceSlider.Value = MIN_PRICE_FILTER_VALUE;
+            MaxPriceSlider.Value = MAX_PRICE_FILTER_VALUE;
             TagListView.SelectedItems.Clear();
             if (this.DataContext is HomePageViewModel viewModel)
                 viewModel.LoadAllGames();
@@ -90,22 +90,7 @@ namespace SteamStore.Pages
                 // Get the services from DataContext
                 if (this.DataContext is HomePageViewModel viewModel)
                 {
-                    // Get game service from viewModel
-                    var gameService = viewModel.GameService;
-                    var cartService = _cartService;
-                    var userGameService = _userGameService;
-                    
-                    // Instead of trying to find MainWindow, navigate directly
-                    // We'll pass the game as navigation parameter
-                    if (this.Parent is Frame frame)
-                    {
-                        // Create the GamePage with just GameService (no CartService yet)
-                        var gamePage = new GamePage(gameService, cartService, userGameService, selectedGame);
-                        
-                        // Set it as content
-                        frame.Content = gamePage;
-
-                    }
+                    viewModel.SwitchToGamePage(this.Parent, selectedGame);
                 }
                 
                 // Clear selection
