@@ -215,11 +215,22 @@ public class DeveloperViewModel : INotifyPropertyChanged
         
         
     }
+    public Game GetGameById(int gameId)
+    {
+        foreach (var game in DeveloperGames)
+        {
+            if (game.Id == gameId)
+            {
+                return game; 
+            }
+        }
+        return null; 
+    }
 
-    
 
 
-   
+
+
 
     public string GetRejectionMessage(int gameId)
     {

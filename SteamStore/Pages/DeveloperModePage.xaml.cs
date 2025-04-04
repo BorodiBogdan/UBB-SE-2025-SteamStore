@@ -97,27 +97,7 @@ namespace SteamStore.Pages
                     await _viewModel.HandleRejectGameAsync(gameId, rejectionReason);
                 }
                     
-                    //try
-                    //{
-                    //    if (!string.IsNullOrWhiteSpace(rejectionReason))
-                    //    {
-                    //        _viewModel._developerService.RejectGameWithMessage(gameId, rejectionReason);
-                    //    }
-                    //    else
-                    //    {
-                    //        _viewModel.RejectGame(gameId);
-                    //    }
-                        
-                    //    RejectReasonTextBox.Text = "";
-                        
-                    //    // Refresh the unvalidated games list
-                    //    _viewModel.LoadUnvalidated();
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    await ShowErrorMessage("Error", $"Failed to reject game: {ex.Message}");
-                    //}
-                //}
+                    
             }
         }
 
@@ -289,6 +269,7 @@ namespace SteamStore.Pages
                 }
             }
         }
+       
 
         private async void EditButton_Click(object sender, RoutedEventArgs e)
         {
@@ -313,11 +294,13 @@ namespace SteamStore.Pages
                     EditGameDiscount.Text = game.Discount.ToString();
                     
                     // Get game tags and preselect them in the UI
-                    EditGameTagList.SelectedItems.Clear();
                     
-                    try {
-                        var gameTags = _viewModel.GetGameTags(game.Id);
-                        
+                    EditGameTagList.SelectedItems.Clear();
+
+                    try
+                    {
+                        var gameTags = _viewModel._developerService.GetGameTags(game.Id);
+
                         if (EditGameTagList.Items != null && EditGameTagList.Items.Count > 0)
                         {
                             foreach (var tag in EditGameTagList.Items)
@@ -337,7 +320,6 @@ namespace SteamStore.Pages
                     {
                         System.Diagnostics.Debug.WriteLine($"Error loading game tags: {ex.Message}");
                     }
-                    
 
                     EditGameDialog.XamlRoot = this.Content.XamlRoot;
                     
@@ -347,9 +329,7 @@ namespace SteamStore.Pages
                     {
                         try
                         {
-                           
-                           // var selectedTags = EditGameTagList.SelectedItems.Cast<Tag>().ToList();
-
+                          
                             string errorMessage = await _viewModel.UpdateGameAsync(
                                 EditGameId.Text,
                                 EditGameName.Text,

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using SteamStore.Pages;
 using SteamStore.Models;
-
+using System.Diagnostics;
 public class DeveloperRepository
 {
     private DataLink dataLink;
@@ -345,7 +345,7 @@ public class DeveloperRepository
         
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
-            new SqlParameter("@game_id", gameId)
+            new SqlParameter("@gid", gameId)
         };
         
         try
@@ -358,9 +358,11 @@ public class DeveloperRepository
                 {
                     Tag tag = new Tag
                     {
+                        
                         tag_id = (int)row["tag_id"],
                         tag_name = (string)row["tag_name"]
                     };
+                    System.Diagnostics.Debug.WriteLine(tag.tag_id,tag.tag_name);
                     tags.Add(tag);
                 }
             }
@@ -369,7 +371,7 @@ public class DeveloperRepository
         {
             throw new Exception($"Error getting game tags: {e.Message}");
         }
-        
+        System.Diagnostics.Debug.WriteLine(tags);
         return tags;
     }
     public int GetGameOwnerCount(int game_id)
