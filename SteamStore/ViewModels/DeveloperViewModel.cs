@@ -8,6 +8,7 @@ using SteamStore.Models;
 using SteamStore;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Windows.Gaming.Input;
 
 public class DeveloperViewModel : INotifyPropertyChanged
 {
@@ -62,18 +63,17 @@ public class DeveloperViewModel : INotifyPropertyChanged
         _developerService.ValidateGame(game_id);
     }
 
+
+
+    public bool CheckIfUserIsADeveloper()
+    {
+        return _developerService.GetCurrentUser().UserRole == User.Role.Developer;
+    }
+
     public void CreateGame(Game game, IList<Tag> selectedTags)
     {
-        _developerService.CreateGame(game);
-        
-        if (selectedTags != null && selectedTags.Count > 0)
-        {
-            foreach (var tag in selectedTags)
-            {
-                _developerService.InsertGameTag(game.Id, tag.tag_id);
-            }
-        }
-        
+      
+        _developerService.CreateGameWithTags(game, selectedTags);
         DeveloperGames.Add(game);
     }
 
@@ -82,6 +82,10 @@ public class DeveloperViewModel : INotifyPropertyChanged
         DeveloperGames.Remove(DeveloperGames.FirstOrDefault(g => g.Id == game.Id));
         _developerService.UpdateGame(game);
         DeveloperGames.Add(game);
+    }
+    public void UpdateGameWithTags(Game game, IList<Tag> selectedTags)
+    {
+
     }
 
     public void DeleteGame(int game_id)
@@ -168,70 +172,63 @@ public class DeveloperViewModel : INotifyPropertyChanged
         await errorDialog.ShowAsync();
     }
 
-    public async Task<string> CreateGameAsync(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minReq, string recReq, string discountText, IList<Tag> selectedTags)
+    public async Task<string> CreateGameAsync(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string recommendedRequirements, string discountText, IList<Tag> selectedTags)
     {
-        int gameId;
-        double price;
-        float discount;
-
-        if (string.IsNullOrWhiteSpace(gameIdText) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(priceText) ||
-            string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(imageUrl) || string.IsNullOrWhiteSpace(minReq) ||
-            string.IsNullOrWhiteSpace(recReq) || string.IsNullOrWhiteSpace(discountText))
-        {
-            return "All fields are required.";
-        }
-
-        if (!int.TryParse(gameIdText, out gameId))
-        {
-            return "Game ID must be a valid integer.";
-        }
-
-        if (!double.TryParse(priceText, out price) || price < 0)
-        {
-            return "Price must be a positive number.";
-        }
-        if (!float.TryParse(discountText, out discount) || discount < 0 || discount > 100)
-        {
-            return "Discount must be between 0 and 100.";
-        }
-
-        if (selectedTags == null || selectedTags.Count == 0)
-        {
-            return "Please select at least one tag for the game.";
-        }
-
-        var game = new Game
-        {
-            Id = gameId,
-            Name = name,
-            Price = price,
-            Description = description,
-            ImagePath = imageUrl,
-            GameplayPath = gameplayUrl,
-            TrailerPath = trailerUrl,
-            MinimumRequirements = minReq,
-            RecommendedRequirements = recReq,
-            Status = "Pending",
-            Discount = discount
-        };
-
        
         try
         {
-          
-            if (IsGameIdInUse(gameId))
+            Game game = _developerService.ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minimumRequirement, recommendedRequirements, discountText, selectedTags);
+
+            if (IsGameIdInUse(game.Id))
             {
-                return "Game ID is already in use. Please choose another ID.";
+                return  "Game ID is already in use. Please choose another ID.";
             }
 
             CreateGame(game,selectedTags);
             OnPropertyChanged(nameof(DeveloperGames));
 
-            return null; // Success
+            return null; 
         }
         catch (Exception ex)
         {
-            return $"Failed to add game: {ex.Message}";
+            return ex.Message;
         }
     }
+
+    public async Task<string> UpdateGameAsync(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string recommendedRequirements, string discountText, IList<Tag> selectedTags)
+    {
+        try
+        {
+            Game game = _developerService.ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minimumRequirement, recommendedRequirements, discountText, selectedTags);
+            
+            _developerService.UpdateGameWithTags(game, selectedTags);
+               
+            
+            
+            return null;
+
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
+        
+        
+    }
+
+    
+
+
+   
+
+    public string GetRejectionMessage(int gameId)
+    {
+        return _developerService.GetRejectionMessage(gameId);
+    }
+
+    public List<Tag> GetGameTags(int gameId)
+    {
+        return _developerService.GetGameTags(gameId);
+    }
+
 }
