@@ -1,5 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
 using SteamStore.Models;
+using SteamStore.Pages;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -15,6 +17,7 @@ public class HomePageViewModel : INotifyPropertyChanged
     public ObservableCollection<Tag> tags { get; set; }
     private readonly GameService _gameService;
     private readonly UserGameService _userGameService;
+    private readonly CartService _cartService;
 
     public string search_filter_text
     {
@@ -39,10 +42,11 @@ public class HomePageViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public HomePageViewModel(GameService gameService, UserGameService userGameService)
+    public HomePageViewModel(GameService gameService, UserGameService userGameService, CartService cartService)
     {
         _gameService = gameService;
         _userGameService = userGameService;
+        _cartService = cartService;
         GameService = gameService; // Assign to public property
         searchedOrFilteredGames = new ObservableCollection<Game>();
         trendingGames = new ObservableCollection<Game>();
@@ -145,4 +149,12 @@ public class HomePageViewModel : INotifyPropertyChanged
         search_filter_text = "Filtered games ";
     }
 
+    public void SwitchToGamePage(Microsoft.UI.Xaml.DependencyObject parent, Game selectedGame)
+    {
+        if (parent is Frame frame)
+        {
+            var gamePage = new GamePage(GameService, _cartService, _userGameService, selectedGame);
+            frame.Content = gamePage;
+        }
+    }
 }

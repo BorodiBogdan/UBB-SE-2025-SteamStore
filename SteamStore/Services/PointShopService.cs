@@ -10,6 +10,7 @@ namespace SteamStore.Services
     {
         private readonly PointShopRepository _repository;
         private readonly User _currentUser;
+        private const string FILTER_TYPE_ALL = "All";
 
         public PointShopService(User currentUser, DataLink dataLink)
         {
@@ -82,50 +83,87 @@ namespace SteamStore.Services
             }
         }
 
-        // Filter items by type
-        public List<PointShopItem> FilterItemsByType(string itemType)
-        {
-            try
-            {
-                return GetAllItems()
-                    .Where(item => item.ItemType.Equals(itemType, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error filtering items by type: {ex.Message}", ex);
-            }
-        }
+        //// Filter items by type
+        //public List<PointShopItem> FilterItemsByType(string itemType)
+        //{
+        //    try
+        //    {
+        //        return GetAllItems()
+        //            .Where(item => item.ItemType.Equals(itemType, StringComparison.OrdinalIgnoreCase))
+        //            .ToList();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception($"Error filtering items by type: {ex.Message}", ex);
+        //    }
+        //}
 
-        // Filter items by price range
-        public List<PointShopItem> FilterItemsByPriceRange(double minPrice, double maxPrice)
+        //// Filter items by price range
+        //public List<PointShopItem> FilterItemsByPriceRange(double minPrice, double maxPrice)
+        //{
+        //    try
+        //    {
+        //        return GetAllItems()
+        //            .Where(item => item.PointPrice >= minPrice && item.PointPrice <= maxPrice)
+        //            .ToList();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception($"Error filtering items by price range: {ex.Message}", ex);
+        //    }
+        //}
+
+        //// Search items by name or description
+        //public List<PointShopItem> SearchItems(string searchTerm)
+        //{
+        //    try
+        //    {
+        //        return GetAllItems()
+        //            .Where(item => 
+        //                item.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || 
+        //                item.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        //            .ToList();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception($"Error searching items: {ex.Message}", ex);
+        //    }
+        //}
+
+        public List<PointShopItem> GetFilteredItems(string filterType, string searchText, double minPrice, double maxPrice)
         {
             try
             {
-                return GetAllItems()
+                var allItems = GetAllItems();
+                var userItems = GetUserItems();
+
+                var availableItems = allItems.Where(item =>
+                    !userItems.Any(userItem => userItem.ItemId == item.ItemId)).ToList();
+
+                if (!string.IsNullOrEmpty(filterType) && filterType != FILTER_TYPE_ALL)
+                {
+                    availableItems = availableItems
+                        .Where(item => item.ItemType.Equals(filterType, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                availableItems = availableItems
                     .Where(item => item.PointPrice >= minPrice && item.PointPrice <= maxPrice)
                     .ToList();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error filtering items by price range: {ex.Message}", ex);
-            }
-        }
+                if (!string.IsNullOrWhiteSpace(searchText))
+                {
+                    availableItems = availableItems
+                        .Where(item =>
+                            item.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                            item.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
 
-        // Search items by name or description
-        public List<PointShopItem> SearchItems(string searchTerm)
-        {
-            try
-            {
-                return GetAllItems()
-                    .Where(item => 
-                        item.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || 
-                        item.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                return availableItems;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error searching items: {ex.Message}", ex);
+                System.Diagnostics.Debug.WriteLine($"Error in GetFilteredItems: {ex.Message}");
+                return new List<PointShopItem>();
             }
         }
     }

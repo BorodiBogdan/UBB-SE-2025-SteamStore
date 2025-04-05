@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.Linq; 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+
 using System.Windows.Input;
 using SteamStore.Pages;
 using System.Threading.Tasks;
@@ -10,6 +11,10 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using SteamStore;
 using SteamStore.Constants;
+
+using System.Threading.Tasks;
+using SteamStore.ViewModels;
+
 
 public class CartViewModel : INotifyPropertyChanged
 {
@@ -215,6 +220,7 @@ public class CartViewModel : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
     //public async Task CheckoutAsync(XamlRoot xamlRoot)
     //{
     //    if (CartGames.Count == 0)

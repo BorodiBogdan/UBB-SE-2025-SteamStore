@@ -222,9 +222,10 @@
             </Grid.ColumnDefinitions>
 
             <!-- Item Image -->
-            <Image Grid.Column="0" x:Name="SelectedItemImage" Width="100" Height="100" 
-                     Margin="0,0,20,0" Style="{StaticResource ItemImageStyle}" 
-                     ImageFailed="Image_ImageFailed"/>
+            <Image
+                   Grid.Column="0" x:Name="SelectedItemImage" Width="100" Height="100" 
+                   Margin="0,0,20,0" Style="{StaticResource ItemImageStyle}" 
+                   ImageFailed="Image_ImageFailed"/>
 
             <!-- Item Details -->
             <StackPanel Grid.Column="1">
