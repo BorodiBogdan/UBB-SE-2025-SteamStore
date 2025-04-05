@@ -223,18 +223,19 @@ namespace SteamStore.Pages
             if (sender is Button button && button.Tag is Game game)
             {
                 Frame frame = this.Parent as Frame;
+                _viewModel.GetSimilarGames(game, frame);
                 
-                if (frame != null)
-                {
-                    var gamePage = new GamePage(_viewModel._gameService, _viewModel._cartService, _viewModel._userGameService, game);
+                //if (frame != null)
+                //{
+                //    var gamePage = new GamePage(_viewModel._gameService, _viewModel._cartService, _viewModel._userGameService, game);
                     
-                    frame.Content = gamePage;
+                //    frame.Content = gamePage;
                    
-                }
-                else
-                {
-                    Frame.Navigate(typeof(GamePage), game);
-                }
+                //}
+                //else
+                //{
+                //    Frame.Navigate(typeof(GamePage), game);
+                //}
             }
         }
     }

@@ -14,7 +14,8 @@ public class DataLink
         //connectionString = "Data Source=" + localDataSource + ";" +
         //                "Initial Catalog=SteamStore;" +
         //                "Integrated Security=True;";
-        connectionString = "Server=MARA-DELL\\SQLEXPRESS01;Initial Catalog=Steam;Integrated Security=True;TrustServerCertificate=True";
+        connectionString = "Data Source=DESKTOP-618UFK0\\SQLEXPRESS;Initial Catalog=Steam;Integrated Security=True;TrustServerCertificate=True";
+
 
         try
         {

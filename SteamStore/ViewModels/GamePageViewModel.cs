@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using Microsoft.UI.Xaml.Controls;
+using SteamStore.Pages;
 
 public class GamePageViewModel : INotifyPropertyChanged
 {
@@ -187,7 +189,21 @@ public class GamePageViewModel : INotifyPropertyChanged
     }
     
     public event PropertyChangedEventHandler PropertyChanged;
-    
+    public void GetSimilarGames(Game game,Frame frame)
+    {
+        if (frame != null)
+        {
+            var gamePage = new GamePage(_gameService, _cartService,_userGameService, game);
+
+            frame.Content = gamePage;
+
+        }
+        else
+        {
+            frame.Navigate(typeof(GamePage), game);
+        }
+
+    }
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
