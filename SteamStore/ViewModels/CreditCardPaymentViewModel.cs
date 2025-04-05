@@ -11,6 +11,7 @@ using System.Windows.Input;
 
 using Microsoft.UI.Xaml;
 using System.Runtime.CompilerServices;
+using SteamStore.Constants;
 
 namespace SteamStore.ViewModels
 {
@@ -101,11 +102,12 @@ namespace SteamStore.ViewModels
                 
                 if (LastEarnedPoints > ThresholdForNotEarningPoints)
                 {
-                    await ShowNotification("Payment Successful", $"Your purchase has been completed successfully. You earned {LastEarnedPoints} points!");
+                    await ShowNotification(PaymentDialogStrings.PaymentSuccessTitle,
+                        string.Format(PaymentDialogStrings.PaymentSuccessWithPointsMessage, LastEarnedPoints));
                 }
                 else
                 {
-                    await ShowNotification("Payment Successful", "Your purchase has been completed successfully.");
+                    await ShowNotification(PaymentDialogStrings.PaymentSuccessTitle, PaymentDialogStrings.PaymentSuccessMessage);
                 }
 
                 CartPage cartPage = new CartPage(_cartService, _userGameService);
@@ -113,7 +115,7 @@ namespace SteamStore.ViewModels
             }
             else
             {
-                await ShowNotification("Payment Failed", "Please check your credit card details.");
+                await ShowNotification(PaymentDialogStrings.PaymentFailedTitle, PaymentDialogStrings.PaymentFailedMessage);
             }
 
         }
@@ -123,7 +125,7 @@ namespace SteamStore.ViewModels
             {
                 Title = title,
                 Content = message,
-                CloseButtonText = "OK",
+                CloseButtonText = PaymentDialogStrings.OkButtonText,
                 XamlRoot = App.m_window.Content.XamlRoot
             };
             await dialog.ShowAsync();

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using SteamStore;
+using SteamStore.Constants;
 
 public class CartViewModel : INotifyPropertyChanged
 {
@@ -16,9 +17,6 @@ public class CartViewModel : INotifyPropertyChanged
     private decimal _totalPrice;
     private string _selectedPaymentMethod;
 
-    private static readonly string PayPalPaymentMethod = "PayPal";
-    private static readonly string CreditCardPaymentMethod = "Credit Card";
-    private static readonly string SteamWalletPaymentMethod = "Steam Wallet";
 
     private const int ThresholdForNotEarningPoints = 0;
 
@@ -115,23 +113,23 @@ public class CartViewModel : INotifyPropertyChanged
 
     public async void ChangeToPaymentPage(Frame frame)
     {
-        if (SelectedPaymentMethod == PayPalPaymentMethod)
+        if (SelectedPaymentMethod == PaymentMethods.PayPalPaymentMethod)
         {
             PaypalPaymentPage paypalPaymentPage = new PaypalPaymentPage(_cartService, _userGameService);
             frame.Content = paypalPaymentPage;
         }
-        else if (SelectedPaymentMethod == CreditCardPaymentMethod)
+        else if (SelectedPaymentMethod == PaymentMethods.CreditCardPaymentMethod)
         {
             CreditCardPaymentPage creditCardPaymentPage = new CreditCardPaymentPage(_cartService, _userGameService);
             frame.Content = creditCardPaymentPage;
         }
-        else if(SelectedPaymentMethod == SteamWalletPaymentMethod)
+        else if(SelectedPaymentMethod == PaymentMethods.SteamWalletPaymentMethod)
         {
             float totalPrice = CartGames.Sum(game => (float)game.Price);
             float userFunds = showUserFunds();
             if ( userFunds < totalPrice)
             {
-                await ShowDialog("Insufficient Funds", "You do not have enough funds in your Steam Wallet to complete this purchase.");
+                await ShowDialog(InsufficientFundsErrors.InsufficientFundsErrorTitle, InsufficientFundsErrors.InsufficientFundsErrorMessage);
             }
             bool isConfirmed = await ShowConfirmationDialogAsync();
             if (!isConfirmed)
@@ -175,10 +173,10 @@ public class CartViewModel : INotifyPropertyChanged
     {
         ContentDialog confirmDialog = new ContentDialog
         {
-            Title = "Confirm Purchase",
-            Content = "Are you sure you want to proceed with the purchase using your Steam Wallet?",
-            PrimaryButtonText = "Yes",
-            CloseButtonText = "No",
+            Title = ConfirmationDialogStrings.ConfirmPurchaseTitle,
+            Content = ConfirmationDialogStrings.ConfirmPurchaseMessage,
+            PrimaryButtonText = ConfirmationDialogStrings.YesButtonText,
+            CloseButtonText = ConfirmationDialogStrings.NoButtonText,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = App.m_window.Content.XamlRoot
         };
@@ -194,9 +192,9 @@ public class CartViewModel : INotifyPropertyChanged
     {
         ContentDialog pointsDialog = new ContentDialog
         {
-            Title = "Points Earned!",
-            Content = $"You earned {pointsEarned} points for your purchase!\nVisit the Points Shop to spend your points on exclusive items.",
-            CloseButtonText = "OK",
+            Title = ConfirmationDialogStrings.PointsEarnedTitle,
+            Content = string.Format(ConfirmationDialogStrings.PointsEarnedMessage, pointsEarned),
+            CloseButtonText = ConfirmationDialogStrings.OkButtonText,
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = App.m_window.Content.XamlRoot
         };

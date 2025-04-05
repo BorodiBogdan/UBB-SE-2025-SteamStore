@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data;
 using System.Collections.ObjectModel;
+using SteamStore.Constants;
 
 
 public class CartRepository
@@ -22,7 +23,7 @@ public class CartRepository
             new SqlParameter("@user_id", user.UserId)
         };
 
-        DataTable? result = dataLink.ExecuteReader("GetAllCartGames", parameters);
+        DataTable? result = dataLink.ExecuteReader(SqlConstants.GetAllCartGames, parameters);
         List<Game> games = new List<Game>();
 
         if (result != null)
@@ -31,11 +32,11 @@ public class CartRepository
             {
                 Game game = new Game
                 {
-                    Id = (int)row["game_id"],
-                    Name = (string)row["name"],
-                    Description = (string)row["Description"],
-                    ImagePath = (string)row["image_url"],
-                    Price = Convert.ToDouble(row["price"]),
+                    Id = (int)row[SqlConstants.GameIdColumn],
+                    Name = (string)row[SqlConstants.NameColumn],
+                    Description = (string)row[SqlConstants.DescriptionColumn],
+                    ImagePath = (string)row[SqlConstants.ImageUrlColumn],
+                    Price = Convert.ToDouble(row[SqlConstants.PriceColumn]),
                     Status = "Approved"
                 };
                 games.Add(game);
@@ -53,7 +54,7 @@ public class CartRepository
 
         try
         {
-            dataLink.ExecuteNonQuery("AddGameToCart", parameters);
+            dataLink.ExecuteNonQuery(SqlConstants.AddGameToCart, parameters);
         }
         catch (Exception e)
         {
@@ -71,7 +72,7 @@ public class CartRepository
 
         try
         {
-            dataLink.ExecuteNonQuery("RemoveGameFromCart", parameters);
+            dataLink.ExecuteNonQuery(SqlConstants.RemoveGameFromCart, parameters);
         }
         catch (Exception e)
         {
