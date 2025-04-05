@@ -13,8 +13,8 @@
         <StackPanel Padding="20" VerticalAlignment="Center" HorizontalAlignment="Center">
             <TextBlock Text="PayPal Payment" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
 
-            <TextBox x:Name="EmailTextBox" Header="Email" PlaceholderText="Enter your PayPal email" Margin="0,0,0,10"/>
-            <PasswordBox x:Name="PasswordBox" Header="Password" PlaceholderText="Enter your PayPal password" Margin="0,0,0,20"/>
+            <TextBox x:Name="EmailTextBox" Header="Email" Text="{Binding Email, Mode=TwoWay}" PlaceholderText="Enter your PayPal email" Margin="0,0,0,10"/>
+            <PasswordBox x:Name="PasswordBox" Header="Password" Password="{Binding Password, Mode=TwoWay}" PlaceholderText="Enter your PayPal password" Margin="0,0,0,20"/>
 
             <Button x:Name="ValidateButton" Content="Validate Payment" Click="ValidateButton_Click" HorizontalAlignment="Center"/>
         </StackPanel>

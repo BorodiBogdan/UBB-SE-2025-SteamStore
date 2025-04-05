@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -40,12 +41,16 @@ namespace SteamStore
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
 
-        public Window MainWindow { get; private set; }
-
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            MainWindow = new MainWindow();
-            MainWindow.Activate();
+            m_window = new MainWindow();
+            m_window.Activate();
+            UnhandledException += (_, e) =>
+            {
+                Debug.WriteLine($"Unhandled UI Exception: {e.Exception.StackTrace}");
+                e.Handled = true; // Prevents app from crashing
+            };
         }
+        public static Window? m_window { get; private set; }
     }
 }

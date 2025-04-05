@@ -14,77 +14,27 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using SteamStore.ViewModels;
 
 namespace SteamStore.Pages
 {
     public sealed partial class PaypalPaymentPage : Page
     {
-        private CartService cartService;
-        private UserGameService userGameService;
-        private List<Game> purchasedGames;
-        private PaypalProcessor paypalProcessor; 
+        private PaypalPaymentViewModel _viewModel;
 
         public PaypalPaymentPage(CartService cartService, UserGameService userGameService)
         {
             this.InitializeComponent();
-            this.cartService = cartService;
-            this.userGameService = userGameService;
-            this.purchasedGames = cartService.getCartGames();
-            this.paypalProcessor = new PaypalProcessor();
+            _viewModel = new PaypalPaymentViewModel(cartService, userGameService);
+            DataContext = _viewModel;
         }
 
         private async void ValidateButton_Click(object sender, RoutedEventArgs e)
         {
-            string email = EmailTextBox.Text;
-            string password = PasswordBox.Password;
-            decimal totalAmount = purchasedGames.Sum(game => (decimal)game.Price);
-
-            bool paymentSuccess = await paypalProcessor.ProcessPaymentAsync(email, password, totalAmount);
-
-            if (paymentSuccess)
+            if (this.Parent is Frame frame)
             {
-                cartService.RemoveGamesFromCart(purchasedGames);
-                userGameService.purchaseGames(purchasedGames);
-
-                // Get points earned from the purchase
-                int pointsEarned = userGameService.LastEarnedPoints;
-
-                // Store points in App resources for PointsShopPage to access
-                try
-                {
-                    Application.Current.Resources["RecentEarnedPoints"] = pointsEarned;
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error storing points: {ex.Message}");
-                }
-
-                // Show points earned notification if points were earned
-                if (pointsEarned > 0)
-                {
-                    await ShowNotification("Payment Successful", $"Your purchase has been completed successfully. You earned {pointsEarned} points!");
-                }
-                else
-                {
-                    await ShowNotification("Payment Successful", "Your purchase has been completed successfully.");
-                }
-
-                if (this.Parent is Frame frame)
-                {
-                    frame.Content = new CartPage(cartService, userGameService);
-                }
+                await _viewModel.ValidatePayment(frame);
             }
-            else
-            {
-                await ShowNotification("Payment Failed", "Please check your email and password.");
-            }
-        }
-
-        private async Task ShowNotification(string title, string message)
-        {
-            NotificationDialog.Title = title;
-            NotificationDialog.Content = message;
-            await NotificationDialog.ShowAsync();
         }
         private void NotificationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {

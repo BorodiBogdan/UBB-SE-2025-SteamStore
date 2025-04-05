@@ -21,6 +21,7 @@ using Microsoft.UI.Dispatching;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 
 namespace SteamStore.Pages
@@ -31,7 +32,6 @@ namespace SteamStore.Pages
     public sealed partial class PointsShopPage : Page
     {
         private PointShopViewModel ViewModel { get; set; }
-        private PointShopService _pointShopService;
 
         public PointsShopPage(PointShopService pointShopService)
         {
@@ -39,136 +39,68 @@ namespace SteamStore.Pages
             
             try
             {
-                _pointShopService = pointShopService;
                 
                 // Initialize the ViewModel with the PointShopService
-                ViewModel = new PointShopViewModel(_pointShopService);
+                ViewModel = new PointShopViewModel(pointShopService);
                 this.DataContext = ViewModel;
-                
+
                 // Check for earned points
-                CheckForEarnedPoints();
+                if (ViewModel.ShouldShowPointsEarnedNotification())
+                {
+                    ShowPointsEarnedNotification(ViewModel.GetPointsEarnedMessage());
+                    ViewModel.ResetEarnedPoints();
+                }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error initializing PointsShopPage: {ex.Message}");
-                ShowErrorDialog("Failed to initialize Points Shop", ex.Message);
             }
-        }
-
-        private async void ShowErrorDialog(string title, string message)
-        {
-            ContentDialog errorDialog = new ContentDialog();
-            errorDialog.Title = title;
-            errorDialog.Content = message;
-            errorDialog.CloseButtonText = "OK";
-            errorDialog.XamlRoot = this.XamlRoot;
-
-            await errorDialog.ShowAsync();
         }
 
         private void ItemsGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ViewModel.SelectedItem != null)
+            if (ViewModel.HandleItemSelection())
             {
-                // Update the selected item details panel
-                SelectedItemName.Text = ViewModel.SelectedItem.Name;
-                SelectedItemType.Text = ViewModel.SelectedItem.ItemType;
-                SelectedItemDescription.Text = ViewModel.SelectedItem.Description;
-                SelectedItemPrice.Text = $"{ViewModel.SelectedItem.PointPrice} Points";
-                
-                // Try to load the image
+                ItemDetailPanel.Visibility = Visibility.Visible;
+                var details = ViewModel.GetSelectedItemDetails();
+
+                SelectedItemName.Text = details.Name;
+                SelectedItemType.Text = details.Type;
+                SelectedItemDescription.Text = details.Description;
+                SelectedItemPrice.Text = details.Price;
+
                 try
                 {
-                    // Support both local and web images
-                    SelectedItemImage.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(ViewModel.SelectedItem.ImagePath));
+                    if (!string.IsNullOrEmpty(details.ImageUri))
+                    {
+                        SelectedItemImage.Source = new BitmapImage(new Uri(details.ImageUri));
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // If image fails to load, handle it
-                    Debug.WriteLine($"Failed to load image: {ex.Message}");
+                    Debug.WriteLine($"Error loading image: {ex.Message}");
                 }
-                
-                // Show the detail panel
-                ItemDetailPanel.Visibility = Visibility.Visible;
             }
             else
-            {
-                // Hide the detail panel if no item is selected
                 ItemDetailPanel.Visibility = Visibility.Collapsed;
-            }
         }
 
         private void CloseDetailButton_Click(object sender, RoutedEventArgs e)
         {
             // Hide the item detail panel and clear the selection
-            ItemDetailPanel.Visibility = Visibility.Collapsed;
-            ItemsGridView.SelectedItem = null;
-            ViewModel.SelectedItem = null;
+            ViewModel.ClearSelection();
         }
 
         private async void PurchaseButton_Click(object sender, RoutedEventArgs e)
         {
-            try
+            bool success = await ViewModel.TryPurchaseSelectedItemAsync();
+
+            if (success)
             {
-                // Store the item name before the purchase
-                if (ViewModel.SelectedItem == null)
-                {
-                    ShowErrorDialog("Purchase Failed", "No item selected");
-                    return;
-                }
-                
-                string itemName = ViewModel.SelectedItem.Name;
-                double pointPrice = ViewModel.SelectedItem.PointPrice;
-                string itemType = ViewModel.SelectedItem.ItemType;
-                
-                bool success = await ViewModel.PurchaseSelectedItem();
-                
-                if (success)
-                {
-                    // Make sure the transaction was added (fallback)
-                    if (ViewModel.TransactionHistory == null)
-                    {
-                        ViewModel.TransactionHistory = new ObservableCollection<PointShopTransaction>();
-                    }
-                    
-                    // Check if we need to manually add a transaction (should already be added in the ViewModel)
-                    bool transactionExists = ViewModel.TransactionHistory.Any(t => t.ItemName == itemName && Math.Abs(t.PointsSpent - pointPrice) < 0.01);
-                    
-                    if (!transactionExists)
-                    {
-                        Debug.WriteLine("Transaction wasn't added in ViewModel - adding it manually");
-                        var transaction = new PointShopTransaction(
-                            ViewModel.TransactionHistory.Count + 1,
-                            itemName,
-                            pointPrice,
-                            itemType);
-                        ViewModel.TransactionHistory.Add(transaction);
-                    }
-                    
-                    ContentDialog successDialog = new ContentDialog();
-                    successDialog.Title = "Purchase Successful";
-                    successDialog.Content = $"You have successfully purchased {itemName}. Check your inventory to view it.";
-                    successDialog.CloseButtonText = "OK";
-                    successDialog.XamlRoot = this.XamlRoot;
-                    
-                    await successDialog.ShowAsync();
-                    
-                    // Close the detail panel
-                    ItemDetailPanel.Visibility = Visibility.Collapsed;
-                    
-                    // Refresh the shop and inventory
-                    ViewModel.LoadItems();
-                    ViewModel.LoadUserItems();
-                    
-                    // Reset selection
-                    ItemsGridView.SelectedItem = null;
-                    ViewModel.SelectedItem = null;
-                }
+                ViewModel.ClearSelection();
+                ItemDetailPanel.Visibility = Visibility.Collapsed;
             }
-            catch (Exception ex)
-            {
-                ShowErrorDialog("Purchase Failed", ex.Message);
-            }
+
         }
 
         private void ViewInventoryButton_Click(object sender, RoutedEventArgs e)
@@ -183,49 +115,9 @@ namespace SteamStore.Pages
 
         private async void RemoveButtons_Click(object sender, RoutedEventArgs e)
         {
-            Button button = sender as Button;
-            if (button == null) return;
-
-            try
+            if (sender is Button button && int.TryParse(button.Tag?.ToString(), out int itemId))
             {
-                // Get the item from the button's tag 
-                int itemId = Convert.ToInt32(button.Tag);
-                var item = ViewModel.UserItems.FirstOrDefault(i => i.ItemId == itemId);
-
-                if (item != null)
-                {
-                    // Check if item is active
-                    if (item.IsActive)
-                    {
-                        // Deactivate the item
-                        await ViewModel.DeactivateItem(item);
-
-                        ContentDialog dialog = new ContentDialog();
-                        dialog.Title = "Item Deactivated";
-                        dialog.Content = $"{item.Name} has been deactivated.";
-                        dialog.CloseButtonText = "OK";
-                        dialog.XamlRoot = this.XamlRoot;
-                        
-                        await dialog.ShowAsync();
-                    }
-                    else
-                    {
-                        // Activate the item
-                        await ViewModel.ActivateItem(item);
-
-                        ContentDialog dialog = new ContentDialog();
-                        dialog.Title = "Item Activated";
-                        dialog.Content = $"{item.Name} has been activated.";
-                        dialog.CloseButtonText = "OK";
-                        dialog.XamlRoot = this.XamlRoot;
-                        
-                        await dialog.ShowAsync();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ShowErrorDialog("Error", ex.Message);
+                await ViewModel.ToggleActivationForItemWithMessage(itemId);
             }
         }
 
@@ -257,81 +149,27 @@ namespace SteamStore.Pages
             NotificationBar.Visibility = Visibility.Collapsed;
         }
 
-        public void ShowPointsEarnedNotification(int pointsEarned)
+        public void ShowPointsEarnedNotification(string message)
         {
-            try
-            {
-                // Update notification text
-                NotificationText.Text = $"You earned {pointsEarned} points from your recent purchase!";
-                
-                // Show notification
-                NotificationBar.Visibility = Visibility.Visible;
-                
-                // Auto-hide after 15 seconds using DispatcherQueue
-                DispatcherQueue.TryEnqueue(() => 
-                {
-                    try 
-                    {
-                        var timer = this.DispatcherQueue.CreateTimer();
-                        timer.Interval = TimeSpan.FromSeconds(15);
-                        timer.Tick += (s, e) => 
-                        {
-                            NotificationBar.Visibility = Visibility.Collapsed;
-                            timer.Stop();
-                        };
-                        timer.Start();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Error setting up timer: {ex.Message}");
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error showing notification: {ex.Message}");
-            }
-        }
+            NotificationText.Text = message;
+            NotificationBar.Visibility = Visibility.Visible;
 
-        private void CheckForEarnedPoints()
-        {
-            try
+            var timer = DispatcherQueue.CreateTimer();
+            timer.Interval = TimeSpan.FromSeconds(15);
+            timer.Tick += (s, e) =>
             {
-                if (Application.Current.Resources.TryGetValue("RecentEarnedPoints", out object pointsObj) && 
-                    pointsObj is int earnedPoints && 
-                    earnedPoints > 0)
-                {
-                    // Show notification about recently earned points
-                    ShowPointsEarnedNotification(earnedPoints);
-                    
-                    // Reset the value so it doesn't show again
-                    Application.Current.Resources["RecentEarnedPoints"] = 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Silent catch - don't let notification issues break the page
-                Debug.WriteLine($"Error checking for earned points: {ex.Message}");
-            }
+                NotificationBar.Visibility = Visibility.Collapsed;
+                timer.Stop();
+            };
+            timer.Start();
         }
 
         private void ViewTransactionHistoryButton_Click(object sender, RoutedEventArgs e)
         {
-            // Debug the transaction history
-            int transactionCount = ViewModel?.TransactionHistory?.Count ?? 0;
-            Debug.WriteLine($"Transaction history count: {transactionCount}");
-            
-            if (ViewModel?.TransactionHistory != null)
-            {
-                foreach (var transaction in ViewModel.TransactionHistory)
-                {
-                    Debug.WriteLine($"Transaction: {transaction.ItemName}, {transaction.PointsSpent} points, {transaction.PurchaseDate}");
-                }
-            }
-            
+
             TransactionHistoryPanel.Visibility = Visibility.Visible;
         }
-
+         
         private void CloseTransactionHistoryButton_Click(object sender, RoutedEventArgs e)
         {
             TransactionHistoryPanel.Visibility = Visibility.Collapsed;

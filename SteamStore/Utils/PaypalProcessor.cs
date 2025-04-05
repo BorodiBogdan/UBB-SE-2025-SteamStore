@@ -4,12 +4,14 @@ using System.Threading.Tasks;
 
 public class PaypalProcessor
 {
+    private const int DELAY_TIME_PAYMENT = 2000;
+    private const int MINIMUM_PASSWORD_LENGTH = 8;
     public async Task<bool> ProcessPaymentAsync(string email, string password, decimal amount)
     {
         if (IsValidEmail(email) && IsValidPassword(password))
         {
             // Simulate a successful payment
-            await Task.Delay(2000);
+            await Task.Delay(DELAY_TIME_PAYMENT);
             return true;
         }
 
@@ -34,6 +36,6 @@ public class PaypalProcessor
 
     private bool IsValidPassword(string password)
     {
-        return !string.IsNullOrWhiteSpace(password) && password.Length > 8;
+        return !string.IsNullOrWhiteSpace(password) && password.Length > MINIMUM_PASSWORD_LENGTH;
     }
 }

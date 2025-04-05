@@ -44,5 +44,10 @@ public class CartService
     {
         return _cartRepository.getUserFunds();
     }
+
+    public decimal GetTotalSumToBePaid()
+    {
+        return _cartRepository.getCartGames().Sum(game => (decimal)game.Price);
+    }
 }
 
