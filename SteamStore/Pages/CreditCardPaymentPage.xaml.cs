@@ -26,6 +26,7 @@ namespace SteamStore.Pages
     public sealed partial class CreditCardPaymentPage : Page
     {
         private  CreditCardPaymentViewModel _viewModel { get; }
+
         public CreditCardPaymentPage(CartService cartService, UserGameService userGameService)
         {
             this.InitializeComponent();
@@ -40,9 +41,8 @@ namespace SteamStore.Pages
 
                 await _viewModel.ProcessPaymentAsync(frame);
             }
-
-           
         }
+
         private void NotificationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
         }

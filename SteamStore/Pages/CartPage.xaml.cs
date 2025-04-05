@@ -17,21 +17,15 @@ namespace SteamStore.Pages
             this.DataContext = _viewModel;
         }
 
-       
         private async void CheckoutButton_Click(object sender, RoutedEventArgs e)
         {
-            
             if (_viewModel.CartGames.Count > 0)
             {
-                
-                if(this.Parent is Frame frame)
+                if (this.Parent is Frame frame)
                 {
                     _viewModel.ChangeToPaymentPage(frame);
                 }
-
-                
             }
         }
-        
     }
 }
