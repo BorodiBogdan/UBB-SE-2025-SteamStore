@@ -179,36 +179,28 @@ public class DeveloperViewModel : INotifyPropertyChanged
     public async Task CreateGameAsync(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string recommendedRequirements, string discountText, IList<Tag> selectedTags)
     {
         // This can throw if any validation fails – and that’s okay
-        Game game = _developerService.ValidateInputForAddingAGame(
+        Game game = _developerService.CreateValidatedGame(
             gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl,
             minimumRequirement, recommendedRequirements, discountText, selectedTags);
 
-        if (IsGameIdInUse(game.Id))
-        {
-            throw new Exception("Game ID is already in use. Please choose another ID.");
-        }
+        //if (IsGameIdInUse(game.Id))
+        //{
+        //    throw new Exception("Game ID is already in use. Please choose another ID.");
+        //}
 
-        CreateGame(game, selectedTags);
+        DeveloperGames.Add(game);
         OnPropertyChanged(nameof(DeveloperGames));
     }
 
 
     public async Task UpdateGameAsync(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string recommendedRequirements, string discountText, IList<Tag> selectedTags)
     {
-        try
-        {
+       
+        
             Game game = _developerService.ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minimumRequirement, recommendedRequirements, discountText, selectedTags);
             //System.Diagnostics.Debug.WriteLine("VALID input");
             _developerService.UpdateGameWithTags(game, selectedTags);
     
-
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
-        
-        
     }
    
     public string GetRejectionMessage(int gameId)

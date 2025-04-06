@@ -209,5 +209,17 @@ public class DeveloperService
     {
         return _developerRepository.GetCurrentUser();
     }
-    
+    public Game CreateValidatedGame(string gameIdText, string name, string priceText, string description, string imageUrl,
+                                string trailerUrl, string gameplayUrl, string minReq, string recReq,
+                                string discountText, IList<Tag> selectedTags)
+    {
+        var game = ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minReq, recReq, discountText, selectedTags);
+
+        if (IsGameIdInUse(game.Id))
+            throw new Exception("Game ID is already in use.");
+
+        CreateGameWithTags(game, selectedTags);
+        return game;
+    }
+
 }

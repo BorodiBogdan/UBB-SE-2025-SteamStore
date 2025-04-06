@@ -220,7 +220,7 @@ namespace SteamStore.Pages
             {
                 try
                 {
-                    // Check if the game is owned by any users
+                    
                     int ownerCount = _viewModel.GetGameOwnerCount(gameId);
                     
                     ContentDialogResult result;
