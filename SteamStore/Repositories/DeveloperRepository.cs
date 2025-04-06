@@ -96,6 +96,7 @@ public class DeveloperRepository
     }
     public void DeleteGameTags(int game_id)
     {
+        //System.Diagnostics.Debug.WriteLine("delete game tags in repo");
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
             new SqlParameter("@game_id", game_id)

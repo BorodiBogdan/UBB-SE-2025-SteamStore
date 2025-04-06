@@ -65,7 +65,19 @@ public class DeveloperService
         };
         return game;
     }
-    
+    public Game FindGameInObservableCollectionById(int gameId, ObservableCollection<Game> gameList)
+    {
+        foreach (Game game in gameList)
+        {
+            if (game.Id == gameId)
+            {
+                return game;
+            }
+        }
+
+        return null; 
+    }
+
     public void CreateGame(Game game)
     {
         try
@@ -120,6 +132,7 @@ public class DeveloperService
         }
         try
         {
+            System.Diagnostics.Debug.WriteLine("deleting the tags!");
             DeleteGameTags(game.Id);
             if (selectedTags != null && selectedTags.Count > 0)
                 foreach (var tag in selectedTags)

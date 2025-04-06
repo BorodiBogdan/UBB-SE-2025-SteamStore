@@ -15,6 +15,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using SteamStore.Constants;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -24,7 +25,7 @@ namespace SteamStore.Pages
     public sealed partial class GamePage : Page
     {
         internal GamePageViewModel _viewModel;
-
+        private const int MaxNumberOfSimilarGamesToDisplay = 3;
         public GamePage()
         {
             this.InitializeComponent();
@@ -87,7 +88,7 @@ namespace SteamStore.Pages
                 GamePrice.Text = $"${_viewModel.Game.Price:F2}";
                 GameDescription.Text = _viewModel.Game.Description;
 
-                GameDeveloper.Text = "Developer: " + _viewModel.Game.Name; 
+                GameDeveloper.Text = LabelStrings.DeveloperPrefix + _viewModel.Game.Name; 
                 
                 if (!string.IsNullOrEmpty(_viewModel.Game.ImagePath))
                 {
@@ -109,7 +110,7 @@ namespace SteamStore.Pages
                 LoadSimilarGamesUi();
                 
                 GameRating.Value = _viewModel.Game.Rating;
-                OwnedStatus.Text = _viewModel.IsOwned ? "OWNED" : "NOT OWNED";
+                OwnedStatus.Text = _viewModel.IsOwned ? LabelStrings.Owned : LabelStrings.NotOwned;
             }
             catch (Exception ex)
             {
@@ -121,8 +122,8 @@ namespace SteamStore.Pages
         {
             MediaLinksPanel.Children.Clear();
          
-            AddMediaLink("Official Trailer", game.TrailerPath);
-            AddMediaLink("Gameplay Video", game.GameplayPath);
+            AddMediaLink(MediaLinkLabels.OfficialTrailer, game.TrailerPath);
+            AddMediaLink(MediaLinkLabels.GameplayVideo, game.GameplayPath);
         }
         
         private void AddMediaLink(string title, string url)
@@ -142,13 +143,15 @@ namespace SteamStore.Pages
                 SimilarGame1.Visibility = Visibility.Collapsed;
                 SimilarGame2.Visibility = Visibility.Collapsed;
                 SimilarGame3.Visibility = Visibility.Collapsed;
-                
+                var similarGameButtons = new[] { SimilarGame1, SimilarGame2, SimilarGame3 };
+                var similarGameImages = new[] { SimilarGame1Image, SimilarGame2Image, SimilarGame3Image };
+                var similarGameTitles = new[] { SimilarGame1Title, SimilarGame2Title, SimilarGame3Title };
+                var similarGameRatings = new[] { SimilarGame1Rating, SimilarGame2Rating, SimilarGame3Rating };
+
                 var similarGames = _viewModel.SimilarGames.ToList();
-                for (int i = 0; i < similarGames.Count; i++)
+                for (int similarGameIndex = 0; similarGameIndex < similarGames.Count; similarGameIndex++)
                 {
-                    if (i == 0) DisplaySimilarGame(SimilarGame1, SimilarGame1Image, SimilarGame1Title, SimilarGame1Rating, similarGames[i]);
-                    if (i == 1) DisplaySimilarGame(SimilarGame2, SimilarGame2Image, SimilarGame2Title, SimilarGame2Rating, similarGames[i]);
-                    if (i == 2) DisplaySimilarGame(SimilarGame3, SimilarGame3Image, SimilarGame3Title, SimilarGame3Rating, similarGames[i]);
+                    DisplaySimilarGame(similarGameButtons[similarGameIndex], similarGameImages[similarGameIndex], similarGameTitles[similarGameIndex], similarGameRatings[similarGameIndex], similarGames[similarGameIndex]);
                 }
             }
             catch (Exception ex)
@@ -174,7 +177,9 @@ namespace SteamStore.Pages
             }
             
             title.Text = game.Name;
-            rating.Text = $"Rating: 4.0/5.0";
+
+            rating.Text = string.Format(LabelStrings.RatingFormat, game.Rating);
+
         }
 
         private void BuyButton_Click(object sender, RoutedEventArgs e)
@@ -183,17 +188,22 @@ namespace SteamStore.Pages
             {
                 _viewModel.AddToCart();
 
-                NotificationTip.Title = "Success";
-                NotificationTip.Subtitle = $"{_viewModel.Game.Name} was added to your cart.";
-                NotificationTip.IsOpen = true;
+                ShowSuccessNotificationForBuy();
             }
             catch (Exception ex)
             {
-                NotificationTip.Title = "Error";
-                NotificationTip.Subtitle = $"Failed to add {_viewModel.Game.Name} to your cart";
+                NotificationTip.Title = NotificationStrings.AddToCartErrorTitle;
+                NotificationTip.Subtitle = string.Format(NotificationStrings.AddToCartErrorMessage, _viewModel.Game.Name) + " " + ex.Message;
                 NotificationTip.IsOpen = true;
             }
         }
+        private void ShowSuccessNotificationForBuy()
+        {
+            NotificationTip.Title = NotificationStrings.AddToCartSuccessTitle;
+            NotificationTip.Subtitle = string.Format(NotificationStrings.AddToCartSuccessMessage, _viewModel.Game.Name);
+            NotificationTip.IsOpen = true;
+        }
+        
 
         private void WishlistButton_Click(object sender, RoutedEventArgs e)
         {
@@ -201,17 +211,17 @@ namespace SteamStore.Pages
             {
                 _viewModel.AddToWishlist();
 
-                NotificationTip.Title = "Success";
-                NotificationTip.Subtitle = $"{_viewModel.Game.Name} was added to your wishlist.";
+                NotificationTip.Title = NotificationStrings.AddToWishlistSuccessTitle;
+                NotificationTip.Subtitle = string.Format(NotificationStrings.AddToWishlistSuccessMessage, _viewModel.Game.Name);
                 NotificationTip.IsOpen = true;
             }
             catch (Exception ex)
             {
-                NotificationTip.Title = "Error";
+                NotificationTip.Title = NotificationStrings.AddToWishlistErrorTitle;
                 string errorMessage = ex.Message;
-                if (errorMessage.Contains("ExecuteNonQuery"))
+                if (errorMessage.Contains(ErrorStrings.SqlNonQueryFailureIndicator))
                 {
-                    errorMessage = $"Failed to add {_viewModel.Game.Name} to your wishlist: Already in wishlist";
+                    errorMessage = string.Format(ErrorStrings.AddToWishlistAlreadyExistsMessage, _viewModel.Game.Name);
                 }
                 NotificationTip.Subtitle = errorMessage;
                 NotificationTip.IsOpen = true;

@@ -110,38 +110,29 @@ namespace SteamStore.Pages
             {
                 try
                 {
-                    var validationMessage = await _viewModel.CreateGameAsync(
-                                    AddGameId.Text,
-                                    AddGameName.Text,
-                                    AddGamePrice.Text,
-                                    AddGameDescription.Text,
-                                    AddGameImageUrl.Text,
-                                    AddGameplayUrl.Text,
-                                    AddTrailerUrl.Text,
-                                    AddGameMinReq.Text,
-                                    AddGameRecReq.Text,
-                                    AddGameDiscount.Text,
-                                    AddGameTagList.SelectedItems.Cast<Tag>().ToList()
-                                    );
-                    if (validationMessage != null)
-                    {
-                        await ShowErrorMessage("Validation Error", validationMessage);
-                    }
-                    else
-                    {
-                        this.ClearFieldsForAddingAGame();
+                    await _viewModel.CreateGameAsync(
+                        AddGameId.Text,
+                        AddGameName.Text,
+                        AddGamePrice.Text,
+                        AddGameDescription.Text,
+                        AddGameImageUrl.Text,
+                        AddGameplayUrl.Text,
+                        AddTrailerUrl.Text,
+                        AddGameMinReq.Text,
+                        AddGameRecReq.Text,
+                        AddGameDiscount.Text,
+                        AddGameTagList.SelectedItems.Cast<Tag>().ToList()
+                    );
 
-                        // Refresh the games list
-                        // _viewModel.LoadGames();
-                    }
+                    this.ClearFieldsForAddingAGame();
                 }
                 catch (Exception ex)
                 {
-                    await ShowErrorMessage("Error", ex.Message);
+                    await ShowErrorMessage("Error", ex.Message); 
                 }
-                
             }
         }
+
 
         private void ClearFieldsForAddingAGame()
         {
@@ -164,7 +155,7 @@ namespace SteamStore.Pages
             {
                 Title = title,
                 Content = message,
-                CloseButtonText = "OK",
+                CloseButtonText = DialogStrings.OkButtonText,
                 XamlRoot = this.Content.XamlRoot
             };
             await errorDialog.ShowAsync();
@@ -212,7 +203,7 @@ namespace SteamStore.Pages
                     }
                     else
                     {
-                        await ShowErrorMessage("Information", "No rejection message available for this game.");
+                        await ShowErrorMessage(DeveloperDialogStrings.InfoTitle, DeveloperDialogStrings.NoRejectionMessage);
                     }
                 }
                 catch (Exception ex)
@@ -237,8 +228,10 @@ namespace SteamStore.Pages
                     {
                         // Game is owned by users, show warning dialog
                         DeleteWarningDialog.XamlRoot = this.Content.XamlRoot;
-                        OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
-                        
+                        //OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
+                        OwnerCountText.Text = string.Format(DeveloperDialogStrings.DeleteConfirmationOwned, ownerCount, ownerCount == 1 ? "" : "s");
+
+
                         result = await DeleteWarningDialog.ShowAsync();
                     }
                     else
@@ -259,9 +252,9 @@ namespace SteamStore.Pages
                 {
                     ContentDialog errorDialog = new ContentDialog
                     {
-                        Title = "Error",
-                        Content = $"Failed to delete game: {ex.Message}",
-                        CloseButtonText = "OK",
+                        Title = DeveloperDialogStrings.ErrorTitle,
+                        Content = string.Format(DeveloperDialogStrings.FailedToDelete, ex.Message),
+                        CloseButtonText = DialogStrings.OkButtonText,
                         XamlRoot = this.Content.XamlRoot
                     };
                     await errorDialog.ShowAsync();
@@ -274,26 +267,22 @@ namespace SteamStore.Pages
         {
             if (sender is Button button && button.CommandParameter is int gameId)
             {
-                var game = _viewModel.DeveloperGames.FirstOrDefault(g => g.Id == gameId);
-                if (game != null)
+                Game gameToEdit = _viewModel.GetGameByIdInDeveloperGameList(gameId);
+                if (gameToEdit != null)
                 {
+                    //System.Diagnostics.Debug.WriteLine("Im in edit");
                     try
                     {
-                        PopulateEditForm(game);
+                        PopulateEditForm(gameToEdit);
                         EditGameDialog.XamlRoot = this.Content.XamlRoot;
                         var result = await EditGameDialog.ShowAsync();
                         if (result == ContentDialogResult.Primary)
                         {
-                            string errorMessage = await SaveUpdatedGameAsync();
-                            if (!string.IsNullOrEmpty(errorMessage))
-                            {
-                                await ShowErrorMessage("Error", errorMessage);
-                            }
-                            else
-                            {
+                            await SaveUpdatedGameAsync();
+                            
                                 // Reload games after the update
-                                _viewModel.LoadGames();
-                            }
+                            _viewModel.LoadGames();
+                            
 
                         }
  
@@ -306,11 +295,11 @@ namespace SteamStore.Pages
 
             }
         }
-        private async Task<string> SaveUpdatedGameAsync()
+        private async Task SaveUpdatedGameAsync()
         {
             try
             {
-                return await _viewModel.UpdateGameAsync(
+                   await _viewModel.UpdateGameAsync(
                     EditGameId.Text,
                     EditGameName.Text,
                     EditGamePrice.Text,
@@ -326,7 +315,7 @@ namespace SteamStore.Pages
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                await ShowErrorMessage("Error", ex.Message);
             }
         }
         private void PopulateEditForm(Game game)
@@ -343,7 +332,7 @@ namespace SteamStore.Pages
             EditGameRecReq.Text = game.RecommendedRequirements;
             EditGameDiscount.Text = game.Discount.ToString();
 
-            // Load and preselect game tags
+           
             LoadGameTags(game);
         }
         private void LoadGameTags(Game game)
@@ -352,7 +341,12 @@ namespace SteamStore.Pages
 
             try
             {
-                var gameTags = _viewModel._developerService.GetGameTags(game.Id);
+                var gameTags = _viewModel.GetGameTags(game.Id);
+                //System.Diagnostics.Debug.WriteLine(gameTags.Count);
+                //foreach (var tag in gameTags)
+                //{
+                //    System.Diagnostics.Debug.WriteLine($"Tag ID: {tag.tag_id}, Tag Name: {tag.tag_name}");
+                //}
 
                 if (gameTags.Any())
                 {

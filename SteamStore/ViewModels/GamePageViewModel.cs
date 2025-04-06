@@ -19,7 +19,9 @@ public class GamePageViewModel : INotifyPropertyChanged
     private ObservableCollection<Game> _similarGames;
     private bool _isOwned;
     private ObservableCollection<string> _gameTags;
-    
+
+    private const int MaxSimilarGamesToDisplay = 3;
+
     public Game Game
     {
         get => _game;
@@ -139,20 +141,8 @@ public class GamePageViewModel : INotifyPropertyChanged
     private void LoadSimilarGames()
     {
         if (Game == null || _gameService == null) return;
-        
-        var allGames = _gameService.getAllGames();
-        
-        var similarGames = allGames
-            .Where(g => g.Id != Game.Id)
-            .OrderBy(g => Guid.NewGuid()) // Random order for demonstration
-            .Take(3) // Take exactly 3 as required
-            .ToList();
-        
-        SimilarGames.Clear();
-        foreach (var game in similarGames)
-        {
-            SimilarGames.Add(game);
-        }
+        var similarGames = _gameService.GetSimilarGames(Game.Id);
+        SimilarGames = new ObservableCollection<Game>(similarGames.Take(MaxSimilarGamesToDisplay));
     }
     
     // Add game to cart - safely handle null CartService

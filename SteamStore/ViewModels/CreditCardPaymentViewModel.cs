@@ -92,7 +92,7 @@ namespace SteamStore.ViewModels
              
                 try
                 {
-                    Application.Current.Resources["RecentEarnedPoints"] = LastEarnedPoints;
+                    Application.Current.Resources[ResourceKeys.RecentEarnedPoints] = LastEarnedPoints;
                 }
                 catch (Exception ex)
                 {
