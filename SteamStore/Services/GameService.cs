@@ -1,5 +1,6 @@
 ﻿using SteamStore.Models;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -75,5 +76,16 @@ public class GameService
                         .OrderByDescending(game => game.trendingScore)
                         .Take(10)
                         .ToList());
+    }
+
+    public List<Game> GetSimilarGames(int gameId)
+    {
+        var allGames = getAllGames();
+        return allGames
+            .Where(g => g.Id != gameId)
+            .OrderBy(g => Guid.NewGuid()) // Random order
+            .Take(3) // Only take 3 similar games
+            .ToList();
+
     }
 }

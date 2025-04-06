@@ -146,7 +146,8 @@ public class CartViewModel : INotifyPropertyChanged
                 // Store the points in App resources for PointsShopPage to access
                 try
                 {
-                    Application.Current.Resources["RecentEarnedPoints"] =LastEarnedPoints;
+                    Application.Current.Resources[ResourceKeys.RecentEarnedPoints] = LastEarnedPoints;
+
                 }
                 catch (Exception ex)
                 {
@@ -168,7 +169,7 @@ public class CartViewModel : INotifyPropertyChanged
         {
             Title = title,
             Content = message,
-            CloseButtonText = "OK",
+            CloseButtonText = DialogStrings.OkButtonText,
             XamlRoot = App.m_window.Content.XamlRoot
         };
 
@@ -178,10 +179,10 @@ public class CartViewModel : INotifyPropertyChanged
     {
         ContentDialog confirmDialog = new ContentDialog
         {
-            Title = ConfirmationDialogStrings.ConfirmPurchaseTitle,
-            Content = ConfirmationDialogStrings.ConfirmPurchaseMessage,
-            PrimaryButtonText = ConfirmationDialogStrings.YesButtonText,
-            CloseButtonText = ConfirmationDialogStrings.NoButtonText,
+            Title = DialogStrings.ConfirmPurchaseTitle,
+            Content = DialogStrings.ConfirmPurchaseMessage,
+            PrimaryButtonText = DialogStrings.YesButtonText,
+            CloseButtonText = DialogStrings.NoButtonText,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = App.m_window.Content.XamlRoot
         };
@@ -197,9 +198,9 @@ public class CartViewModel : INotifyPropertyChanged
     {
         ContentDialog pointsDialog = new ContentDialog
         {
-            Title = ConfirmationDialogStrings.PointsEarnedTitle,
-            Content = string.Format(ConfirmationDialogStrings.PointsEarnedMessage, pointsEarned),
-            CloseButtonText = ConfirmationDialogStrings.OkButtonText,
+            Title = DialogStrings.PointsEarnedTitle,
+            Content = string.Format(DialogStrings.PointsEarnedMessage, pointsEarned),
+            CloseButtonText = DialogStrings.OkButtonText,
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = App.m_window.Content.XamlRoot
         };

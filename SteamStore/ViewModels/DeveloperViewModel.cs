@@ -35,6 +35,12 @@ public class DeveloperViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    public Game GetGameByIdInDeveloperGameList(int gameId)
+    {
+        return _developerService.FindGameInObservableCollectionById(gameId,DeveloperGames);
+
+    }
+
 
     private void LoadTags()
     {
@@ -62,8 +68,6 @@ public class DeveloperViewModel : INotifyPropertyChanged
     {
         _developerService.ValidateGame(game_id);
     }
-
-
 
     public bool CheckIfUserIsADeveloper()
     {
@@ -172,66 +176,41 @@ public class DeveloperViewModel : INotifyPropertyChanged
         await errorDialog.ShowAsync();
     }
 
-    public async Task<string> CreateGameAsync(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string recommendedRequirements, string discountText, IList<Tag> selectedTags)
+    public async Task CreateGameAsync(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string recommendedRequirements, string discountText, IList<Tag> selectedTags)
     {
-       
-        try
+        // This can throw if any validation fails – and that’s okay
+        Game game = _developerService.ValidateInputForAddingAGame(
+            gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl,
+            minimumRequirement, recommendedRequirements, discountText, selectedTags);
+
+        if (IsGameIdInUse(game.Id))
         {
-            Game game = _developerService.ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minimumRequirement, recommendedRequirements, discountText, selectedTags);
-
-            if (IsGameIdInUse(game.Id))
-            {
-                return  "Game ID is already in use. Please choose another ID.";
-            }
-
-            CreateGame(game,selectedTags);
-            OnPropertyChanged(nameof(DeveloperGames));
-
-            return null; 
+            throw new Exception("Game ID is already in use. Please choose another ID.");
         }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
+
+        CreateGame(game, selectedTags);
+        OnPropertyChanged(nameof(DeveloperGames));
     }
 
-    public async Task<string> UpdateGameAsync(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string recommendedRequirements, string discountText, IList<Tag> selectedTags)
+
+    public async Task UpdateGameAsync(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string recommendedRequirements, string discountText, IList<Tag> selectedTags)
     {
         try
         {
             Game game = _developerService.ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minimumRequirement, recommendedRequirements, discountText, selectedTags);
-            
+            //System.Diagnostics.Debug.WriteLine("VALID input");
             _developerService.UpdateGameWithTags(game, selectedTags);
-               
-            
-            
-            return null;
+    
 
         }
         catch (Exception ex)
         {
-            return ex.Message;
+            throw new Exception(ex.Message);
         }
         
         
     }
-    public Game GetGameById(int gameId)
-    {
-        foreach (var game in DeveloperGames)
-        {
-            if (game.Id == gameId)
-            {
-                return game; 
-            }
-        }
-        return null; 
-    }
-
-
-
-
-
-
+   
     public string GetRejectionMessage(int gameId)
     {
         return _developerService.GetRejectionMessage(gameId);
