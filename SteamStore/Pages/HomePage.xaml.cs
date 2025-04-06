@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using SteamStore.Models;
+using SteamStore.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +31,7 @@ namespace SteamStore.Pages
         private const int RATING_FILTER_VALUE = 0;
 
         private HomePageViewModel HomePageViewModel { get; set; }
-        public HomePage(GameService _gameService, CartService _cartService, UserGameService _userGameService)
+        public HomePage(IGameService _gameService, ICartService _cartService, IUserGameService _userGameService)
         {
             this.InitializeComponent();
             HomePageViewModel = new HomePageViewModel(_gameService, _userGameService, _cartService);

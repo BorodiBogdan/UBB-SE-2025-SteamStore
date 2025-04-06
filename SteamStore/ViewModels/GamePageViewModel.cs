@@ -8,12 +8,13 @@ using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using Microsoft.UI.Xaml.Controls;
 using SteamStore.Pages;
+using SteamStore.Services.Interfaces;
 
 public class GamePageViewModel : INotifyPropertyChanged
 {
-    internal readonly CartService _cartService;
-    internal readonly UserGameService _userGameService;
-    internal readonly GameService _gameService;
+    internal readonly ICartService _cartService;
+    internal readonly IUserGameService _userGameService;
+    internal readonly IGameService _gameService;
 
     private Game _game;
     private ObservableCollection<Game> _similarGames;
@@ -67,7 +68,7 @@ public class GamePageViewModel : INotifyPropertyChanged
         }
     }
     
-    public GamePageViewModel(GameService gameService, CartService cartService, UserGameService userGameService)
+    public GamePageViewModel(IGameService gameService, ICartService cartService, IUserGameService userGameService)
     {
         _cartService = cartService;
         _userGameService = userGameService;

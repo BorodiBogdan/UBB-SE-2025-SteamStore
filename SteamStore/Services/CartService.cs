@@ -1,14 +1,16 @@
-﻿using System;
+﻿using SteamStore.Repositories.Interfaces;
+using SteamStore.Services.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class CartService
+public class CartService : ICartService
 {
-    private CartRepository _cartRepository;
+    private ICartRepository _cartRepository;
 
-    public CartService(CartRepository cartRepository)
+    public CartService(ICartRepository cartRepository)
     {
         _cartRepository = cartRepository;
     }

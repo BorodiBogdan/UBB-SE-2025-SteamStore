@@ -1,4 +1,6 @@
+using SteamStore.Data;
 using SteamStore.Models;
+using SteamStore.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -9,12 +11,12 @@ using System.Threading.Tasks;
 
 namespace SteamStore.Repositories
 {
-    public class PointShopRepository
+    public class PointShopRepository : IPointShopRepository
     {
         private User _user;
-        private DataLink _data;
+        private IDataLink _data;
 
-        public PointShopRepository(User user, DataLink data)
+        public PointShopRepository(User user, IDataLink data)
         {
             _user = user;
             _data = data;
@@ -183,7 +185,7 @@ namespace SteamStore.Repositories
             }
         }
 
-        private void UpdateUserPointBalance()
+        public void UpdateUserPointBalance()
         {
             try
             {

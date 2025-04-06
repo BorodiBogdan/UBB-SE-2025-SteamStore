@@ -12,13 +12,14 @@ using System.Windows.Input;
 using Microsoft.UI.Xaml;
 using System.Runtime.CompilerServices;
 using SteamStore.Constants;
+using SteamStore.Services.Interfaces;
 
 namespace SteamStore.ViewModels
 {
     class CreditCardPaymentViewModel : INotifyPropertyChanged
     {
-        private readonly CartService _cartService;
-        private readonly UserGameService _userGameService;
+        private readonly ICartService _cartService;
+        private readonly IUserGameService _userGameService;
         private readonly CreditCardProcessor _creditCardProcessor;
         private string _cardNumber;
         private string _expirationDate;
@@ -70,7 +71,7 @@ namespace SteamStore.ViewModels
         {
             get;
         }
-        public CreditCardPaymentViewModel(CartService cartService, UserGameService userGameService)
+        public CreditCardPaymentViewModel(ICartService cartService, IUserGameService userGameService)
         {
             _cartService = cartService;
             _userGameService = userGameService;

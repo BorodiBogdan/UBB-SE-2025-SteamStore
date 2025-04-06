@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Threading;
 using Microsoft.UI.Xaml.Controls;
+using SteamStore.Services.Interfaces;
+using SteamStore.Data;
 
 namespace SteamStore.ViewModels
 {
     public class PointShopViewModel : INotifyPropertyChanged
     {
-        private readonly PointShopService _pointShopService;
+        private readonly IPointShopService _pointShopService;
         private User _user;
         private const string FILTER_TYPE_ALL = "All";
         private const string INITIAL_SEARCH_STRING = "";
@@ -40,7 +42,7 @@ namespace SteamStore.ViewModels
         private CancellationTokenSource _searchCancellationTokenSource;
         private int _nextTransactionId = TRANSACTION_ID;
 
-        public PointShopViewModel(User currentUser, DataLink dataLink)
+        public PointShopViewModel(User currentUser, IDataLink dataLink)
         {
             // Store the current user reference
             _user = currentUser;
@@ -56,7 +58,7 @@ namespace SteamStore.ViewModels
             LoadUserItems();
         }
 
-        public PointShopViewModel(PointShopService pointShopService)
+        public PointShopViewModel(IPointShopService pointShopService)
         {
             // Initialize with existing service
             _pointShopService = pointShopService;

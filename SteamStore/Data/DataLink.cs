@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Data;
 
-public class DataLink
+public class DataLink : SteamStore.Data.IDataLink
 {
     private SqlConnection sqlConnection;
     private readonly string connectionString;
@@ -14,7 +14,7 @@ public class DataLink
         //connectionString = "Data Source=" + localDataSource + ";" +
         //                "Initial Catalog=SteamStore;" +
         //                "Integrated Security=True;";
-        connectionString = "Data Source=DESKTOP-618UFK0\\SQLEXPRESS;Initial Catalog=Steam;Integrated Security=True;TrustServerCertificate=True";
+        connectionString = "Server=MARA-DELL\\SQLEXPRESS01;Initial Catalog=Steam;Integrated Security=True;TrustServerCertificate=True";
 
 
         try

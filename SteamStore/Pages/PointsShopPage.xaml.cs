@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media.Imaging;
+using SteamStore.Services.Interfaces;
 
 
 namespace SteamStore.Pages
@@ -33,7 +34,7 @@ namespace SteamStore.Pages
     {
         private PointShopViewModel ViewModel { get; set; }
 
-        public PointsShopPage(PointShopService pointShopService)
+        public PointsShopPage(IPointShopService pointShopService)
         {
             this.InitializeComponent();
             

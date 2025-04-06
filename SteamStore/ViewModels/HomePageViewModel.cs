@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml.Controls;
 using SteamStore.Models;
 using SteamStore.Pages;
+using SteamStore.Services.Interfaces;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -15,9 +16,9 @@ public class HomePageViewModel : INotifyPropertyChanged
     public ObservableCollection<Game> discountedGames { get; set;}
     public string _search_filter_text;
     public ObservableCollection<Tag> tags { get; set; }
-    private readonly GameService _gameService;
-    private readonly UserGameService _userGameService;
-    private readonly CartService _cartService;
+    private readonly IGameService _gameService;
+    private readonly IUserGameService _userGameService;
+    private readonly ICartService _cartService;
 
     public string search_filter_text
     {
@@ -33,7 +34,7 @@ public class HomePageViewModel : INotifyPropertyChanged
     }
 
     // Expose GameService so it can be accessed by the view
-    public GameService GameService { get; private set; }
+    public IGameService GameService { get; private set; }
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -42,7 +43,7 @@ public class HomePageViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public HomePageViewModel(GameService gameService, UserGameService userGameService, CartService cartService)
+    public HomePageViewModel(IGameService gameService, IUserGameService userGameService, ICartService cartService)
     {
         _gameService = gameService;
         _userGameService = userGameService;

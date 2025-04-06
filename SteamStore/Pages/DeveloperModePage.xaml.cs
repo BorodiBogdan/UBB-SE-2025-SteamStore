@@ -15,6 +15,7 @@ using Windows.Foundation.Collections;
 using SteamStore.Models;
 using System.Threading.Tasks;
 using SteamStore.Constants;
+using SteamStore.Services.Interfaces;
 
 
 namespace SteamStore.Pages
@@ -26,7 +27,7 @@ namespace SteamStore.Pages
     {
         private DeveloperViewModel _viewModel;
 
-        public DeveloperModePage(DeveloperService developerService, UserGameService userGameService)
+        public DeveloperModePage(IDeveloperService developerService, IUserGameService userGameService)
         {
             InitializeComponent();
             _viewModel = new DeveloperViewModel(developerService, userGameService);

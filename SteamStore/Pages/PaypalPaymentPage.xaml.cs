@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using SteamStore.ViewModels;
+using SteamStore.Services.Interfaces;
 
 namespace SteamStore.Pages
 {
@@ -22,7 +23,7 @@ namespace SteamStore.Pages
     {
         private PaypalPaymentViewModel _viewModel;
 
-        public PaypalPaymentPage(CartService cartService, UserGameService userGameService)
+        public PaypalPaymentPage(ICartService cartService, IUserGameService userGameService)
         {
             this.InitializeComponent();
             _viewModel = new PaypalPaymentViewModel(cartService, userGameService);

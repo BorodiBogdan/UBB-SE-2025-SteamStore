@@ -16,6 +16,7 @@ using Windows.Foundation.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using SteamStore.Constants;
+using SteamStore.Services.Interfaces;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -31,7 +32,7 @@ namespace SteamStore.Pages
             this.InitializeComponent();
         }
         
-        public GamePage(GameService gameService,CartService cartService, UserGameService userGameService, Game game)
+        public GamePage(IGameService gameService,ICartService cartService, IUserGameService userGameService, Game game)
         {
             this.InitializeComponent();
             _viewModel = new GamePageViewModel(gameService, cartService, userGameService);
