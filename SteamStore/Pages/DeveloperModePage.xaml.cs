@@ -14,6 +14,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using SteamStore.Models;
 using System.Threading.Tasks;
+using SteamStore.Constants;
 
 
 namespace SteamStore.Pages
@@ -38,20 +39,24 @@ namespace SteamStore.Pages
             MyGamesButton.Click += MyGamesButton_Click;
         }
 
+        private void DisableControls()
+        {
+            AddGameButton.IsEnabled = false;
+            ReviewGamesButton.IsEnabled = false;
+            MyGamesButton.IsEnabled = false;
+            DeveloperGamesList.IsEnabled = false;
+            ReviewGamesList.IsEnabled = false;
+        }
+
         private void DeveloperModePage_Loaded(object sender, RoutedEventArgs e)
         {
             // Check if user is a developer
-            if (_viewModel._developerService.GetCurrentUser().UserRole != User.Role.Developer)
+            if (! _viewModel.CheckIfUserIsADeveloper())
             {
                 // Show error message dialog
                 ShowNotDeveloperMessage();
-                
                 // Disable all interactive elements
-                AddGameButton.IsEnabled = false;
-                ReviewGamesButton.IsEnabled = false;
-                MyGamesButton.IsEnabled = false;
-                DeveloperGamesList.IsEnabled = false;
-                ReviewGamesList.IsEnabled = false;
+                this.DisableControls();
             }
         }
 
@@ -60,7 +65,7 @@ namespace SteamStore.Pages
             _viewModel.LoadUnvalidated();
             DeveloperGamesList.Visibility = Visibility.Collapsed;
             ReviewGamesList.Visibility = Visibility.Visible;
-            PageTitle.Text = "Review Games";
+            PageTitle.Text = DeveloperPageTitles.ReviewGames;
         }
 
         private void MyGamesButton_Click(object sender, RoutedEventArgs e)
@@ -68,7 +73,7 @@ namespace SteamStore.Pages
             _viewModel.LoadGames();
             DeveloperGamesList.Visibility = Visibility.Visible;
             ReviewGamesList.Visibility = Visibility.Collapsed;
-            PageTitle.Text = "My Games";
+            PageTitle.Text = DeveloperPageTitles.MyGames;
         }
 
         private void AcceptButton_Click(object sender, RoutedEventArgs e)
@@ -76,7 +81,6 @@ namespace SteamStore.Pages
             if (sender is Button button && button.CommandParameter is int gameId)
             {
                 _viewModel.ValidateGame(gameId);
-                // Refresh the unvalidated games list
                 _viewModel.LoadUnvalidated();
             }
         }
@@ -87,33 +91,13 @@ namespace SteamStore.Pages
             {
 
                 RejectGameDialog.XamlRoot = this.Content.XamlRoot;
-                
+
                 var result = await RejectGameDialog.ShowAsync();
-                
+
                 if (result == ContentDialogResult.Primary)
                 {
                     string rejectionReason = RejectReasonTextBox.Text;
-                    
-                    try
-                    {
-                        if (!string.IsNullOrWhiteSpace(rejectionReason))
-                        {
-                            _viewModel._developerService.RejectGameWithMessage(gameId, rejectionReason);
-                        }
-                        else
-                        {
-                            _viewModel.RejectGame(gameId);
-                        }
-                        
-                        RejectReasonTextBox.Text = "";
-                        
-                        // Refresh the unvalidated games list
-                        _viewModel.LoadUnvalidated();
-                    }
-                    catch (Exception ex)
-                    {
-                        await ShowErrorMessage("Error", $"Failed to reject game: {ex.Message}");
-                    }
+                    await _viewModel.HandleRejectGameAsync(gameId, rejectionReason);
                 }
             }
         }
@@ -121,97 +105,49 @@ namespace SteamStore.Pages
         private async void AddGameButton_Click(object sender, RoutedEventArgs e)
         {
             var result = await AddGameDialog.ShowAsync();
-            
+
             if (result == ContentDialogResult.Primary)
             {
                 try
                 {
-                    // Validation
-                    if (string.IsNullOrWhiteSpace(AddGameId.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameName.Text) ||
-                        string.IsNullOrWhiteSpace(AddGamePrice.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameDescription.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameImageUrl.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameMinReq.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameRecReq.Text) ||
-                        string.IsNullOrWhiteSpace(AddGameDiscount.Text))
-                    {
-                        await ShowErrorMessage("Validation Error", "All fields are required.");
-                        return;
-                    }
-                    
-                    if (!int.TryParse(AddGameId.Text, out int gameId))
-                    {
-                        await ShowErrorMessage("Validation Error", "Game ID must be a valid integer.");
-                        return;
-                    }
-                    
-                    if (_viewModel.IsGameIdInUse(gameId))
-                    {
-                        await ShowErrorMessage("Validation Error", "Game ID is already in use. Please choose another ID.");
-                        return;
-                    }
-                    
-                    // Validate price (must be a positive number)
-                    if (!double.TryParse(AddGamePrice.Text, out double price) || price < 0)
-                    {
-                        await ShowErrorMessage("Validation Error", "Price must be a positive number.");
-                        return;
-                    }
-                    
-                    // Validate discount (must be between 0 and 100)
-                    if (!float.TryParse(AddGameDiscount.Text, out float discount) || discount < 0 || discount > 100)
-                    {
-                        await ShowErrorMessage("Validation Error", "Discount must be between 0 and 100.");
-                        return;
-                    }
-                    
-                    // Validate at least one tag is selected
-                    var selectedTags = AddGameTagList.SelectedItems.Cast<Tag>().ToList();
-                    if (selectedTags.Count == 0)
-                    {
-                        await ShowErrorMessage("Validation Error", "Please select at least one tag for the game.");
-                        return;
-                    }
-                    
-                    var game = new Game
-                    {
-                        Id = gameId,
-                        Name = AddGameName.Text,
-                        Price = price,
-                        Description = AddGameDescription.Text,
-                        ImagePath = AddGameImageUrl.Text,
-                        GameplayPath = AddGameplayUrl.Text,
-                        TrailerPath = AddTrailerUrl.Text,
-                        MinimumRequirements = AddGameMinReq.Text,
-                        RecommendedRequirements = AddGameRecReq.Text,
-                        Status = "Pending",
-                        Discount = discount
-                    };
-                    
-                    _viewModel.CreateGame(game, selectedTags);
+                    await _viewModel.CreateGameAsync(
+                        AddGameId.Text,
+                        AddGameName.Text,
+                        AddGamePrice.Text,
+                        AddGameDescription.Text,
+                        AddGameImageUrl.Text,
+                        AddGameplayUrl.Text,
+                        AddTrailerUrl.Text,
+                        AddGameMinReq.Text,
+                        AddGameRecReq.Text,
+                        AddGameDiscount.Text,
+                        AddGameTagList.SelectedItems.Cast<Tag>().ToList()
+                    );
 
-                    // Clear all fields after successful addition
-                    AddGameId.Text = "";
-                    AddGameName.Text = "";
-                    AddGamePrice.Text = "";
-                    AddGameDescription.Text = "";
-                    AddGameImageUrl.Text = "";
-                    AddGameplayUrl.Text = "";
-                    AddTrailerUrl.Text = "";
-                    AddGameMinReq.Text = "";
-                    AddGameRecReq.Text = "";
-                    AddGameDiscount.Text = "";
-                    AddGameTagList.SelectedItems.Clear();
-
-                    // Refresh the games list
-                    _viewModel.LoadGames();
+                    this.ClearFieldsForAddingAGame();
                 }
                 catch (Exception ex)
                 {
-                    await ShowErrorMessage("Error", $"Failed to add game: {ex.Message}");
+                    await ShowErrorMessage("Error", ex.Message); 
                 }
+                
             }
+        }
+
+
+        private void ClearFieldsForAddingAGame()
+        {
+            AddGameId.Text = string.Empty;
+            AddGameName.Text = string.Empty;
+            AddGamePrice.Text = string.Empty;
+            AddGameDescription.Text = string.Empty;
+            AddGameImageUrl.Text = string.Empty;
+            AddGameplayUrl.Text = string.Empty;
+            AddTrailerUrl.Text = string.Empty;
+            AddGameMinReq.Text = string.Empty;
+            AddGameRecReq.Text = string.Empty;
+            AddGameDiscount.Text = string.Empty;
+            AddGameTagList.SelectedItems.Clear();
         }
 
         private async Task ShowErrorMessage(string title, string message)
@@ -220,7 +156,7 @@ namespace SteamStore.Pages
             {
                 Title = title,
                 Content = message,
-                CloseButtonText = "OK",
+                CloseButtonText = DialogStrings.OkButtonText,
                 XamlRoot = this.Content.XamlRoot
             };
             await errorDialog.ShowAsync();
@@ -236,9 +172,9 @@ namespace SteamStore.Pages
             
             ContentDialog notDeveloperDialog = new ContentDialog
             {
-                Title = "Access Denied",
-                Content = "You need to be a registered developer to access this page.",
-                CloseButtonText = "OK",
+                Title = NotDeveloperDialogStrings.AccessDeniedTitle,
+                Content = NotDeveloperDialogStrings.AccessDeniedMessage,
+                CloseButtonText = NotDeveloperDialogStrings.CloseButtonText,
                 XamlRoot = this.Content.XamlRoot
             };
             
@@ -258,7 +194,7 @@ namespace SteamStore.Pages
             {
                 try
                 {
-                    string rejectionMessage = _viewModel._developerService.GetRejectionMessage(gameId);
+                    string rejectionMessage = _viewModel.GetRejectionMessage(gameId);
                     
                     if (!string.IsNullOrWhiteSpace(rejectionMessage))
                     {
@@ -268,7 +204,7 @@ namespace SteamStore.Pages
                     }
                     else
                     {
-                        await ShowErrorMessage("Information", "No rejection message available for this game.");
+                        await ShowErrorMessage(DeveloperDialogStrings.InfoTitle, DeveloperDialogStrings.NoRejectionMessage);
                     }
                 }
                 catch (Exception ex)
@@ -293,8 +229,10 @@ namespace SteamStore.Pages
                     {
                         // Game is owned by users, show warning dialog
                         DeleteWarningDialog.XamlRoot = this.Content.XamlRoot;
-                        OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
-                        
+                        //OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
+                        OwnerCountText.Text = string.Format(DeveloperDialogStrings.DeleteConfirmationOwned, ownerCount, ownerCount == 1 ? "" : "s");
+
+
                         result = await DeleteWarningDialog.ShowAsync();
                     }
                     else
@@ -315,169 +253,120 @@ namespace SteamStore.Pages
                 {
                     ContentDialog errorDialog = new ContentDialog
                     {
-                        Title = "Error",
-                        Content = $"Failed to delete game: {ex.Message}",
-                        CloseButtonText = "OK",
+                        Title = DeveloperDialogStrings.ErrorTitle,
+                        Content = string.Format(DeveloperDialogStrings.FailedToDelete, ex.Message),
+                        CloseButtonText = DialogStrings.OkButtonText,
                         XamlRoot = this.Content.XamlRoot
                     };
                     await errorDialog.ShowAsync();
                 }
             }
         }
+       
 
         private async void EditButton_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("EditButton_Click was called!");
-            
             if (sender is Button button && button.CommandParameter is int gameId)
             {
-                var game = _viewModel.DeveloperGames.FirstOrDefault(g => g.Id == gameId);
-                if (game != null)
+                Game gameToEdit = _viewModel.GetGameByIdInDeveloperGameList(gameId);
+                if (gameToEdit != null)
                 {
-                    // Populate edit form with game data
-                    EditGameId.Text = game.Id.ToString();
-                    EditGameId.IsEnabled = false;
-                    EditGameName.Text = game.Name;
-                    EditGameDescription.Text = game.Description;
-                    EditGamePrice.Text = game.Price.ToString();
-                    EditGameImageUrl.Text = game.ImagePath;
-                    EditGameplayUrl.Text = game.GameplayPath ?? "";
-                    EditTrailerUrl.Text = game.TrailerPath ?? "";
-                    EditGameMinReq.Text = game.MinimumRequirements;
-                    EditGameRecReq.Text = game.RecommendedRequirements;
-                    EditGameDiscount.Text = game.Discount.ToString();
-                    
-                    // Get game tags and preselect them in the UI
-                    EditGameTagList.SelectedItems.Clear();
-                    
-                    try {
-                        var gameTags = _viewModel._developerService.GetGameTags(game.Id);
-                        
-                        if (EditGameTagList.Items != null && EditGameTagList.Items.Count > 0)
+                    //System.Diagnostics.Debug.WriteLine("Im in edit");
+                    try
+                    {
+                        PopulateEditForm(gameToEdit);
+                        EditGameDialog.XamlRoot = this.Content.XamlRoot;
+                        var result = await EditGameDialog.ShowAsync();
+                        if (result == ContentDialogResult.Primary)
                         {
-                            foreach (var tag in EditGameTagList.Items)
-                            {
-                                if (tag is Tag tagItem && gameTags.Any(t => t.tag_id == tagItem.tag_id))
-                                {
-                                    EditGameTagList.SelectedItems.Add(tag);
-                                }
-                            }
+                            await SaveUpdatedGameAsync();
+                            
+                                // Reload games after the update
+                            _viewModel.LoadGames();
+                            
+
                         }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine("EditGameTagList has no items loaded");
-                        }
+ 
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Error loading game tags: {ex.Message}");
+                        await ShowErrorMessage("Error", ex.Message);
                     }
-                    
+                }
 
-                    EditGameDialog.XamlRoot = this.Content.XamlRoot;
-                    
-                    var result = await EditGameDialog.ShowAsync();
-                    
-                    if (result == ContentDialogResult.Primary)
+            }
+        }
+        private async Task SaveUpdatedGameAsync()
+        {
+            try
+            {
+                   await _viewModel.UpdateGameAsync(
+                    EditGameId.Text,
+                    EditGameName.Text,
+                    EditGamePrice.Text,
+                    EditGameDescription.Text,
+                    EditGameImageUrl.Text,
+                    EditGameplayUrl.Text,
+                    EditTrailerUrl.Text,
+                    EditGameMinReq.Text,
+                    EditGameRecReq.Text,
+                    EditGameDiscount.Text,
+                    EditGameTagList.SelectedItems.Cast<Tag>().ToList()
+                );
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorMessage("Error", ex.Message);
+            }
+        }
+        private void PopulateEditForm(Game game)
+        {
+            EditGameId.Text = game.Id.ToString();
+            EditGameId.IsEnabled = false;
+            EditGameName.Text = game.Name;
+            EditGameDescription.Text = game.Description;
+            EditGamePrice.Text = game.Price.ToString();
+            EditGameImageUrl.Text = game.ImagePath;
+            EditGameplayUrl.Text = game.GameplayPath ?? "";
+            EditTrailerUrl.Text = game.TrailerPath ?? "";
+            EditGameMinReq.Text = game.MinimumRequirements;
+            EditGameRecReq.Text = game.RecommendedRequirements;
+            EditGameDiscount.Text = game.Discount.ToString();
+
+           
+            LoadGameTags(game);
+        }
+        private void LoadGameTags(Game game)
+        {
+            EditGameTagList.SelectedItems.Clear();
+
+            try
+            {
+                var gameTags = _viewModel.GetGameTags(game.Id);
+                //System.Diagnostics.Debug.WriteLine(gameTags.Count);
+                //foreach (var tag in gameTags)
+                //{
+                //    System.Diagnostics.Debug.WriteLine($"Tag ID: {tag.tag_id}, Tag Name: {tag.tag_name}");
+                //}
+
+                if (gameTags.Any())
+                {
+                    foreach (var tag in EditGameTagList.Items)
                     {
-                        try
+                        if (tag is Tag tagItem && gameTags.Any(t => t.tag_id == tagItem.tag_id))
                         {
-                            // Validation
-                            if (string.IsNullOrWhiteSpace(EditGameName.Text) ||
-                                string.IsNullOrWhiteSpace(EditGamePrice.Text) ||
-                                string.IsNullOrWhiteSpace(EditGameDescription.Text) ||
-                                string.IsNullOrWhiteSpace(EditGameImageUrl.Text) ||
-                                string.IsNullOrWhiteSpace(EditGameMinReq.Text) ||
-                                string.IsNullOrWhiteSpace(EditGameRecReq.Text) ||
-                                string.IsNullOrWhiteSpace(EditGameDiscount.Text))
-                            {
-                                await ShowErrorMessage("Validation Error", "All fields are required.");
-                                return;
-                            }
-                            
-                            // Validate price (must be a positive number)
-                            if (!double.TryParse(EditGamePrice.Text, out double price) || price < 0)
-                            {
-                                await ShowErrorMessage("Validation Error", "Price must be a positive number.");
-                                return;
-                            }
-                            
-                            // Validate discount (must be between 0 and 100)
-                            if (!float.TryParse(EditGameDiscount.Text, out float discount) || discount < 0 || discount > 100)
-                            {
-                                await ShowErrorMessage("Validation Error", "Discount must be between 0 and 100.");
-                                return;
-                            }
-                            
-                            // Validate at least one tag is selected
-                            var selectedTags = EditGameTagList.SelectedItems.Cast<Tag>().ToList();
-                            if (selectedTags.Count == 0)
-                            {
-                                await ShowErrorMessage("Validation Error", "Please select at least one tag for the game.");
-                                return;
-                            }
-                            
-                            // Create updated game object
-                            var updatedGame = new Game
-                            {
-                                Id = game.Id,
-                                Name = EditGameName.Text,
-                                Price = price,
-                                Description = EditGameDescription.Text,
-                                ImagePath = EditGameImageUrl.Text,
-                                GameplayPath = EditGameplayUrl.Text,
-                                TrailerPath = EditTrailerUrl.Text,
-                                MinimumRequirements = EditGameMinReq.Text,
-                                RecommendedRequirements = EditGameRecReq.Text,
-                                Status = "Pending", // Always reset status to Pending for any edited game to require re-validation
-                                Discount = discount,
-                                PublisherId = game.PublisherId // Keep existing publisher
-                            };
-                            
-                            System.Diagnostics.Debug.WriteLine($"Game status set to 'Pending' for game ID {game.Id}");
-                            
-                            // First delete existing tags, then add the new ones
-                            try
-                            {
-                                _viewModel._developerService.DeleteGameTags(game.Id);
-                                System.Diagnostics.Debug.WriteLine("Successfully deleted existing game tags");
-                            }
-                            catch (Exception tagEx)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"Error deleting game tags: {tagEx.Message}");
-                                await ShowErrorMessage("Tag Error", $"Failed to remove existing game tags: {tagEx.Message}");
-                                return;
-                            }
-                            
-                            // Update the game
-                            _viewModel.UpdateGame(updatedGame);
-                            
-                            // Add new tags
-                            try
-                            {
-                                foreach (var tag in selectedTags)
-                                {
-                                    System.Diagnostics.Debug.WriteLine($"Inserting tag ID {tag.tag_id} for game ID {game.Id}");
-                                    _viewModel._developerService.InsertGameTag(game.Id, tag.tag_id);
-                                }
-                                System.Diagnostics.Debug.WriteLine("Successfully inserted all game tags");
-                            }
-                            catch (Exception tagEx)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"Error inserting game tags: {tagEx.Message}");
-                                await ShowErrorMessage("Tag Error", $"Failed to add new game tags: {tagEx.Message}");
-                                return;
-                            }
-                            
-                            // Refresh the games list
-                            _viewModel.LoadGames();
-                        }
-                        catch (Exception ex)
-                        {
-                            await ShowErrorMessage("Error", $"Failed to update game: {ex.Message}");
+                            EditGameTagList.SelectedItems.Add(tag);
                         }
                     }
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("No tags found for the game.");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading game tags: {ex.Message}");
             }
         }
     }

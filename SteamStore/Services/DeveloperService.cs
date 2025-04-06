@@ -17,6 +17,71 @@ public class DeveloperService
     {
         _developerRepository.ValidateGame(game_id);
     }
+    public Game ValidateInputForAddingAGame(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl,string gameplayUrl,
+                                string minReq, string recReq, string discountText, IList<Tag> selectedTags)
+    {
+        if (string.IsNullOrWhiteSpace(gameIdText) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(priceText) ||
+            string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(imageUrl) || string.IsNullOrWhiteSpace(minReq) ||
+            string.IsNullOrWhiteSpace(recReq) || string.IsNullOrWhiteSpace(discountText))
+        {
+            throw new Exception("All fields Are required!");
+        }
+
+        if (!int.TryParse(gameIdText, out int gameId))
+        {
+            throw new Exception("GameId must be a valid integer!");
+            
+        }
+
+        if (!double.TryParse(priceText, out double price) || price < 0)
+        {
+            throw new Exception("Price must be a positive number.");
+        }
+
+        if (!float.TryParse(discountText, out float discount) || discount < 0 || discount > 100)
+        {
+            throw new Exception("Discount must be between 0 and 100.");
+        }
+
+        if (selectedTags == null || selectedTags.Count == 0)
+        {
+            throw new Exception("Please select at least one tag for the game.");
+        }
+
+       // var game = new Game(gameId, name,price, description, imageUrl, gameplayUrl, trailerUrl, minReq, recReq, "Pending", discount);
+        var game = new Game
+        {
+            Id = gameId,
+            Name = name,
+            Price = price,
+            Description = description,
+            ImagePath = imageUrl,
+            GameplayPath = gameplayUrl,
+            TrailerPath = trailerUrl,
+            MinimumRequirements = minReq,
+            RecommendedRequirements = recReq,
+            Status = "Pending",
+            Discount = discount
+        };
+        return game;
+    }
+
+    public Game FindGameInObservableCollectionById(int gameId, ObservableCollection<Game> gameList)
+    {
+        foreach (Game game in gameList)
+        {
+            if (game.Id == gameId)
+            {
+                return game;
+            }
+        }
+
+        return null; 
+    }
+
+
+    
+
     public void CreateGame(Game game)
     {
         try
@@ -28,6 +93,24 @@ public class DeveloperService
             throw new Exception(e.Message);
         }
     }
+
+    public void CreateGameWithTags(Game game, IList<Tag> selectedTags)
+    {   try
+        {
+            CreateGame(game);
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+        if (selectedTags != null && selectedTags.Count > 0)
+        {
+            foreach (var tag in selectedTags)
+            {
+                InsertGameTag(game.Id, tag.tag_id);
+            }
+        }
+    }
     public void UpdateGame(Game game)
     {
         try
@@ -37,6 +120,31 @@ public class DeveloperService
         catch (Exception e)
         {
             throw new Exception(e.Message);
+        }
+
+    }
+
+    public void UpdateGameWithTags(Game game, IList<Tag> selectedTags)
+    {
+        try
+        {
+            _developerRepository.UpdateGame(game.Id, game);
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+        try
+        {
+            //System.Diagnostics.Debug.WriteLine("deleting the tags!");
+            DeleteGameTags(game.Id);
+            if (selectedTags != null && selectedTags.Count > 0)
+                foreach (var tag in selectedTags)
+                    InsertGameTag(game.Id, tag.tag_id);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
         }
 
     }
@@ -75,6 +183,8 @@ public class DeveloperService
     {
         _developerRepository.InsertGameTag(gameId, tagId);
     }
+
+   
     public Collection<Tag> GetAllTags()
     {
         return _developerRepository.GetAllTags();
@@ -99,4 +209,5 @@ public class DeveloperService
     {
         return _developerRepository.GetCurrentUser();
     }
+    
 }

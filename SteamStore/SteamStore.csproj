@@ -76,6 +76,11 @@
     <Resource Remove="Pages\HomePage.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Pages\DeveloperModePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

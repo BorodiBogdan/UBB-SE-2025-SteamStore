@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using Microsoft.UI.Xaml.Controls;
+using SteamStore.Pages;
 
 public class GamePageViewModel : INotifyPropertyChanged
 {
@@ -17,7 +19,9 @@ public class GamePageViewModel : INotifyPropertyChanged
     private ObservableCollection<Game> _similarGames;
     private bool _isOwned;
     private ObservableCollection<string> _gameTags;
-    
+
+    private const int MaxSimilarGamesToDisplay = 3;
+
     public Game Game
     {
         get => _game;
@@ -137,20 +141,8 @@ public class GamePageViewModel : INotifyPropertyChanged
     private void LoadSimilarGames()
     {
         if (Game == null || _gameService == null) return;
-        
-        var allGames = _gameService.getAllGames();
-        
-        var similarGames = allGames
-            .Where(g => g.Id != Game.Id)
-            .OrderBy(g => Guid.NewGuid()) // Random order for demonstration
-            .Take(3) // Take exactly 3 as required
-            .ToList();
-        
-        SimilarGames.Clear();
-        foreach (var game in similarGames)
-        {
-            SimilarGames.Add(game);
-        }
+        var similarGames = _gameService.GetSimilarGames(Game.Id);
+        SimilarGames = new ObservableCollection<Game>(similarGames.Take(MaxSimilarGamesToDisplay));
     }
     
     // Add game to cart - safely handle null CartService
@@ -187,7 +179,21 @@ public class GamePageViewModel : INotifyPropertyChanged
     }
     
     public event PropertyChangedEventHandler PropertyChanged;
-    
+    public void GetSimilarGames(Game game,Frame frame)
+    {
+        if (frame != null)
+        {
+            var gamePage = new GamePage(_gameService, _cartService,_userGameService, game);
+
+            frame.Content = gamePage;
+
+        }
+        else
+        {
+            frame.Navigate(typeof(GamePage), game);
+        }
+
+    }
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
