@@ -130,6 +130,7 @@ namespace SteamStore.Pages
                 {
                     await ShowErrorMessage("Error", ex.Message); 
                 }
+                
             }
         }
 
