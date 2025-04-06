@@ -4,26 +4,28 @@ using System.Data.SqlClient;
 using System.Data;
 using System.Collections.ObjectModel;
 using SteamStore.Constants;
+using SteamStore.Data;
+using SteamStore.Repositories.Interfaces;
 
 
-public class CartRepository
+public class CartRepository: ICartRepository
 {
-    private readonly DataLink dataLink;
-    private readonly User user;
+    private readonly IDataLink _dataLink;
+    private readonly User _user;
 
-    public CartRepository(DataLink dataLink, User user)
+    public CartRepository(IDataLink dataLink, User user)
     {
-        this.dataLink = dataLink;
-        this.user = user;
+        this._dataLink = dataLink;
+        this._user = user;
     }
     public List<Game> getCartGames()
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", user.UserId)
+            new SqlParameter("@user_id", _user.UserId)
         };
 
-        DataTable? result = dataLink.ExecuteReader(SqlConstants.GetAllCartGames, parameters);
+        DataTable? result = _dataLink.ExecuteReader(SqlConstants.GetAllCartGames, parameters);
         List<Game> games = new List<Game>();
 
         if (result != null)
@@ -48,13 +50,13 @@ public class CartRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", user.UserId),
+            new SqlParameter("@user_id", _user.UserId),
             new SqlParameter("@game_id", game.Id)
         };
 
         try
         {
-            dataLink.ExecuteNonQuery(SqlConstants.AddGameToCart, parameters);
+            _dataLink.ExecuteNonQuery(SqlConstants.AddGameToCart, parameters);
         }
         catch (Exception e)
         {
@@ -66,13 +68,13 @@ public class CartRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", user.UserId),
+            new SqlParameter("@user_id", _user.UserId),
             new SqlParameter("@game_id", game.Id)
         };
 
         try
         {
-            dataLink.ExecuteNonQuery(SqlConstants.RemoveGameFromCart, parameters);
+            _dataLink.ExecuteNonQuery(SqlConstants.RemoveGameFromCart, parameters);
         }
         catch (Exception e)
         {
@@ -81,6 +83,6 @@ public class CartRepository
     }
     public float getUserFunds()
     {
-        return user.WalletBalance;
+        return _user.WalletBalance;
     }
 }

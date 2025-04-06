@@ -9,6 +9,7 @@ using SteamStore;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Windows.Gaming.Input;
+using SteamStore.Services.Interfaces;
 
 public class DeveloperViewModel : INotifyPropertyChanged
 {
@@ -16,10 +17,10 @@ public class DeveloperViewModel : INotifyPropertyChanged
     public ObservableCollection<Game> UnvalidatedGames {  get; set; }
     public ObservableCollection<Tag> Tags { get; set; }
 
-    public DeveloperService _developerService;
-    public UserGameService _userGameService;
+    public IDeveloperService _developerService;
+    public IUserGameService _userGameService;
 
-    public DeveloperViewModel(DeveloperService developerService, UserGameService userGameService)
+    public DeveloperViewModel(IDeveloperService developerService, IUserGameService userGameService)
     {
         _developerService = developerService;
         _userGameService = userGameService;

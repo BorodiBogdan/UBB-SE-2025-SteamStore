@@ -6,15 +6,17 @@ using System.Collections.ObjectModel;
 using SteamStore.Pages;
 using SteamStore.Models;
 using System.Diagnostics;
-public class DeveloperRepository
+using SteamStore.Data;
+using SteamStore.Repositories.Interfaces;
+public class DeveloperRepository: IDeveloperRepository
 {
-    private DataLink dataLink;
-    private User user;
+    private IDataLink _dataLink;
+    private User _user;
 
-    public DeveloperRepository(DataLink dataLink, User user)
+    public DeveloperRepository(IDataLink dataLink, User user)
     {
-        this.dataLink = dataLink;
-        this.user = user;
+        this._dataLink = dataLink;
+        this._user = user;
     }
     public void ValidateGame(int game_id)
     {
@@ -24,7 +26,7 @@ public class DeveloperRepository
         };
         try
         {
-            dataLink.ExecuteNonQuery("validateGame", sqlParameters);
+            _dataLink.ExecuteNonQuery("validateGame", sqlParameters);
         }
         catch (Exception e)
         {
@@ -34,7 +36,7 @@ public class DeveloperRepository
     }
     public void CreateGame(Game game)
     {
-        game.PublisherId = user.UserId;
+        game.PublisherId = _user.UserId;
         
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
@@ -53,7 +55,7 @@ public class DeveloperRepository
         };
         try
         {
-            dataLink.ExecuteNonQuery("InsertGame", sqlParameters);
+            _dataLink.ExecuteNonQuery("InsertGame", sqlParameters);
         }
         catch (Exception e)
         {
@@ -64,10 +66,10 @@ public class DeveloperRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@publisher_id", user.UserId)
+            new SqlParameter("@publisher_id", _user.UserId)
         };
 
-        DataTable? result = dataLink.ExecuteReader("GetAllUnvalidated", parameters);
+        DataTable? result = _dataLink.ExecuteReader("GetAllUnvalidated", parameters);
         List<Game> games = new List<Game>();
 
         if (result != null)
@@ -103,7 +105,7 @@ public class DeveloperRepository
         };
         try
         {
-            dataLink.ExecuteNonQuery("DeleteGameTags", sqlParameters);
+            _dataLink.ExecuteNonQuery("DeleteGameTags", sqlParameters);
         }
         catch (Exception e)
         {
@@ -124,28 +126,28 @@ public class DeveloperRepository
             {
                 new SqlParameter("@game_id", game_id)
             };
-            dataLink.ExecuteNonQuery("DeleteGameReviews", reviewParams);
+            _dataLink.ExecuteNonQuery("DeleteGameReviews", reviewParams);
             
             // 3. Delete game from transaction history
             SqlParameter[] transactionParams = new SqlParameter[]
             {
                 new SqlParameter("@game_id", game_id)
             };
-            dataLink.ExecuteNonQuery("DeleteGameTransactions", transactionParams);
+            _dataLink.ExecuteNonQuery("DeleteGameTransactions", transactionParams);
             
             // 4. Delete game from user libraries
             SqlParameter[] libraryParams = new SqlParameter[]
             {
                 new SqlParameter("@game_id", game_id)
             };
-            dataLink.ExecuteNonQuery("DeleteGameFromUserLibraries", libraryParams);
+            _dataLink.ExecuteNonQuery("DeleteGameFromUserLibraries", libraryParams);
             
             // 5. delete the game itself
             SqlParameter[] gameParams = new SqlParameter[]
             {
                 new SqlParameter("@game_id", game_id)
             };
-            dataLink.ExecuteNonQuery("DeleteGameDeveloper", gameParams);
+            _dataLink.ExecuteNonQuery("DeleteGameDeveloper", gameParams);
         }
         catch (Exception e)
         {
@@ -156,9 +158,9 @@ public class DeveloperRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@publisher_id", user.UserId)
+            new SqlParameter("@publisher_id", _user.UserId)
         };
-        DataTable? result = dataLink.ExecuteReader("GetDeveloperGames", parameters);
+        DataTable? result = _dataLink.ExecuteReader("GetDeveloperGames", parameters);
         List<Game> games = new List<Game>();
         if (result != null)
         {
@@ -186,7 +188,7 @@ public class DeveloperRepository
     }
     public void UpdateGame(int game_id, Game game)
     {
-        game.PublisherId = user.UserId;
+        game.PublisherId = _user.UserId;
         
         SqlParameter[] sqlParameters = new SqlParameter[]
         {
@@ -205,7 +207,7 @@ public class DeveloperRepository
         };
         try
         {
-            dataLink.ExecuteNonQuery("UpdateGame", sqlParameters);
+            _dataLink.ExecuteNonQuery("UpdateGame", sqlParameters);
         }
         catch (Exception e)
         {
@@ -220,7 +222,7 @@ public class DeveloperRepository
         };
         try
         {
-            dataLink.ExecuteNonQuery("RejectGame", sqlParameters);
+            _dataLink.ExecuteNonQuery("RejectGame", sqlParameters);
         }
         catch (Exception e)
         {
@@ -236,7 +238,7 @@ public class DeveloperRepository
         };
         try
         {
-            dataLink.ExecuteNonQuery("RejectGameWithMessage", sqlParameters);
+            _dataLink.ExecuteNonQuery("RejectGameWithMessage", sqlParameters);
         }
         catch (Exception e)
         {
@@ -251,7 +253,7 @@ public class DeveloperRepository
         };
         try
         {
-            DataTable? result = dataLink.ExecuteReader("GetRejectionMessage", sqlParameters);
+            DataTable? result = _dataLink.ExecuteReader("GetRejectionMessage", sqlParameters);
             
             if (result != null && result.Rows.Count > 0)
             {
@@ -275,7 +277,7 @@ public class DeveloperRepository
         
         try
         {
-            DataTable? result = dataLink.ExecuteReader("GetAllTags", null);
+            DataTable? result = _dataLink.ExecuteReader("GetAllTags", null);
             
             if (result != null)
             {
@@ -308,7 +310,7 @@ public class DeveloperRepository
         
         try
         {
-            dataLink.ExecuteNonQuery("InsertGameTags", sqlParameters);
+            _dataLink.ExecuteNonQuery("InsertGameTags", sqlParameters);
         }
         catch (Exception e)
         {
@@ -324,7 +326,7 @@ public class DeveloperRepository
         
         try
         {
-            DataTable? result = dataLink.ExecuteReader("IsGameIdInUse", sqlParameters);
+            DataTable? result = _dataLink.ExecuteReader("IsGameIdInUse", sqlParameters);
             
             if (result != null && result.Rows.Count > 0)
             {
@@ -351,7 +353,7 @@ public class DeveloperRepository
         
         try
         {
-            DataTable? result = dataLink.ExecuteReader("GetGameTags", sqlParameters);
+            DataTable? result = _dataLink.ExecuteReader("GetGameTags", sqlParameters);
             
             if (result != null)
             {
@@ -384,7 +386,7 @@ public class DeveloperRepository
         
         try
         {
-            DataTable? result = dataLink.ExecuteReader("GetGameOwnerCount", sqlParameters);
+            DataTable? result = _dataLink.ExecuteReader("GetGameOwnerCount", sqlParameters);
             
             if (result != null && result.Rows.Count > 0)
             {
@@ -401,6 +403,6 @@ public class DeveloperRepository
     
     public User GetCurrentUser()
     {
-        return user;
+        return _user;
     }
 }

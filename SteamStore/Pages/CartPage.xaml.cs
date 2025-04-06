@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
+using SteamStore.Services.Interfaces;
 
 namespace SteamStore.Pages
 {
@@ -10,7 +11,7 @@ namespace SteamStore.Pages
     {
         private CartViewModel _viewModel;
 
-        public CartPage(CartService cartService, UserGameService userGameService)
+        public CartPage(ICartService cartService, IUserGameService userGameService)
         {
             this.InitializeComponent();
             _viewModel = new CartViewModel(cartService, userGameService);

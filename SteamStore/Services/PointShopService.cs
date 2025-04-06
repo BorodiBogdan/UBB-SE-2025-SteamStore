@@ -1,18 +1,21 @@
+using SteamStore.Data;
 using SteamStore.Models;
 using SteamStore.Repositories;
+using SteamStore.Repositories.Interfaces;
+using SteamStore.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SteamStore.Services
 {
-    public class PointShopService
+    public class PointShopService : IPointShopService
     {
-        private readonly PointShopRepository _repository;
+        private readonly IPointShopRepository _repository;
         private readonly User _currentUser;
         private const string FILTER_TYPE_ALL = "All";
 
-        public PointShopService(User currentUser, DataLink dataLink)
+        public PointShopService(User currentUser, IDataLink dataLink)
         {
             _currentUser = currentUser;
             _repository = new PointShopRepository(currentUser, dataLink);

@@ -5,36 +5,36 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using SteamStore.Pages;
 using SteamStore.Models;
+using SteamStore.Data;
+using SteamStore.Repositories.Interfaces;
 
-
-public class GameRepository
+public class GameRepository : IGameRepository
 {
-    private readonly DataLink dataLink;
-    public GameRepository(DataLink dataLink)
+    private readonly IDataLink _dataLink;
+    public GameRepository(IDataLink dataLink)
     {
-        this.dataLink = dataLink;
+        this._dataLink = dataLink;
     }
 
     public int CreateGame(Game game)
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@Name", game.Name),
-            new SqlParameter("@Description", game.Description),
-            new SqlParameter("@ImagePath", game.ImagePath),
-            new SqlParameter("@Price", game.Price),
-            new SqlParameter("@TrailerPath", game.TrailerPath),
-            new SqlParameter("GameplayPath", game.GameplayPath),
-            new SqlParameter("@MinimumRequirements", game.MinimumRequirements),
-            new SqlParameter("@RecommendedRequirements", game.RecommendedRequirements),
-            new SqlParameter("@Status", game.Status),
-            new SqlParameter("@Discount", game.Discount)
-            //test on main
+                    new SqlParameter("@Name", game.Name),
+                    new SqlParameter("@Description", game.Description),
+                    new SqlParameter("@ImagePath", game.ImagePath),
+                    new SqlParameter("@Price", game.Price),
+                    new SqlParameter("@TrailerPath", game.TrailerPath),
+                    new SqlParameter("GameplayPath", game.GameplayPath),
+                    new SqlParameter("@MinimumRequirements", game.MinimumRequirements),
+                    new SqlParameter("@RecommendedRequirements", game.RecommendedRequirements),
+                    new SqlParameter("@Status", game.Status),
+                    new SqlParameter("@Discount", game.Discount)
         };
 
         try
         {
-            int? result = dataLink.ExecuteScalar<int>("CreateGame", parameters);
+            int? result = _dataLink.ExecuteScalar<int>("CreateGame", parameters);
             return result ?? 0;
         }
         catch (Exception e)
@@ -44,16 +44,16 @@ public class GameRepository
         }
     }
 
-    private string[] GetGameTags(int gameId)
+    public string[] GetGameTags(int gameId)
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@gid", gameId)
+                    new SqlParameter("@gid", gameId)
         };
 
         try
         {
-            DataTable result = dataLink.ExecuteReader("getGameTags", parameters);
+            DataTable result = _dataLink.ExecuteReader("getGameTags", parameters);
             List<string> tags = new List<string>();
 
             if (result != null)
@@ -72,33 +72,34 @@ public class GameRepository
         }
     }
 
-    private float GetGameRating(int gameId)
+    public float GetGameRating(int gameId)
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@gid", gameId)
+                    new SqlParameter("@gid", gameId)
         };
 
         try
         {
-            float? result = dataLink.ExecuteScalar<float>("getGameRating", parameters);
+            float? result = _dataLink.ExecuteScalar<float>("getGameRating", parameters);
             return result ?? 0f;
         }
-        catch (Exception e) { 
+        catch (Exception e)
+        {
             throw new Exception($"Error getting rating for game {gameId}: {e.Message}");
         }
     }
 
-    private int GetNoOfRecentSalesForGame(int gameId)
+    public int GetNoOfRecentSalesForGame(int gameId)
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@gid", gameId)
+                    new SqlParameter("@gid", gameId)
         };
 
         try
         {
-            int? result = dataLink.ExecuteScalar<int>("getNoOfRecentSalesForGame", parameters);
+            int? result = _dataLink.ExecuteScalar<int>("getNoOfRecentSalesForGame", parameters);
             return result ?? 0;
         }
         catch (Exception e)
@@ -106,12 +107,12 @@ public class GameRepository
             throw new Exception($"Error getting no. of recent purchases for game {gameId}: {e.Message}");
         }
     }
+
     public Collection<Game> getAllGames()
     {
-
-        DataTable? result = dataLink.ExecuteReader("GetAllGames");
+        DataTable? result = _dataLink.ExecuteReader("GetAllGames");
         List<Game> games = new List<Game>();
-        
+
         if (result != null)
         {
             foreach (DataRow row in result.Rows)
@@ -138,14 +139,15 @@ public class GameRepository
                 games.Add(game);
             }
         }
-        
+
         return new Collection<Game>(games);
     }
 
-    public Collection<Tag> getAllTags() {
-        DataTable? result = dataLink.ExecuteReader("GetAllTags");
+    public Collection<Tag> getAllTags()
+    {
+        DataTable? result = _dataLink.ExecuteReader("GetAllTags");
         List<Tag> tags = new List<Tag>();
-           if (result != null)
+        if (result != null)
         {
             foreach (DataRow row in result.Rows)
             {

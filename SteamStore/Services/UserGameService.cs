@@ -1,4 +1,6 @@
 ﻿using SteamStore.Models;
+using SteamStore.Repositories.Interfaces;
+using SteamStore.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,15 +9,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class UserGameService
+public class UserGameService : IUserGameService
 {
-    private UserGameRepository _userGameRepository;
-    private GameRepository _gameRepository;
+    private IUserGameRepository _userGameRepository;
+    private IGameRepository _gameRepository;
     
     // Property to track points earned in the last purchase
     public int LastEarnedPoints { get; private set; }
 
-    public UserGameService(UserGameRepository userGameRepository,GameRepository gameRepository)
+    public UserGameService(IUserGameRepository userGameRepository,IGameRepository gameRepository)
     {
         _userGameRepository = userGameRepository;
         _gameRepository = gameRepository;

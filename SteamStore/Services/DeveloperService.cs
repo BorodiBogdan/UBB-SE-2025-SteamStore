@@ -5,11 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SteamStore.Models;
+using SteamStore.Repositories.Interfaces;
+using SteamStore.Services.Interfaces;
 
-public class DeveloperService
+public class DeveloperService : IDeveloperService
 {
-    private DeveloperRepository _developerRepository;
-    public DeveloperService(DeveloperRepository developerRepository)
+    private IDeveloperRepository _developerRepository;
+    public DeveloperService(IDeveloperRepository developerRepository)
     {
         _developerRepository = developerRepository;
     }

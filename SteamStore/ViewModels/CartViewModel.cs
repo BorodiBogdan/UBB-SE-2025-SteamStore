@@ -14,6 +14,7 @@ using SteamStore.Constants;
 
 using System.Threading.Tasks;
 using SteamStore.ViewModels;
+using SteamStore.Services.Interfaces;
 
 
 public class CartViewModel : INotifyPropertyChanged
@@ -63,12 +64,12 @@ public class CartViewModel : INotifyPropertyChanged
     // Property to track points earned in the last purchase
     public int LastEarnedPoints { get; private set; }
 
-    public CartService _cartService;
-    public UserGameService _userGameService;
+    public ICartService _cartService;
+    public IUserGameService _userGameService;
     public ICommand RemoveGameCommand { get; }
     public ICommand CheckoutCommand { get; }
 
-    public CartViewModel(CartService cartService, UserGameService userGameService)
+    public CartViewModel(ICartService cartService, IUserGameService userGameService)
     {
         _cartService = cartService;
         _userGameService = userGameService;

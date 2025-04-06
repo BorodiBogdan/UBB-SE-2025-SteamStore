@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using SteamStore.Models;
 using SteamStore.Pages;
+using SteamStore.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,9 +25,9 @@ namespace SteamStore.ViewModels
         private const string SORT_RATING_DESC = "Rating (High to Low)";
         private const string SORT_DISCOUNT_DESC = "Discount (High to Low)";
 
-        private readonly UserGameService _userGameService;
-        private readonly GameService _gameService;
-        private readonly CartService _cartService;
+        private readonly IUserGameService _userGameService;
+        private readonly IGameService _gameService;
+        private readonly ICartService _cartService;
         private ObservableCollection<Game> _wishListGames = new ObservableCollection<Game>();
         private string _searchText = INITIAL_SEARCH_STRING;
 
@@ -54,9 +55,9 @@ namespace SteamStore.ViewModels
         }
 
         // Expose services for navigation
-        public GameService GameService => _gameService;
-        public CartService CartService => _cartService;
-        public UserGameService UserGameService => _userGameService;
+        public IGameService GameService => _gameService;
+        public ICartService CartService => _cartService;
+        public IUserGameService UserGameService => _userGameService;
 
         public ICommand RemoveFromWishlistCommand { get; }
         public ICommand ViewDetailsCommand { get; }
@@ -97,7 +98,7 @@ namespace SteamStore.ViewModels
             }
         }
 
-        public WishListViewModel(UserGameService userGameService, GameService gameService, CartService cartService)
+        public WishListViewModel(IUserGameService userGameService, IGameService gameService, ICartService cartService)
         {
             _userGameService = userGameService;
             _gameService = gameService;

@@ -6,6 +6,7 @@ using System;
 using Microsoft.UI.Xaml.Media;
 using SteamStore.Pages;
 using SteamStore;
+using SteamStore.Services.Interfaces;
 
 namespace SteamStore.Pages
 {
@@ -13,7 +14,7 @@ namespace SteamStore.Pages
     {
         private WishListViewModel _viewModel;
 
-        public WishListView(UserGameService userGameService, GameService gameService, CartService cartService)
+        public WishListView(IUserGameService userGameService, IGameService gameService, ICartService cartService)
         {
             this.InitializeComponent();
             _viewModel = new WishListViewModel(userGameService, gameService, cartService);

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SteamStore.Data;
+using SteamStore.Repositories.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -9,15 +11,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Gaming.Input;
 
-public class UserGameRepository
+public class UserGameRepository : IUserGameRepository
 {
-    private User user;
-    private DataLink data;
+    private User _user;
+    private IDataLink _data;
 
-    public UserGameRepository(DataLink data, User user)
+    public UserGameRepository(IDataLink data, User user)
     {
-        this.user = user;
-        this.data = data;
+        this._user = user;
+        this._data = data;
     }
 
     public bool isGamePurchased(Game game)
@@ -25,11 +27,11 @@ public class UserGameRepository
         SqlParameter[] parameters = new SqlParameter[]
         {
             new SqlParameter("@game_id", game.Id),
-            new SqlParameter("@user_id", user.UserId),
+            new SqlParameter("@user_id", _user.UserId),
         };
         try
         {
-            return data.ExecuteScalar<int>("IsGamePurchased", parameters) > 0;
+            return _data.ExecuteScalar<int>("IsGamePurchased", parameters) > 0;
         }
         catch (Exception e)
         {
@@ -40,13 +42,13 @@ public class UserGameRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", user.UserId),
+            new SqlParameter("@user_id", _user.UserId),
             new SqlParameter("@game_id", game.Id)
         };
 
         try
         {
-            data.ExecuteNonQuery("RemoveGameFromWishlist", parameters);
+            _data.ExecuteNonQuery("RemoveGameFromWishlist", parameters);
         }
         catch (Exception e)
         {
@@ -57,19 +59,19 @@ public class UserGameRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", user.UserId),
+            new SqlParameter("@user_id", _user.UserId),
             new SqlParameter("@game_id", game.Id)
         };
 
         try
         {
-            if(user.WalletBalance < game.Price)
+            if(_user.WalletBalance < game.Price)
             {
                 throw new Exception("Insufficient funds");
             }
 
-            data.ExecuteNonQuery("AddGameToPurchased", parameters);
-            user.WalletBalance -= (float)game.Price;
+            _data.ExecuteNonQuery("AddGameToPurchased", parameters);
+            _user.WalletBalance -= (float)game.Price;
             
             // Calculate and add points (121 points for every $1 spent)
             AddPointsForPurchase((float)game.Price);
@@ -83,13 +85,13 @@ public class UserGameRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", user.UserId),
+            new SqlParameter("@user_id", _user.UserId),
             new SqlParameter("@game_id", game.Id)
         };
 
         try
         {
-            data.ExecuteNonQuery("AddGameToWishlist", parameters);
+            _data.ExecuteNonQuery("AddGameToWishlist", parameters);
         }
         catch (Exception e)
         {
@@ -97,7 +99,7 @@ public class UserGameRepository
         }
     }
 
-    private string[] GetGameTags(int gameId)
+    public string[] GetGameTags(int gameId)
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
@@ -106,7 +108,7 @@ public class UserGameRepository
 
         try
         {
-            DataTable result = data.ExecuteReader("getGameTags", parameters);
+            DataTable result = _data.ExecuteReader("getGameTags", parameters);
             List<string> tags = new List<string>();
 
             if (result != null)
@@ -129,10 +131,10 @@ public class UserGameRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@uid", user.UserId)
+            new SqlParameter("@uid", _user.UserId)
         };
 
-        DataTable? result = data.ExecuteReader("getUserGames",parameters);
+        DataTable? result = _data.ExecuteReader("getUserGames",parameters);
         List<Game> games = new List<Game>();
 
         if (result != null)
@@ -159,7 +161,7 @@ public class UserGameRepository
         return new Collection<Game>(games);
     }
 
-    private void AddPointsForPurchase(float purchaseAmount)
+    public void AddPointsForPurchase(float purchaseAmount)
     {
         try
         {
@@ -167,16 +169,16 @@ public class UserGameRepository
             int earnedPoints = (int)(purchaseAmount * 121);
             
             // Update user's point balance
-            user.PointsBalance += earnedPoints;
+            _user.PointsBalance += earnedPoints;
             
             // Update in database
             SqlParameter[] parameters = new SqlParameter[]
             {
-                new SqlParameter("@UserId", user.UserId),
-                new SqlParameter("@PointBalance", user.PointsBalance)
+                new SqlParameter("@UserId", _user.UserId),
+                new SqlParameter("@PointBalance", _user.PointsBalance)
             };
 
-            data.ExecuteNonQuery("UpdateUserPointBalance", parameters);
+            _data.ExecuteNonQuery("UpdateUserPointBalance", parameters);
         }
         catch (Exception ex)
         {
@@ -187,17 +189,17 @@ public class UserGameRepository
     public float GetUserPointsBalance()
     {
         // Simply return the user's current points balance from the model
-        return user.PointsBalance;
+        return _user.PointsBalance;
     }
 
     public Collection<Game> getWishlistGames()
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", user.UserId)
+            new SqlParameter("@user_id", _user.UserId)
         };
 
-        DataTable? result = data.ExecuteReader("GetWishlistGames", parameters);
+        DataTable? result = _data.ExecuteReader("GetWishlistGames", parameters);
         List<Game> games = new List<Game>();
 
         if (result != null)

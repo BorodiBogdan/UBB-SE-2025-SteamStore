@@ -8,13 +8,14 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SteamStore.Pages;
+using SteamStore.Services.Interfaces;
 
 namespace SteamStore.ViewModels
 {
     class PaypalPaymentViewModel:INotifyPropertyChanged
     {
-        private CartService _cartService;
-        private UserGameService _userGameService;
+        private ICartService _cartService;
+        private IUserGameService _userGameService;
         private List<Game> _purchasedGames;
         private PaypalProcessor _paypalProcessor;
         private decimal _amountToPay;
@@ -36,7 +37,7 @@ namespace SteamStore.ViewModels
             set { _password = value; OnPropertyChanged(); }
         }
 
-        public PaypalPaymentViewModel(CartService cartService, UserGameService userGameService)
+        public PaypalPaymentViewModel(ICartService cartService, IUserGameService userGameService)
         {
             this._cartService = cartService;
             this._userGameService = userGameService;

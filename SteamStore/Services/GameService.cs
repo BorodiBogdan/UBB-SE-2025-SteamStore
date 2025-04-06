@@ -1,13 +1,15 @@
 ﻿using SteamStore.Models;
+using SteamStore.Repositories.Interfaces;
+using SteamStore.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-public class GameService
+public class GameService : IGameService
 {
-    private GameRepository _gameRepository;
-    public GameService(GameRepository gameRepository)
+    private IGameRepository _gameRepository;
+    public GameService(IGameRepository gameRepository)
     {
         _gameRepository = gameRepository;
     }
