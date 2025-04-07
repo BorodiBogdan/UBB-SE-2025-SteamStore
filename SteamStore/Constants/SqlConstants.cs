@@ -9,16 +9,16 @@ namespace SteamStore.Constants
     public static class SqlConstants
     {
         // Stored Procedure Names
-        public const string GetAllCartGames = "GetAllCartGames";
-        public const string AddGameToCart = "AddGameToCart";
-        public const string RemoveGameFromCart = "RemoveGameFromCart";
+        public const string GET_ALL_CART_GAMES = "GetAllCartGames";
+        public const string ADD_GAME_TO_CART = "AddGameToCart";
+        public const string REMOVE_GAME_FROM_CART = "RemoveGameFromCart";
 
         // Column Names
-        public const string GameIdColumn = "game_id";
-        public const string NameColumn = "name";
-        public const string DescriptionColumn = "Description";
-        public const string ImageUrlColumn = "image_url";
-        public const string PriceColumn = "price";
+        public const string GAME_ID_COLUMN = "game_id";
+        public const string NAME_COLUMN  = "name";
+        public const string DESCRIPTION_COLUMN = "Description";
+        public const string IMAGE_URL_COLUMN = "image_url";
+        public const string PRICE_COLUMN = "price";
     }
 
 }

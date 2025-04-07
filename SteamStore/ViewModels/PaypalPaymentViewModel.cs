@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SteamStore.Pages;
 using SteamStore.Services.Interfaces;
+using SteamStore.Constants;
 
 namespace SteamStore.ViewModels
 {
@@ -60,7 +61,7 @@ namespace SteamStore.ViewModels
                 // Store points in App resources for PointsShopPage to access
                 try
                 {
-                    Application.Current.Resources["RecentEarnedPoints"] = pointsEarned;
+                    Application.Current.Resources[ResourceKeys.RecentEarnedPoints] = pointsEarned;
                 }
                 catch (Exception ex)
                 {
@@ -70,17 +71,18 @@ namespace SteamStore.ViewModels
                 // Show points earned notification if points were earned
                 if (pointsEarned > 0)
                 {
-                    await ShowNotification("Payment Successful", $"Your purchase has been completed successfully. You earned {pointsEarned} points!");
+                    await ShowNotification(PaymentDialogStrings.PAYMENT_SUCCESS_MESSAGE,
+                        string.Format(PaymentDialogStrings.PAYMENT_SUCCESS_WITH_POINTS_MESSAGE, pointsEarned));
                 }
                 else
                 {
-                    await ShowNotification("Payment Successful", "Your purchase has been completed successfully.");
+                    await ShowNotification(PaymentDialogStrings.PAYMENT_SUCCESS_TITLE, PaymentDialogStrings.PAYMENT_SUCCESS_MESSAGE);
                 }
                 frame.Content = new CartPage(_cartService, _userGameService);
             }
             else
             {
-                await ShowNotification("Payment Failed", "Please check your email and password.");
+                await ShowNotification(PaymentDialogStrings.PAYMENT_FAILED_TITLE, PaymentDialogStrings.PAYMENT_FAILED_MESSAGE);
             }
         }
 
@@ -90,7 +92,7 @@ namespace SteamStore.ViewModels
             {
                 Title = title,
                 Content = message,
-                CloseButtonText = "OK",
+                CloseButtonText = PaymentDialogStrings.OK_BUTTON_TEXT,
                 XamlRoot = App.m_window.Content.XamlRoot
             };
             await dialog.ShowAsync();

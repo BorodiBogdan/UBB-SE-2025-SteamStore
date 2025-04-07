@@ -8,7 +8,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using SteamStore.Constants;
+using SteamStore.Constants.SteamStore.Constants;
+using static SteamStore.Constants.NotificationStrings;
 public class UserGameService : IUserGameService
 {
     private IUserGameRepository _userGameRepository;
@@ -35,7 +37,9 @@ public class UserGameService : IUserGameService
             // Check if game is already purchased
             if (isGamePurchased(game))
             {
-                throw new Exception($"Failed to add {game.Name} to your wishlist: Game already owned");
+                throw new Exception(string.Format(ExceptionMessages.GameAlreadyOwned, game.Name));
+
+                //throw new Exception($"Failed to add {game.Name} to your wishlist: Game already owned");
             }
             
             _userGameRepository.addGameToWishlist(game);
@@ -46,7 +50,7 @@ public class UserGameService : IUserGameService
             string message = e.Message;
             if (message.Contains("ExecuteNonQuery"))
             {
-                message = $"Failed to add {game.Name} to your wishlist: Already in wishlist";
+                message = string.Format(ExceptionMessages.GameAlreadyInWishlist, game.Name);
             }
             throw new Exception(message);
         }
@@ -153,13 +157,13 @@ public class UserGameService : IUserGameService
         var games = _userGameRepository.getWishlistGames();
         switch (criteria)
         {
-            case "overwhelmingly_positive":
+            case FilterCriteria.OVERWHELMINGLY_POSITIVE:
                 return new Collection<Game>(games.Where(g => g.Rating >= 4.5).ToList());
-            case "very_positive":
+            case FilterCriteria.VERY_POSITIVE:
                 return new Collection<Game>(games.Where(g => g.Rating >= 4 && g.Rating < 4.5).ToList());
-            case "mixed":
+            case FilterCriteria.MIXED:
                 return new Collection<Game>(games.Where(g => g.Rating >= 2 && g.Rating < 4).ToList());
-            case "negative":
+            case FilterCriteria.NEGATIVE:
                 return new Collection<Game>(games.Where(g => g.Rating < 2).ToList());
             default:
                 return games;
@@ -175,9 +179,9 @@ public class UserGameService : IUserGameService
         var games = _userGameRepository.getWishlistGames();
         IOrderedEnumerable<Game> orderedGames = criteria switch
         {
-            "price" => ascending ? games.OrderBy(g => g.Price) : games.OrderByDescending(g => g.Price),
-            "rating" => ascending ? games.OrderBy(g => g.Rating) : games.OrderByDescending(g => g.Rating),
-            "discount" => ascending ? games.OrderBy(g => g.Discount) : games.OrderByDescending(g => g.Discount),
+            FilterCriteria.PRICE => ascending ? games.OrderBy(g => g.Price) : games.OrderByDescending(g => g.Price),
+            FilterCriteria.RATING => ascending ? games.OrderBy(g => g.Rating) : games.OrderByDescending(g => g.Rating),
+            FilterCriteria.DISCOUNT => ascending ? games.OrderBy(g => g.Discount) : games.OrderByDescending(g => g.Discount),
             _ => ascending ? games.OrderBy(g => g.Name) : games.OrderByDescending(g => g.Name)
         };
         return new Collection<Game>(orderedGames.ToList());

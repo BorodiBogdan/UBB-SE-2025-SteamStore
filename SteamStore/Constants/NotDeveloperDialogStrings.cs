@@ -8,8 +8,8 @@ namespace SteamStore.Constants
 {
     public static class NotDeveloperDialogStrings
     {
-        public const string AccessDeniedTitle = "Access Denied";
-        public const string AccessDeniedMessage = "You need to be a registered developer to access this page.";
-        public const string CloseButtonText = "OK";
+        public const string ACCESS_DENIED_TITLE = "Access Denied";
+        public const string ACCESS_DENIED_MESSAGE = "You need to be a registered developer to access this page.";
+        public const string CLOSE_BUTTON_TEXT = "OK";
     }
 }

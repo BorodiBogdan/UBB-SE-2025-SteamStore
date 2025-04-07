@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 using SteamStore.Models;
 using SteamStore.Repositories.Interfaces;
 using SteamStore.Services.Interfaces;
+using SteamStore.Constants;
+using static SteamStore.Constants.NotificationStrings;
 
 public class DeveloperService : IDeveloperService
 {
     private IDeveloperRepository _developerRepository;
+    private static string PENDING_STATE = "Pending";
     public DeveloperService(IDeveloperRepository developerRepository)
     {
         _developerRepository = developerRepository;
@@ -26,28 +29,28 @@ public class DeveloperService : IDeveloperService
             string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(imageUrl) || string.IsNullOrWhiteSpace(minReq) ||
             string.IsNullOrWhiteSpace(recReq) || string.IsNullOrWhiteSpace(discountText))
         {
-            throw new Exception("All fields Are required!");
+            throw new Exception(ExceptionMessages.AllFieldsRequired);
         }
 
         if (!int.TryParse(gameIdText, out int gameId))
         {
-            throw new Exception("GameId must be a valid integer!");
+            throw new Exception(ExceptionMessages.InvalidGameId);
             
         }
 
         if (!double.TryParse(priceText, out double price) || price < 0)
         {
-            throw new Exception("Price must be a positive number.");
+            throw new Exception(ExceptionMessages.InvalidPrice);
         }
 
         if (!float.TryParse(discountText, out float discount) || discount < 0 || discount > 100)
         {
-            throw new Exception("Discount must be between 0 and 100.");
+            throw new Exception(ExceptionMessages.InvalidDiscount);
         }
 
         if (selectedTags == null || selectedTags.Count == 0)
         {
-            throw new Exception("Please select at least one tag for the game.");
+            throw new Exception(ExceptionMessages.NoTagsSelected);
         }
 
        // var game = new Game(gameId, name,price, description, imageUrl, gameplayUrl, trailerUrl, minReq, recReq, "Pending", discount);
@@ -62,7 +65,7 @@ public class DeveloperService : IDeveloperService
             TrailerPath = trailerUrl,
             MinimumRequirements = minReq,
             RecommendedRequirements = recReq,
-            Status = "Pending",
+            Status = PENDING_STATE,
             Discount = discount
         };
         return game;
@@ -211,5 +214,18 @@ public class DeveloperService : IDeveloperService
     {
         return _developerRepository.GetCurrentUser();
     }
-    
+    public Game CreateValidatedGame(string gameIdText, string name, string priceText, string description, string imageUrl,
+                                string trailerUrl, string gameplayUrl, string minReq, string recReq,
+                                string discountText, IList<Tag> selectedTags)
+    {
+        var game = ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minReq, recReq, discountText, selectedTags);
+
+        if (IsGameIdInUse(game.Id))
+            throw new Exception(ExceptionMessages.IdAlreadyInUse);
+
+        CreateGameWithTags(game, selectedTags);
+        return game;
+    }
+
+
 }

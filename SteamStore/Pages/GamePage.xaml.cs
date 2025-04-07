@@ -84,12 +84,13 @@ namespace SteamStore.Pages
                     Debug.WriteLine("Error: Game not found");
                     return;
                 }
-                
+
                 GameTitle.Text = _viewModel.Game.Name;
-                GamePrice.Text = $"${_viewModel.Game.Price:F2}";
+                GamePrice.Text = GamePrice.Text = _viewModel.FormattedPrice;
+
                 GameDescription.Text = _viewModel.Game.Description;
 
-                GameDeveloper.Text = LabelStrings.DeveloperPrefix + _viewModel.Game.Name; 
+                GameDeveloper.Text = LabelStrings.DEVELOPER_PREFIX + _viewModel.Game.Name; 
                 
                 if (!string.IsNullOrEmpty(_viewModel.Game.ImagePath))
                 {
@@ -111,7 +112,7 @@ namespace SteamStore.Pages
                 LoadSimilarGamesUi();
                 
                 GameRating.Value = _viewModel.Game.Rating;
-                OwnedStatus.Text = _viewModel.IsOwned ? LabelStrings.Owned : LabelStrings.NotOwned;
+                OwnedStatus.Text = _viewModel.IsOwned ? LabelStrings.OWNED : LabelStrings.NOT_OWNED;
             }
             catch (Exception ex)
             {
@@ -123,8 +124,8 @@ namespace SteamStore.Pages
         {
             MediaLinksPanel.Children.Clear();
          
-            AddMediaLink(MediaLinkLabels.OfficialTrailer, game.TrailerPath);
-            AddMediaLink(MediaLinkLabels.GameplayVideo, game.GameplayPath);
+            AddMediaLink(MediaLinkLabels.OFFICIAL_TRAILER, game.TrailerPath);
+            AddMediaLink(MediaLinkLabels.GAMEPLAY_VIDEO, game.GameplayPath);
         }
         
         private void AddMediaLink(string title, string url)
@@ -179,7 +180,7 @@ namespace SteamStore.Pages
             
             title.Text = game.Name;
 
-            rating.Text = string.Format(LabelStrings.RatingFormat, game.Rating);
+            rating.Text = string.Format(LabelStrings.RATING_FORMAT, game.Rating);
 
         }
 
@@ -220,9 +221,9 @@ namespace SteamStore.Pages
             {
                 NotificationTip.Title = NotificationStrings.AddToWishlistErrorTitle;
                 string errorMessage = ex.Message;
-                if (errorMessage.Contains(ErrorStrings.SqlNonQueryFailureIndicator))
+                if (errorMessage.Contains(ErrorStrings.SQL_NON_QUERY_FAILURE_INDICATORr))
                 {
-                    errorMessage = string.Format(ErrorStrings.AddToWishlistAlreadyExistsMessage, _viewModel.Game.Name);
+                    errorMessage = string.Format(ErrorStrings.ADD_TO_WISHLIST_ALREADY_EXISTS_MESSAGE, _viewModel.Game.Name);
                 }
                 NotificationTip.Subtitle = errorMessage;
                 NotificationTip.IsOpen = true;

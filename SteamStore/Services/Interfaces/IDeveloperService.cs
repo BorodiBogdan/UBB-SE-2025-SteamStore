@@ -13,6 +13,10 @@ namespace SteamStore.Services.Interfaces
         void ValidateGame(int game_id);
         Game ValidateInputForAddingAGame(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl,
                                 string minReq, string recReq, string discountText, IList<Tag> selectedTags);
+
+        Game CreateValidatedGame(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl,
+                             string minReq, string recReq, string discountText, IList<Tag> selectedTags);
+
         Game FindGameInObservableCollectionById(int gameId, ObservableCollection<Game> gameList);
         void CreateGame(Game game);
         void CreateGameWithTags(Game game, IList<Tag> selectedTags);
