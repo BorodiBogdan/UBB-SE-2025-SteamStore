@@ -18,14 +18,7 @@ namespace SteamStore.ViewModels
     {
         private readonly IPointShopService _pointShopService;
         private User _user;
-        //private const string FILTER_TYPE_ALL = "All";
-        //private const string INITIAL_SEARCH_STRING = "";
-        //private const int MIN_PRICE = 0;
-        //private const int MAX_PRICE = 10000;
-        //private const int TRANSACTION_ID = 1;
-        //private const double MINMAL_DIFFERENCE_VALUE_COMPARISON = 0.01;
-        //private const int DELAY_TIME_SEARCH = 300;
-
+        
         // Collections
         private ObservableCollection<PointShopItem> _shopItems;
         private ObservableCollection<PointShopItem> _userItems;
