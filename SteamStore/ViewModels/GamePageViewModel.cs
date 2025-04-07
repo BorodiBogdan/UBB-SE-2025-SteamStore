@@ -34,7 +34,10 @@ public class GamePageViewModel : INotifyPropertyChanged
             UpdateGameTags();
         }
     }
-    
+
+    public string FormattedPrice => Game != null ? $"${Game.Price:F2}" : string.Empty;
+
+
     public ObservableCollection<string> GameTags
     {
         get => _gameTags;

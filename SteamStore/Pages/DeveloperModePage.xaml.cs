@@ -66,7 +66,7 @@ namespace SteamStore.Pages
             _viewModel.LoadUnvalidated();
             DeveloperGamesList.Visibility = Visibility.Collapsed;
             ReviewGamesList.Visibility = Visibility.Visible;
-            PageTitle.Text = DeveloperPageTitles.ReviewGames;
+            PageTitle.Text = DeveloperPageTitles.REVIEW_GAMES;
         }
 
         private void MyGamesButton_Click(object sender, RoutedEventArgs e)
@@ -74,7 +74,7 @@ namespace SteamStore.Pages
             _viewModel.LoadGames();
             DeveloperGamesList.Visibility = Visibility.Visible;
             ReviewGamesList.Visibility = Visibility.Collapsed;
-            PageTitle.Text = DeveloperPageTitles.MyGames;
+            PageTitle.Text = DeveloperPageTitles.MY_GAMES;
         }
 
         private void AcceptButton_Click(object sender, RoutedEventArgs e)

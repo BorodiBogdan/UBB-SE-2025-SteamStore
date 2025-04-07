@@ -7,7 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-
+using SteamStore.Constants;
 public class HomePageViewModel : INotifyPropertyChanged
 {
     public ObservableCollection<Game> searchedOrFilteredGames{get;set;}
@@ -105,7 +105,7 @@ public class HomePageViewModel : INotifyPropertyChanged
     public void LoadAllGames()
     {
         searchedOrFilteredGames.Clear();
-        search_filter_text = "All Games";
+        search_filter_text = HomePageConstants.ALL_GAMES_FILTER;
         var games = _gameService.getAllGames();
         foreach (var game in games)
         {
@@ -123,15 +123,15 @@ public class HomePageViewModel : INotifyPropertyChanged
         }
         if(search_query == "")
         {
-            search_filter_text = "All Games";
+            search_filter_text = HomePageConstants.ALL_GAMES_FILTER;
             return;
         }
         if(games.Count == 0)
         {
-            search_filter_text = "No games found for search: " + search_query;
+            search_filter_text = HomePageConstants.NO_GAMES_FOUND + search_query;
             return;
         }
-        search_filter_text = "Search results for: " + search_query;
+        search_filter_text = HomePageConstants.SEARCH_RESULTS_FOR + search_query;
     }
 
     public void FilterGames(int minRating, int minPrice, int maxPrice, String[] Tags)
@@ -144,10 +144,10 @@ public class HomePageViewModel : INotifyPropertyChanged
         }
         if (games.Count == 0)
         {
-            search_filter_text = "No games found for the filter";
+            search_filter_text = HomePageConstants.NO_GAMES_FOUND;
             return;
         }
-        search_filter_text = "Filtered games ";
+        search_filter_text = HomePageConstants.FILTERED_GAMES;
     }
 
     public void SwitchToGamePage(Microsoft.UI.Xaml.DependencyObject parent, Game selectedGame)

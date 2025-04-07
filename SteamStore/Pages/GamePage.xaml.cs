@@ -84,9 +84,10 @@ namespace SteamStore.Pages
                     Debug.WriteLine("Error: Game not found");
                     return;
                 }
-                
+
                 GameTitle.Text = _viewModel.Game.Name;
-                GamePrice.Text = $"${_viewModel.Game.Price:F2}";
+                GamePrice.Text = GamePrice.Text = _viewModel.FormattedPrice;
+
                 GameDescription.Text = _viewModel.Game.Description;
 
                 GameDeveloper.Text = LabelStrings.DEVELOPER_PREFIX + _viewModel.Game.Name; 

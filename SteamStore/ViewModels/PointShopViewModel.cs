@@ -10,6 +10,7 @@ using System.Threading;
 using Microsoft.UI.Xaml.Controls;
 using SteamStore.Services.Interfaces;
 using SteamStore.Data;
+using SteamStore.Constants;
 
 namespace SteamStore.ViewModels
 {
@@ -17,13 +18,13 @@ namespace SteamStore.ViewModels
     {
         private readonly IPointShopService _pointShopService;
         private User _user;
-        private const string FILTER_TYPE_ALL = "All";
-        private const string INITIAL_SEARCH_STRING = "";
-        private const int MIN_PRICE = 0;
-        private const int MAX_PRICE = 10000;
-        private const int TRANSACTION_ID = 1;
-        private const double MINMAL_DIFFERENCE_VALUE_COMPARISON = 0.01;
-        private const int DELAY_TIME_SEARCH = 300;
+        //private const string FILTER_TYPE_ALL = "All";
+        //private const string INITIAL_SEARCH_STRING = "";
+        //private const int MIN_PRICE = 0;
+        //private const int MAX_PRICE = 10000;
+        //private const int TRANSACTION_ID = 1;
+        //private const double MINMAL_DIFFERENCE_VALUE_COMPARISON = 0.01;
+        //private const int DELAY_TIME_SEARCH = 300;
 
         // Collections
         private ObservableCollection<PointShopItem> _shopItems;
@@ -31,16 +32,16 @@ namespace SteamStore.ViewModels
         private ObservableCollection<PointShopTransaction> _transactionHistory;
 
         // Filter properties
-        private string _filterType = FILTER_TYPE_ALL;
-        private string _searchText = INITIAL_SEARCH_STRING;
-        private double _minPrice = MIN_PRICE;
-        private double _maxPrice = MAX_PRICE;
+        private string _filterType = PointShopConstants.FILTER_TYPE_ALL;
+        private string _searchText = PointShopConstants.INITIAL_SEARCH_STRING;
+        private double _minPrice = PointShopConstants.MIN_PRICE;
+        private double _maxPrice = PointShopConstants.MAX_PRICE;
 
         // Selected item
         private PointShopItem _selectedItem;
 
         private CancellationTokenSource _searchCancellationTokenSource;
-        private int _nextTransactionId = TRANSACTION_ID;
+        private int _nextTransactionId = PointShopConstants.TRANSACTION_ID;
 
         public PointShopViewModel(User currentUser, IDataLink dataLink)
         {
@@ -345,7 +346,7 @@ namespace SteamStore.ViewModels
             try
             {
                 // Wait a bit before searching to avoid excessive updates while typing
-                await Task.Delay(DELAY_TIME_SEARCH, cancellationToken);
+                await Task.Delay(PointShopConstants.DELAY_TIME_SEARCH, cancellationToken);
                 
                 // Only apply if not cancelled
                 if (!cancellationToken.IsCancellationRequested)
@@ -458,7 +459,7 @@ namespace SteamStore.ViewModels
 
                     bool transactionExists = TransactionHistory.Any(t =>
                         t.ItemName == itemName &&
-                        Math.Abs(t.PointsSpent - pointPrice) < MINMAL_DIFFERENCE_VALUE_COMPARISON);
+                        Math.Abs(t.PointsSpent - pointPrice) < PointShopConstants.MINMAL_DIFFERENCE_VALUE_COMPARISON);
 
                     if (!transactionExists)
                     {
