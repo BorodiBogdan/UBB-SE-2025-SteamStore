@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SteamStore.Models;
+using SteamStore.Repositories;
 using SteamStore.Repositories.Interfaces;
 using SteamStore.Services.Interfaces;
 using SteamStore.Constants;
@@ -12,15 +10,18 @@ using static SteamStore.Constants.NotificationStrings;
 
 public class DeveloperService : IDeveloperService
 {
-    private IDeveloperRepository _developerRepository;
     private static string PENDING_STATE = "Pending";
-    public DeveloperService(IDeveloperRepository developerRepository)
-    {
-        _developerRepository = developerRepository;
-    }
+
+    public IGameRepository GameRepository{ get; set; }
+    public ITagRepository TagRepository { get; set; }
+    
+    public IUserGameRepository UserGameRepository { get; set; }
+    
+    public User User { get; set; }
+    
     public void ValidateGame(int game_id)
     {
-        _developerRepository.ValidateGame(game_id);
+        GameRepository.ValidateGame(game_id);
     }
     public Game ValidateInputForAddingAGame(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl,string gameplayUrl,
                                 string minReq, string recReq, string discountText, IList<Tag> selectedTags)
@@ -38,12 +39,12 @@ public class DeveloperService : IDeveloperService
             
         }
 
-        if (!double.TryParse(priceText, out double price) || price < 0)
+        if (!decimal.TryParse(priceText, out var price) || price < 0)
         {
             throw new Exception(ExceptionMessages.InvalidPrice);
         }
 
-        if (!float.TryParse(discountText, out float discount) || discount < 0 || discount > 100)
+        if (!decimal.TryParse(discountText, out var discount) || discount < 0 || discount > 100)
         {
             throw new Exception(ExceptionMessages.InvalidDiscount);
         }
@@ -89,14 +90,8 @@ public class DeveloperService : IDeveloperService
 
     public void CreateGame(Game game)
     {
-        try
-        {
-            _developerRepository.CreateGame(game);
-        }
-        catch (Exception e)
-        {
-            throw new Exception(e.Message);
-        }
+        game.PublisherId = User.UserId;
+        GameRepository.CreateGame(game);
     }
 
     public void CreateGameWithTags(Game game, IList<Tag> selectedTags)
@@ -120,7 +115,8 @@ public class DeveloperService : IDeveloperService
     {
         try
         {
-            _developerRepository.UpdateGame(game.Id,game);
+            game.PublisherId = User.UserId;
+            GameRepository.UpdateGame(game.Id,game);
         }
         catch (Exception e)
         {
@@ -133,7 +129,8 @@ public class DeveloperService : IDeveloperService
     {
         try
         {
-            _developerRepository.UpdateGame(game.Id, game);
+            game.PublisherId = User.UserId;
+            GameRepository.UpdateGame(game.Id, game);
         }
         catch (Exception e)
         {
@@ -157,7 +154,7 @@ public class DeveloperService : IDeveloperService
     {
         try
         {
-            _developerRepository.DeleteGame(game_id);
+            GameRepository.DeleteGame(game_id);
         }
         catch (Exception e)
         {
@@ -166,53 +163,53 @@ public class DeveloperService : IDeveloperService
     }
     public List<Game> GetDeveloperGames()
     {
-        return _developerRepository.GetDeveloperGames();
+        return GameRepository.GetDeveloperGames(User.UserId);
     }
     public List<Game> GetUnvalidated()
     {
-        return _developerRepository.GetUnvalidated();
+        return GameRepository.GetUnvalidated(User.UserId);
     }
     public void RejectGame(int game_id)
     {
-        _developerRepository.RejectGame(game_id);
+        GameRepository.RejectGame(game_id);
     }
     public void RejectGameWithMessage(int game_id, string message)
     {
-        _developerRepository.RejectGameWithMessage(game_id, message);
+        GameRepository.RejectGameWithMessage(game_id, message);
     }
     public string GetRejectionMessage(int game_id)
     {
-        return _developerRepository.GetRejectionMessage(game_id);
+        return GameRepository.GetRejectionMessage(game_id);
     }
     public void InsertGameTag(int gameId, int tagId)
     {
-        _developerRepository.InsertGameTag(gameId, tagId);
+        GameRepository.InsertGameTag(gameId, tagId);
     }
 
    
     public Collection<Tag> GetAllTags()
     {
-        return _developerRepository.GetAllTags();
+        return TagRepository.GetAllTags();
     }
     public bool IsGameIdInUse(int gameId)
     {
-        return _developerRepository.IsGameIdInUse(gameId);
+        return GameRepository.IsGameIdInUse(gameId);
     }
     public List<Tag> GetGameTags(int gameId)
     {
-        return _developerRepository.GetGameTags(gameId);
+        return GameRepository.GetGameTags(gameId);
     }
     public void DeleteGameTags(int gameId)
     {
-        _developerRepository.DeleteGameTags(gameId);
+        GameRepository.DeleteGameTags(gameId);
     }
-    public int GetGameOwnerCount(int game_id)
+    public int GetGameOwnerCount(int gameId)
     {
-        return _developerRepository.GetGameOwnerCount(game_id);
+        return UserGameRepository.GetGameOwnerCount(gameId);
     }
     public User GetCurrentUser()
     {
-        return _developerRepository.GetCurrentUser();
+        return User;
     }
     public Game CreateValidatedGame(string gameIdText, string name, string priceText, string description, string imageUrl,
                                 string trailerUrl, string gameplayUrl, string minReq, string recReq,

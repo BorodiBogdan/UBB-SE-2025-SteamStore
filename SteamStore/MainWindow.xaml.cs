@@ -33,41 +33,55 @@ namespace SteamStore
 
         public MainWindow()
         {
-            
             this.InitializeComponent();
 
             //initiate the user
             // this will need to be changed when we conenct with a database query to get the user
             User loggedInUser = new User(1, "John Doe", "johnyDoe@gmail.com", 999999.99f, 6000f, User.Role.Developer);
-            
+
             // Assign to the class field so it can be used in navigation
             this.user = loggedInUser;
 
             var dataLink = new DataLink(new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json")
-            .Build());
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json")
+                .Build());
 
+            var tagRepository = new TagRepository(dataLink);
             var gameRepository = new GameRepository(dataLink);
-            gameService = new GameService(gameRepository);
+            gameService = new GameService { GameRepository = gameRepository, TagRepository = tagRepository };
             cartService = new CartService(new CartRepository(dataLink, loggedInUser));
-            userGameService = new UserGameService(new UserGameRepository(dataLink, loggedInUser),gameRepository);
+            var userGameRepository = new UserGameRepository(dataLink, loggedInUser);
+            userGameService = new UserGameService
+            {
+                UserGameRepository = userGameRepository,
+                GameRepository = gameRepository,
+                TagRepository = tagRepository
+            };
             pointShopService = new PointShopService(loggedInUser, dataLink);
 
-            var developerRepository = new DeveloperRepository(dataLink,loggedInUser);
-            developerService = new DeveloperService(developerRepository);
+            developerService = new DeveloperService
+            {
+                GameRepository = gameRepository,
+                TagRepository = tagRepository, 
+                UserGameRepository = userGameRepository,
+                User = loggedInUser
+            };
 
 
             if (ContentFrame == null)
             {
                 throw new Exception("ContentFrame is not initialized.");
             }
+
             ContentFrame.Content = new HomePage(gameService, cartService, userGameService);
         }
+
         public void ResetToHomePage()
         {
             ContentFrame.Content = new HomePage(gameService, cartService, userGameService);
         }
+
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             if (args.SelectedItemContainer != null)
@@ -88,16 +102,16 @@ namespace SteamStore
                         ContentFrame.Content = new WishListView(userGameService, gameService, cartService);
                         break;
                     case "DeveloperModePage":
-                        ContentFrame.Content = new DeveloperModePage(developerService, userGameService);
+                        ContentFrame.Content = new DeveloperModePage(developerService);
                         break;
                 }
             }
+
             if (NavView != null)
             {
                 // Deselect the NavigationViewItem when moving to a non-menu page
                 NavView.SelectedItem = null;
             }
         }
-      
     }
 }

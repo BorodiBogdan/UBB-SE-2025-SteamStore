@@ -19,5 +19,6 @@ namespace SteamStore.Repositories.Interfaces
         float GetUserPointsBalance();
         Collection<Game> getWishlistGames();
 
+        int GetGameOwnerCount(int gameId);
     }
 }

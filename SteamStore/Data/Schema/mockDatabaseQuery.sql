@@ -1,4 +1,5 @@
-﻿USE SteamStore
+﻿
+USE SteamStore
 
 
 DROP TABLE IF EXISTS users_items;
@@ -194,7 +195,7 @@ CREATE PROCEDURE getGameTags
     @gid int
 AS
 BEGIN
-    SELECT t.tag_name 
+    SELECT t.tag_name, t.tag_id
     FROM Games g
     INNER JOIN game_tags gt ON gt.game_id = g.game_id
     INNER JOIN tags t ON t.tag_id = gt.tag_id
@@ -589,6 +590,7 @@ BEGIN
 	ELSE
 		SELECT 0 AS Result;
 END;
+GO;
 
 DROP PROCEDURE IF EXISTS DeleteGameTags;
 GO
