@@ -103,12 +103,12 @@ namespace SteamStore.ViewModels
                 
                 if (LastEarnedPoints > ThresholdForNotEarningPoints)
                 {
-                    await ShowNotification(PaymentDialogStrings.PaymentSuccessTitle,
-                        string.Format(PaymentDialogStrings.PaymentSuccessWithPointsMessage, LastEarnedPoints));
+                    await ShowNotification(PaymentDialogStrings.PAYMENT_SUCCESS_TITLE,
+                        string.Format(PaymentDialogStrings.PAYMENT_SUCCESS_WITH_POINTS_MESSAGE, LastEarnedPoints));
                 }
                 else
                 {
-                    await ShowNotification(PaymentDialogStrings.PaymentSuccessTitle, PaymentDialogStrings.PaymentSuccessMessage);
+                    await ShowNotification(PaymentDialogStrings.PAYMENT_SUCCESS_TITLE, PaymentDialogStrings.PAYMENT_SUCCESS_MESSAGE);
                 }
 
                 CartPage cartPage = new CartPage(_cartService, _userGameService);
@@ -116,7 +116,7 @@ namespace SteamStore.ViewModels
             }
             else
             {
-                await ShowNotification(PaymentDialogStrings.PaymentFailedTitle, PaymentDialogStrings.PaymentFailedMessage);
+                await ShowNotification(PaymentDialogStrings.PAYMENT_FAILED_TITLE, PaymentDialogStrings.PAYMENT_FAILED_MESSAGE);
             }
 
         }
@@ -126,7 +126,7 @@ namespace SteamStore.ViewModels
             {
                 Title = title,
                 Content = message,
-                CloseButtonText = PaymentDialogStrings.OkButtonText,
+                CloseButtonText = PaymentDialogStrings.OK_BUTTON_TEXT,
                 XamlRoot = App.m_window.Content.XamlRoot
             };
             await dialog.ShowAsync();

@@ -157,13 +157,13 @@ public class UserGameService : IUserGameService
         var games = _userGameRepository.getWishlistGames();
         switch (criteria)
         {
-            case FilterCriteria.OverwhelminglyPositive:
+            case FilterCriteria.OVERWHELMINGLY_POSITIVE:
                 return new Collection<Game>(games.Where(g => g.Rating >= 4.5).ToList());
-            case FilterCriteria.VeryPositive:
+            case FilterCriteria.VERY_POSITIVE:
                 return new Collection<Game>(games.Where(g => g.Rating >= 4 && g.Rating < 4.5).ToList());
-            case FilterCriteria.Mixed:
+            case FilterCriteria.MIXED:
                 return new Collection<Game>(games.Where(g => g.Rating >= 2 && g.Rating < 4).ToList());
-            case FilterCriteria.Negative:
+            case FilterCriteria.NEGATIVE:
                 return new Collection<Game>(games.Where(g => g.Rating < 2).ToList());
             default:
                 return games;
@@ -179,9 +179,9 @@ public class UserGameService : IUserGameService
         var games = _userGameRepository.getWishlistGames();
         IOrderedEnumerable<Game> orderedGames = criteria switch
         {
-            FilterCriteria.Price => ascending ? games.OrderBy(g => g.Price) : games.OrderByDescending(g => g.Price),
-            FilterCriteria.Rating => ascending ? games.OrderBy(g => g.Rating) : games.OrderByDescending(g => g.Rating),
-            FilterCriteria.Discount => ascending ? games.OrderBy(g => g.Discount) : games.OrderByDescending(g => g.Discount),
+            FilterCriteria.PRICE => ascending ? games.OrderBy(g => g.Price) : games.OrderByDescending(g => g.Price),
+            FilterCriteria.RATING => ascending ? games.OrderBy(g => g.Rating) : games.OrderByDescending(g => g.Rating),
+            FilterCriteria.DISCOUNT => ascending ? games.OrderBy(g => g.Discount) : games.OrderByDescending(g => g.Discount),
             _ => ascending ? games.OrderBy(g => g.Name) : games.OrderByDescending(g => g.Name)
         };
         return new Collection<Game>(orderedGames.ToList());

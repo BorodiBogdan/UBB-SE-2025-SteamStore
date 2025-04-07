@@ -157,7 +157,7 @@ namespace SteamStore.Pages
             {
                 Title = title,
                 Content = message,
-                CloseButtonText = DialogStrings.OkButtonText,
+                CloseButtonText = DialogStrings.OK_BUTTON_TEXT,
                 XamlRoot = this.Content.XamlRoot
             };
             await errorDialog.ShowAsync();
@@ -173,9 +173,9 @@ namespace SteamStore.Pages
             
             ContentDialog notDeveloperDialog = new ContentDialog
             {
-                Title = NotDeveloperDialogStrings.AccessDeniedTitle,
-                Content = NotDeveloperDialogStrings.AccessDeniedMessage,
-                CloseButtonText = NotDeveloperDialogStrings.CloseButtonText,
+                Title = NotDeveloperDialogStrings.ACCESS_DENIED_TITLE,
+                Content = NotDeveloperDialogStrings.ACCESS_DENIED_MESSAGE,
+                CloseButtonText = NotDeveloperDialogStrings.CLOSE_BUTTON_TEXT,
                 XamlRoot = this.Content.XamlRoot
             };
             
@@ -205,7 +205,7 @@ namespace SteamStore.Pages
                     }
                     else
                     {
-                        await ShowErrorMessage(DeveloperDialogStrings.InfoTitle, DeveloperDialogStrings.NoRejectionMessage);
+                        await ShowErrorMessage(DeveloperDialogStrings.INFO_TITLE, DeveloperDialogStrings.NO_REJECTION_MESSAGE);
                     }
                 }
                 catch (Exception ex)
@@ -231,9 +231,7 @@ namespace SteamStore.Pages
                         // Game is owned by users, show warning dialog
                         DeleteWarningDialog.XamlRoot = this.Content.XamlRoot;
                         //OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
-                        OwnerCountText.Text = string.Format(DeveloperDialogStrings.DeleteConfirmationOwned, ownerCount, ownerCount == 1 ? "" : "s");
-
-
+                        OwnerCountText.Text = string.Format(DeveloperDialogStrings.DELETE_CONFIRMATION_OWNED, ownerCount, ownerCount == 1 ? "" : "s");
                         result = await DeleteWarningDialog.ShowAsync();
                     }
                     else
@@ -254,9 +252,9 @@ namespace SteamStore.Pages
                 {
                     ContentDialog errorDialog = new ContentDialog
                     {
-                        Title = DeveloperDialogStrings.ErrorTitle,
-                        Content = string.Format(DeveloperDialogStrings.FailedToDelete, ex.Message),
-                        CloseButtonText = DialogStrings.OkButtonText,
+                        Title = DeveloperDialogStrings.ERROR_TITLE,
+                        Content = string.Format(DeveloperDialogStrings.FAILED_TO_DELETE, ex.Message),
+                        CloseButtonText = DialogStrings.OK_BUTTON_TEXT,
                         XamlRoot = this.Content.XamlRoot
                     };
                     await errorDialog.ShowAsync();

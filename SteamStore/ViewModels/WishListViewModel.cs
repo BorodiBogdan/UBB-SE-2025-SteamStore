@@ -9,27 +9,20 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using SteamStore.Constants;
+using SteamStore.Constants.SteamStore.Constants;
 
 namespace SteamStore.ViewModels
 {
     public class WishListViewModel : INotifyPropertyChanged
     {
-        private const string INITIAL_SEARCH_STRING = "";
-        private const string FILTER_ALL = "All Games";
-        private const string FILTER_OVERWHELMINGLY_POSITIVE = "Overwhelmingly Positive (4.5+★)";
-        private const string FILTER_VERY_POSITIVE = "Very Positive (4-4.5★)";
-        private const string FILTER_MIXED = "Mixed (2-4★)";
-        private const string FILTER_NEGATIVE = "Negative (<2★)";
-        private const string SORT_PRICE_ASC = "Price (Low to High)";
-        private const string SORT_PRICE_DESC = "Price (High to Low)";
-        private const string SORT_RATING_DESC = "Rating (High to Low)";
-        private const string SORT_DISCOUNT_DESC = "Discount (High to Low)";
+     
 
         private readonly IUserGameService _userGameService;
         private readonly IGameService _gameService;
         private readonly ICartService _cartService;
         private ObservableCollection<Game> _wishListGames = new ObservableCollection<Game>();
-        private string _searchText = INITIAL_SEARCH_STRING;
+        private string _searchText = WishListSearchStrings.INITIAL_SEARCH_STRING;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -65,13 +58,13 @@ namespace SteamStore.ViewModels
 
         public List<string> FilterOptions { get; } = new()
     {
-        FILTER_ALL, FILTER_OVERWHELMINGLY_POSITIVE, FILTER_VERY_POSITIVE,
-        FILTER_MIXED, FILTER_NEGATIVE
+        WishListSearchStrings.FILTER_ALL, WishListSearchStrings.FILTER_OVERWHELMINGLY_POSITIVE, WishListSearchStrings.FILTER_VERY_POSITIVE,
+        WishListSearchStrings.FILTER_MIXED, WishListSearchStrings.FILTER_NEGATIVE
     };
 
         public List<string> SortOptions { get; } = new()
     {
-        SORT_PRICE_ASC, SORT_PRICE_DESC, SORT_RATING_DESC, SORT_DISCOUNT_DESC
+        WishListSearchStrings.SORT_PRICE_ASC, WishListSearchStrings.SORT_PRICE_DESC, WishListSearchStrings.SORT_RATING_DESC, WishListSearchStrings.SORT_DISCOUNT_DESC
     };
 
         private string _selectedFilter;
@@ -112,11 +105,11 @@ namespace SteamStore.ViewModels
         {
             string criteria = SelectedFilter switch
             {
-                FILTER_OVERWHELMINGLY_POSITIVE => "overwhelmingly_positive",
-                FILTER_VERY_POSITIVE => "very_positive",
-                FILTER_MIXED => "mixed",
-                FILTER_NEGATIVE => "negative",
-                _ => "all"
+                WishListSearchStrings.FILTER_OVERWHELMINGLY_POSITIVE => WishListSearchStrings.OVERWHELMINGLY_POSITIVE,
+                WishListSearchStrings.FILTER_VERY_POSITIVE => WishListSearchStrings.VERY_POSITIVE,
+                WishListSearchStrings.FILTER_MIXED => WishListSearchStrings.MIXED,
+                WishListSearchStrings.FILTER_NEGATIVE => WishListSearchStrings.NEGATIVE,
+                _ => WishListSearchStrings.ALL
             };
 
             FilterWishListGames(criteria);
@@ -126,13 +119,13 @@ namespace SteamStore.ViewModels
         {
             switch (SelectedSort)
             {
-                case SORT_PRICE_ASC:
+                case WishListSearchStrings.SORT_PRICE_ASC:
                     SortWishListGames("price", true); break;
-                case SORT_PRICE_DESC:
+                case WishListSearchStrings.SORT_PRICE_DESC:
                     SortWishListGames("price", false); break;
-                case SORT_RATING_DESC:
+                case WishListSearchStrings.SORT_RATING_DESC:
                     SortWishListGames("rating", false); break;
-                case SORT_DISCOUNT_DESC:
+                case WishListSearchStrings.SORT_DISCOUNT_DESC:
                     SortWishListGames("discount", false); break;
             }
         }
@@ -218,14 +211,13 @@ namespace SteamStore.ViewModels
             {
                 var dialog = new ContentDialog
                 {
-                    Title = "Confirm Removal",
-                    Content = $"Are you sure you want to remove {game.Name} from your wishlist?",
-                    PrimaryButtonText = "Yes",
-                    CloseButtonText = "No",
+                    Title = ConfirmationDialogStrings.CONFIRM_REMOVAL_TITLE,
+                    Content = string.Format(ConfirmationDialogStrings.CONFIRM_REMOVAL_MESSAGE, game.Name),
+                    PrimaryButtonText = ConfirmationDialogStrings.YES_BUTTON_TEXT,
+                    CloseButtonText = ConfirmationDialogStrings.NO_BUTTON_TEXT,
                     DefaultButton = ContentDialogButton.Primary,
                     XamlRoot = App.m_window.Content.XamlRoot
                 };
-
                 var result = await dialog.ShowAsync();
                 if (result == ContentDialogResult.Primary)
                 {
