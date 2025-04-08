@@ -1,61 +1,65 @@
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using SteamStore.Models;
-using System.Threading.Tasks;
-using SteamStore.Constants;
-using SteamStore.Services.Interfaces;
-
+// <copyright file="DeveloperModePage.xaml.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.Pages
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.InteropServices.WindowsRuntime;
+    using System.Threading.Tasks;
+    using Microsoft.UI.Xaml;
+    using Microsoft.UI.Xaml.Controls;
+    using Microsoft.UI.Xaml.Controls.Primitives;
+    using Microsoft.UI.Xaml.Data;
+    using Microsoft.UI.Xaml.Input;
+    using Microsoft.UI.Xaml.Media;
+    using Microsoft.UI.Xaml.Navigation;
+    using SteamStore.Constants;
+    using SteamStore.Models;
+    using SteamStore.Services.Interfaces;
+    using Windows.Foundation;
+    using Windows.Foundation.Collections;
+
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class DeveloperModePage : Page
     {
-        private DeveloperViewModel _viewModel;
+        private DeveloperViewModel viewModel;
 
         public DeveloperModePage(IDeveloperService developerService)
         {
-            InitializeComponent();
-            _viewModel = new DeveloperViewModel(developerService);
-            this.DataContext = _viewModel;
+            this.InitializeComponent();
+            this.viewModel = new DeveloperViewModel(developerService);
+            this.DataContext = this.viewModel;
 
-            this.Loaded += DeveloperModePage_Loaded;
+            this.Loaded += this.DeveloperModePage_Loaded;
 
-            AddGameButton.Click += AddGameButton_Click;
-            ReviewGamesButton.Click += ReviewGamesButton_Click;
-            MyGamesButton.Click += MyGamesButton_Click;
+            this.AddGameButton.Click += this.AddGameButton_Click;
+            this.ReviewGamesButton.Click += this.ReviewGamesButton_Click;
+            this.MyGamesButton.Click += this.MyGamesButton_Click;
         }
 
         private void DisableControls()
         {
-            AddGameButton.IsEnabled = false;
-            ReviewGamesButton.IsEnabled = false;
-            MyGamesButton.IsEnabled = false;
-            DeveloperGamesList.IsEnabled = false;
-            ReviewGamesList.IsEnabled = false;
+            this.AddGameButton.IsEnabled = false;
+            this.ReviewGamesButton.IsEnabled = false;
+            this.MyGamesButton.IsEnabled = false;
+            this.DeveloperGamesList.IsEnabled = false;
+            this.ReviewGamesList.IsEnabled = false;
         }
 
         private void DeveloperModePage_Loaded(object sender, RoutedEventArgs e)
         {
             // Check if user is a developer
-            if (! _viewModel.CheckIfUserIsADeveloper())
+            if (!this.viewModel.CheckIfUserIsADeveloper())
             {
                 // Show error message dialog
-                ShowNotDeveloperMessage();
+                this.ShowNotDeveloperMessage();
+
                 // Disable all interactive elements
                 this.DisableControls();
             }
@@ -63,26 +67,26 @@ namespace SteamStore.Pages
 
         private void ReviewGamesButton_Click(object sender, RoutedEventArgs e)
         {
-            _viewModel.LoadUnvalidated();
-            DeveloperGamesList.Visibility = Visibility.Collapsed;
-            ReviewGamesList.Visibility = Visibility.Visible;
-            PageTitle.Text = DeveloperPageTitles.REVIEW_GAMES;
+            this.viewModel.LoadUnvalidated();
+            this.DeveloperGamesList.Visibility = Visibility.Collapsed;
+            this.ReviewGamesList.Visibility = Visibility.Visible;
+            this.PageTitle.Text = DeveloperPageTitles.REVIEWGAMES;
         }
 
         private void MyGamesButton_Click(object sender, RoutedEventArgs e)
         {
-            _viewModel.LoadGames();
-            DeveloperGamesList.Visibility = Visibility.Visible;
-            ReviewGamesList.Visibility = Visibility.Collapsed;
-            PageTitle.Text = DeveloperPageTitles.MY_GAMES;
+            this.viewModel.LoadGames();
+            this.DeveloperGamesList.Visibility = Visibility.Visible;
+            this.ReviewGamesList.Visibility = Visibility.Collapsed;
+            this.PageTitle.Text = DeveloperPageTitles.MYGAMES;
         }
 
         private void AcceptButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is int gameId)
             {
-                _viewModel.ValidateGame(gameId);
-                _viewModel.LoadUnvalidated();
+                this.viewModel.ValidateGame(gameId);
+                this.viewModel.LoadUnvalidated();
             }
         }
 
@@ -90,65 +94,61 @@ namespace SteamStore.Pages
         {
             if (sender is Button button && button.CommandParameter is int gameId)
             {
+                this.RejectGameDialog.XamlRoot = this.Content.XamlRoot;
 
-                RejectGameDialog.XamlRoot = this.Content.XamlRoot;
-
-                var result = await RejectGameDialog.ShowAsync();
+                var result = await this.RejectGameDialog.ShowAsync();
 
                 if (result == ContentDialogResult.Primary)
                 {
-                    string rejectionReason = RejectReasonTextBox.Text;
-                    await _viewModel.HandleRejectGameAsync(gameId, rejectionReason);
+                    string rejectionReason = this.RejectReasonTextBox.Text;
+                    await this.viewModel.HandleRejectGameAsync(gameId, rejectionReason);
                 }
             }
         }
 
         private async void AddGameButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = await AddGameDialog.ShowAsync();
+            var result = await this.AddGameDialog.ShowAsync();
 
             if (result == ContentDialogResult.Primary)
             {
                 try
                 {
-                    await _viewModel.CreateGameAsync(
-                        AddGameId.Text,
-                        AddGameName.Text,
-                        AddGamePrice.Text,
-                        AddGameDescription.Text,
-                        AddGameImageUrl.Text,
-                        AddGameplayUrl.Text,
-                        AddTrailerUrl.Text,
-                        AddGameMinReq.Text,
-                        AddGameRecReq.Text,
-                        AddGameDiscount.Text,
-                        AddGameTagList.SelectedItems.Cast<Tag>().ToList()
-                    );
+                    await this.viewModel.CreateGameAsync(
+                        this.AddGameId.Text,
+                        this.AddGameName.Text,
+                        this.AddGamePrice.Text,
+                        this.AddGameDescription.Text,
+                        this.AddGameImageUrl.Text,
+                        this.AddGameplayUrl.Text,
+                        this.AddTrailerUrl.Text,
+                        this.AddGameMinReq.Text,
+                        this.AddGameRecReq.Text,
+                        this.AddGameDiscount.Text,
+                        this.AddGameTagList.SelectedItems.Cast<Tag>().ToList());
 
                     this.ClearFieldsForAddingAGame();
                 }
-                catch (Exception ex)
+                catch (Exception exception)
                 {
-                    await ShowErrorMessage("Error", ex.Message); 
+                    await this.ShowErrorMessage("Error", exception.Message);
                 }
-                
             }
         }
 
-
         private void ClearFieldsForAddingAGame()
         {
-            AddGameId.Text = string.Empty;
-            AddGameName.Text = string.Empty;
-            AddGamePrice.Text = string.Empty;
-            AddGameDescription.Text = string.Empty;
-            AddGameImageUrl.Text = string.Empty;
-            AddGameplayUrl.Text = string.Empty;
-            AddTrailerUrl.Text = string.Empty;
-            AddGameMinReq.Text = string.Empty;
-            AddGameRecReq.Text = string.Empty;
-            AddGameDiscount.Text = string.Empty;
-            AddGameTagList.SelectedItems.Clear();
+            this.AddGameId.Text = string.Empty;
+            this.AddGameName.Text = string.Empty;
+            this.AddGamePrice.Text = string.Empty;
+            this.AddGameDescription.Text = string.Empty;
+            this.AddGameImageUrl.Text = string.Empty;
+            this.AddGameplayUrl.Text = string.Empty;
+            this.AddTrailerUrl.Text = string.Empty;
+            this.AddGameMinReq.Text = string.Empty;
+            this.AddGameRecReq.Text = string.Empty;
+            this.AddGameDiscount.Text = string.Empty;
+            this.AddGameTagList.SelectedItems.Clear();
         }
 
         private async Task ShowErrorMessage(string title, string message)
@@ -157,12 +157,12 @@ namespace SteamStore.Pages
             {
                 Title = title,
                 Content = message,
-                CloseButtonText = DialogStrings.OK_BUTTON_TEXT,
-                XamlRoot = this.Content.XamlRoot
+                CloseButtonText = DialogStrings.OKBUTTONTEXT,
+                XamlRoot = this.Content.XamlRoot,
             };
             await errorDialog.ShowAsync();
         }
-        
+
         private async void ShowNotDeveloperMessage()
         {
             if (this.Content == null || this.Content.XamlRoot == null)
@@ -170,22 +170,22 @@ namespace SteamStore.Pages
                 System.Diagnostics.Debug.WriteLine("Cannot show developer access dialog: XamlRoot is null");
                 return;
             }
-            
+
             ContentDialog notDeveloperDialog = new ContentDialog
             {
-                Title = NotDeveloperDialogStrings.ACCESS_DENIED_TITLE,
-                Content = NotDeveloperDialogStrings.ACCESS_DENIED_MESSAGE,
-                CloseButtonText = NotDeveloperDialogStrings.CLOSE_BUTTON_TEXT,
-                XamlRoot = this.Content.XamlRoot
+                Title = NotDeveloperDialogStrings.ACCESSDENIEDTITLE,
+                Content = NotDeveloperDialogStrings.ACCESSDENIEDMESSAGE,
+                CloseButtonText = NotDeveloperDialogStrings.CLOSEBUTTONTEXT,
+                XamlRoot = this.Content.XamlRoot,
             };
-            
+
             try
             {
                 await notDeveloperDialog.ShowAsync();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Error showing developer access dialog: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error showing developer access dialog: {exception.Message}");
             }
         }
 
@@ -195,22 +195,21 @@ namespace SteamStore.Pages
             {
                 try
                 {
-                    string rejectionMessage = _viewModel.GetRejectionMessage(gameId);
-                    
+                    string rejectionMessage = this.viewModel.GetRejectionMessage(gameId);
                     if (!string.IsNullOrWhiteSpace(rejectionMessage))
                     {
-                        RejectionMessageText.Text = rejectionMessage;
-                        RejectionMessageDialog.XamlRoot = this.Content.XamlRoot;
-                        await RejectionMessageDialog.ShowAsync();
+                        this.RejectionMessageText.Text = rejectionMessage;
+                        this.RejectionMessageDialog.XamlRoot = this.Content.XamlRoot;
+                        await this.RejectionMessageDialog.ShowAsync();
                     }
                     else
                     {
-                        await ShowErrorMessage(DeveloperDialogStrings.INFO_TITLE, DeveloperDialogStrings.NO_REJECTION_MESSAGE);
+                        await this.ShowErrorMessage(DeveloperDialogStrings.INFOTITLE, DeveloperDialogStrings.NOREJECTIONMESSAGE);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception exception)
                 {
-                    await ShowErrorMessage("Error", $"Failed to retrieve rejection message: {ex.Message}");
+                    await this.ShowErrorMessage("Error", $"Failed to retrieve rejection message: {exception.Message}");
                 }
             }
         }
@@ -222,139 +221,128 @@ namespace SteamStore.Pages
                 try
                 {
                     // Check if the game is owned by any users
-                    int ownerCount = _viewModel.GetGameOwnerCount(gameId);
-                    
+                    int ownerCount = this.viewModel.GetGameOwnerCount(gameId);
                     ContentDialogResult result;
-                    
                     if (ownerCount > 0)
                     {
                         // Game is owned by users, show warning dialog
-                        DeleteWarningDialog.XamlRoot = this.Content.XamlRoot;
-                        //OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
-                        OwnerCountText.Text = string.Format(DeveloperDialogStrings.DELETE_CONFIRMATION_OWNED, ownerCount, ownerCount == 1 ? "" : "s");
-                        result = await DeleteWarningDialog.ShowAsync();
+                        this.DeleteWarningDialog.XamlRoot = this.Content.XamlRoot;
+
+                        // OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
+                        this.OwnerCountText.Text = string.Format(DeveloperDialogStrings.DELETECONFIRMATIONOWNED, ownerCount, ownerCount == 1 ? string.Empty : "s");
+                        result = await this.DeleteWarningDialog.ShowAsync();
                     }
                     else
                     {
                         // Game is not owned by any users, show standard confirmation dialog
-                        DeleteConfirmationDialog.XamlRoot = this.Content.XamlRoot;
-                        result = await DeleteConfirmationDialog.ShowAsync();
+                        this.DeleteConfirmationDialog.XamlRoot = this.Content.XamlRoot;
+                        result = await this.DeleteConfirmationDialog.ShowAsync();
                     }
-                    
-                    if (result == ContentDialogResult.Primary) 
+
+                    if (result == ContentDialogResult.Primary)
                     {
-                        _viewModel.DeleteGame(gameId);
+                        this.viewModel.DeleteGame(gameId);
+
                         // Refresh the games list
-                        _viewModel.LoadGames();
+                        this.viewModel.LoadGames();
                     }
                 }
-                catch (Exception ex)
+                catch (Exception exception)
                 {
                     ContentDialog errorDialog = new ContentDialog
                     {
-                        Title = DeveloperDialogStrings.ERROR_TITLE,
-                        Content = string.Format(DeveloperDialogStrings.FAILED_TO_DELETE, ex.Message),
-                        CloseButtonText = DialogStrings.OK_BUTTON_TEXT,
-                        XamlRoot = this.Content.XamlRoot
+                        Title = DeveloperDialogStrings.ERRORTITLE,
+                        Content = string.Format(DeveloperDialogStrings.FAILEDTODELETE, exception.Message),
+                        CloseButtonText = DialogStrings.OKBUTTONTEXT,
+                        XamlRoot = this.Content.XamlRoot,
                     };
                     await errorDialog.ShowAsync();
                 }
             }
         }
-       
 
         private async void EditButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is int gameId)
             {
-                Game gameToEdit = _viewModel.GetGameByIdInDeveloperGameList(gameId);
+                Game gameToEdit = this.viewModel.GetGameByIdInDeveloperGameList(gameId);
                 if (gameToEdit != null)
                 {
-                    //System.Diagnostics.Debug.WriteLine("Im in edit");
+                    // System.Diagnostics.Debug.WriteLine("Im in edit");
                     try
                     {
-                        PopulateEditForm(gameToEdit);
-                        EditGameDialog.XamlRoot = this.Content.XamlRoot;
-                        var result = await EditGameDialog.ShowAsync();
+                        this.PopulateEditForm(gameToEdit);
+                        this.EditGameDialog.XamlRoot = this.Content.XamlRoot;
+                        var result = await this.EditGameDialog.ShowAsync();
                         if (result == ContentDialogResult.Primary)
                         {
-                            await SaveUpdatedGameAsync();
-                            
-                                // Reload games after the update
-                            _viewModel.LoadGames();
-                            
+                            await this.SaveUpdatedGameAsync();
 
+                            // Reload games after the update
+                            this.viewModel.LoadGames();
                         }
- 
                     }
-                    catch (Exception ex)
+                    catch (Exception exception)
                     {
-                        await ShowErrorMessage("Error", ex.Message);
+                        await this.ShowErrorMessage("Error", exception.Message);
                     }
                 }
-
             }
         }
+
         private async Task SaveUpdatedGameAsync()
         {
             try
             {
-                   await _viewModel.UpdateGameAsync(
-                    EditGameId.Text,
-                    EditGameName.Text,
-                    EditGamePrice.Text,
-                    EditGameDescription.Text,
-                    EditGameImageUrl.Text,
-                    EditGameplayUrl.Text,
-                    EditTrailerUrl.Text,
-                    EditGameMinReq.Text,
-                    EditGameRecReq.Text,
-                    EditGameDiscount.Text,
-                    EditGameTagList.SelectedItems.Cast<Tag>().ToList()
-                );
+                await this.viewModel.UpdateGameAsync(
+                    this.EditGameId.Text,
+                    this.EditGameName.Text,
+                    this.EditGamePrice.Text,
+                    this.EditGameDescription.Text,
+                    this.EditGameImageUrl.Text,
+                    this.EditGameplayUrl.Text,
+                    this.EditTrailerUrl.Text,
+                    this.EditGameMinReq.Text,
+                    this.EditGameRecReq.Text,
+                    this.EditGameDiscount.Text,
+                    this.EditGameTagList.SelectedItems.Cast<Tag>().ToList());
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                await ShowErrorMessage("Error", ex.Message);
+                await this.ShowErrorMessage("Error", exception.Message);
             }
         }
+
         private void PopulateEditForm(Game game)
         {
-            EditGameId.Text = game.Id.ToString();
-            EditGameId.IsEnabled = false;
-            EditGameName.Text = game.Name;
-            EditGameDescription.Text = game.Description;
-            EditGamePrice.Text = game.Price.ToString();
-            EditGameImageUrl.Text = game.ImagePath;
-            EditGameplayUrl.Text = game.GameplayPath ?? "";
-            EditTrailerUrl.Text = game.TrailerPath ?? "";
-            EditGameMinReq.Text = game.MinimumRequirements;
-            EditGameRecReq.Text = game.RecommendedRequirements;
-            EditGameDiscount.Text = game.Discount.ToString();
-
-           
-            LoadGameTags(game);
+            this.EditGameId.Text = game.Id.ToString();
+            this.EditGameId.IsEnabled = false;
+            this.EditGameName.Text = game.Name;
+            this.EditGameDescription.Text = game.Description;
+            this.EditGamePrice.Text = game.Price.ToString();
+            this.EditGameImageUrl.Text = game.ImagePath;
+            this.EditGameplayUrl.Text = game.GameplayPath ?? string.Empty;
+            this.EditTrailerUrl.Text = game.TrailerPath ?? string.Empty;
+            this.EditGameMinReq.Text = game.MinimumRequirements;
+            this.EditGameRecReq.Text = game.RecommendedRequirements;
+            this.EditGameDiscount.Text = game.Discount.ToString();
+            this.LoadGameTags(game);
         }
+
         private void LoadGameTags(Game game)
         {
-            EditGameTagList.SelectedItems.Clear();
+            this.EditGameTagList.SelectedItems.Clear();
 
             try
             {
-                var gameTags = _viewModel.GetGameTags(game.Id);
-                //System.Diagnostics.Debug.WriteLine(gameTags.Count);
-                //foreach (var tag in gameTags)
-                //{
-                //    System.Diagnostics.Debug.WriteLine($"Tag ID: {tag.tag_id}, Tag Name: {tag.tag_name}");
-                //}
-
+                var gameTags = this.viewModel.GetGameTags(game.Id);
                 if (gameTags.Any())
                 {
-                    foreach (var tag in EditGameTagList.Items)
+                    foreach (var tag in this.EditGameTagList.Items)
                     {
                         if (tag is Tag tagItem && gameTags.Any(t => t.tag_id == tagItem.tag_id))
                         {
-                            EditGameTagList.SelectedItems.Add(tag);
+                            this.EditGameTagList.SelectedItems.Add(tag);
                         }
                     }
                 }
@@ -363,9 +351,9 @@ namespace SteamStore.Pages
                     System.Diagnostics.Debug.WriteLine("No tags found for the game.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading game tags: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error loading game tags: {exception.Message}");
             }
         }
     }

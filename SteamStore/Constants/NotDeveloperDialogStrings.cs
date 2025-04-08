@@ -1,15 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// <copyright file="NotDeveloperDialogStrings.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.Constants
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+
     public static class NotDeveloperDialogStrings
     {
-        public const string ACCESS_DENIED_TITLE = "Access Denied";
-        public const string ACCESS_DENIED_MESSAGE = "You need to be a registered developer to access this page.";
-        public const string CLOSE_BUTTON_TEXT = "OK";
+        public const string ACCESSDENIEDTITLE = "Access Denied";
+        public const string ACCESSDENIEDMESSAGE = "You need to be a registered developer to access this page.";
+        public const string CLOSEBUTTONTEXT = "OK";
     }
 }

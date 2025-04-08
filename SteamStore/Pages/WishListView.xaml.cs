@@ -1,24 +1,28 @@
-using SteamStore.Models;
-using SteamStore.ViewModels;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using System;
-using Microsoft.UI.Xaml.Media;
-using SteamStore.Pages;
-using SteamStore;
-using SteamStore.Services.Interfaces;
+// <copyright file="WishListView.xaml.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.Pages
 {
+    using System;
+    using Microsoft.UI.Xaml;
+    using Microsoft.UI.Xaml.Controls;
+    using Microsoft.UI.Xaml.Media;
+    using SteamStore;
+    using SteamStore.Models;
+    using SteamStore.Pages;
+    using SteamStore.Services.Interfaces;
+    using SteamStore.ViewModels;
+
     public sealed partial class WishListView : Page
     {
-        private WishListViewModel _viewModel;
+        private WishListViewModel viewModel;
 
         public WishListView(IUserGameService userGameService, IGameService gameService, ICartService cartService)
         {
             this.InitializeComponent();
-            _viewModel = new WishListViewModel(userGameService, gameService, cartService);
-            this.DataContext = _viewModel;
+            this.viewModel = new WishListViewModel(userGameService, gameService, cartService);
+            this.DataContext = this.viewModel;
         }
 
         private void ViewDetails_Click(object sender, RoutedEventArgs e)
@@ -27,7 +31,7 @@ namespace SteamStore.Pages
             {
                 if (this.Parent is Frame frame)
                 {
-                    _viewModel.ViewGameDetails(frame, game);
+                    this.viewModel.ViewGameDetails(frame, game);
                 }
             }
         }
@@ -36,16 +40,16 @@ namespace SteamStore.Pages
         {
             if (this.Parent is Frame frame)
             {
-                _viewModel.BackToHomePage(frame);
+                this.viewModel.BackToHomePage(frame);
             }
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_viewModel != null)
+            if (this.viewModel != null)
             {
-                _viewModel.HandleSearchWishListGames();
+                this.viewModel.HandleSearchWishListGames();
             }
         }
     }
-} 
+}

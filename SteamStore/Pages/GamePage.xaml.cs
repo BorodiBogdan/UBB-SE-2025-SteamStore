@@ -1,57 +1,99 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using SteamStore.Constants;
-using SteamStore.Services.Interfaces;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+﻿// <copyright file="GamePage.xaml.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.Pages
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.InteropServices.WindowsRuntime;
+    using Microsoft.UI.Xaml;
+    using Microsoft.UI.Xaml.Controls;
+    using Microsoft.UI.Xaml.Controls.Primitives;
+    using Microsoft.UI.Xaml.Data;
+    using Microsoft.UI.Xaml.Input;
+    using Microsoft.UI.Xaml.Media;
+    using Microsoft.UI.Xaml.Media.Imaging;
+    using Microsoft.UI.Xaml.Navigation;
+    using SteamStore.Constants;
+    using SteamStore.Services.Interfaces;
+    using Windows.Foundation;
+    using Windows.Foundation.Collections;
+
     public sealed partial class GamePage : Page
     {
-        internal GamePageViewModel _viewModel;
         private const int MaxNumberOfSimilarGamesToDisplay = 3;
+        private GamePageViewModel viewModel;
+
         public GamePage()
         {
             this.InitializeComponent();
         }
-        
-        public GamePage(IGameService gameService,ICartService cartService, IUserGameService userGameService, Game game)
+
+        public GamePage(IGameService gameService, ICartService cartService, IUserGameService userGameService, Game game)
         {
             this.InitializeComponent();
-            _viewModel = new GamePageViewModel(gameService, cartService, userGameService);
-            this.DataContext = _viewModel;
-            
+            this.viewModel = new GamePageViewModel(gameService, cartService, userGameService);
+            this.DataContext = this.viewModel;
             if (game != null)
             {
-                _viewModel.LoadGame(game);
-                LoadGameUi();
+                this.viewModel.LoadGame(game);
+                this.LoadGameUi();
             }
         }
-        
+
+        public void LoadGameUi()
+        {
+            try
+            {
+                if (this.viewModel.Game == null)
+                {
+                    Debug.WriteLine("Error: Game not found");
+                    return;
+                }
+
+                this.GameTitle.Text = this.viewModel.Game.Name;
+                this.GamePrice.Text = this.GamePrice.Text = this.viewModel.FormattedPrice;
+
+                this.GameDescription.Text = this.viewModel.Game.Description;
+
+                this.GameDeveloper.Text = LabelStrings.DEVELOPERPREFIX + this.viewModel.Game.Name;
+
+                if (!string.IsNullOrEmpty(this.viewModel.Game.ImagePath))
+                {
+                    try
+                    {
+                        this.GameImage.Source = new BitmapImage(new Uri(this.viewModel.Game.ImagePath));
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                this.MinimumRequirements.Text = this.viewModel.Game.MinimumRequirements;
+                this.RecommendedRequirements.Text = this.viewModel.Game.RecommendedRequirements;
+                this.AddMediaLinks(this.viewModel.Game);
+                this.LoadSimilarGamesUi();
+                this.GameRating.Value = Convert.ToDouble(this.viewModel.Game.Rating);
+                this.OwnedStatus.Text = this.viewModel.IsOwned ? LabelStrings.OWNED : LabelStrings.NOTOWNED;
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine($"Error loading game UI: {exception.Message}");
+            }
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
             try
             {
-                if (_viewModel == null)
+                if (this.viewModel == null)
                 {
                     Debug.WriteLine("Error: Services not available");
                     return;
@@ -59,114 +101,67 @@ namespace SteamStore.Pages
 
                 if (e.Parameter is Game selectedGame)
                 {
-                    _viewModel.LoadGame(selectedGame);
-                    LoadGameUi();
+                    this.viewModel.LoadGame(selectedGame);
+                    this.LoadGameUi();
                 }
                 else if (e.Parameter is int gameId)
                 {
-                    _viewModel.LoadGameById(gameId);
-                    LoadGameUi();
+                    this.viewModel.LoadGameById(gameId);
+                    this.LoadGameUi();
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 // Handle any errors
-                Debug.WriteLine($"Error in OnNavigatedTo: {ex.Message}");
+                Debug.WriteLine($"Error in OnNavigatedTo: {exception.Message}");
             }
         }
-        
-        public void LoadGameUi()
-        {
-            try
-            {
-                if (_viewModel.Game == null)
-                {
-                    Debug.WriteLine("Error: Game not found");
-                    return;
-                }
 
-                GameTitle.Text = _viewModel.Game.Name;
-                GamePrice.Text = GamePrice.Text = _viewModel.FormattedPrice;
-
-                GameDescription.Text = _viewModel.Game.Description;
-
-                GameDeveloper.Text = LabelStrings.DEVELOPER_PREFIX + _viewModel.Game.Name; 
-                
-                if (!string.IsNullOrEmpty(_viewModel.Game.ImagePath))
-                {
-                    try
-                    {
-                        GameImage.Source = new BitmapImage(new Uri(_viewModel.Game.ImagePath));
-                    }
-                    catch
-                    {
-                    }
-                }
-                
-                MinimumRequirements.Text = _viewModel.Game.MinimumRequirements;
-                RecommendedRequirements.Text = _viewModel.Game.RecommendedRequirements;
-               
-               
-                AddMediaLinks(_viewModel.Game);
-                
-                LoadSimilarGamesUi();
-                
-                GameRating.Value = Convert.ToDouble(_viewModel.Game.Rating);
-                OwnedStatus.Text = _viewModel.IsOwned ? LabelStrings.OWNED : LabelStrings.NOT_OWNED;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading game UI: {ex.Message}");
-            }
-        }
-        
         private void AddMediaLinks(Game game)
         {
-            MediaLinksPanel.Children.Clear();
-         
-            AddMediaLink(MediaLinkLabels.OFFICIAL_TRAILER, game.TrailerPath);
-            AddMediaLink(MediaLinkLabels.GAMEPLAY_VIDEO, game.GameplayPath);
+            this.MediaLinksPanel.Children.Clear();
+            this.AddMediaLink(MediaLinkLabels.OFFICIALTRAILER, game.TrailerPath);
+            this.AddMediaLink(MediaLinkLabels.GAMEPLAYVIDEO, game.GameplayPath);
         }
-        
+
         private void AddMediaLink(string title, string url)
         {
             HyperlinkButton link = new HyperlinkButton
             {
                 Content = title,
-                NavigateUri = new Uri(url)
+                NavigateUri = new Uri(url),
             };
-            MediaLinksPanel.Children.Add(link);
+            this.MediaLinksPanel.Children.Add(link);
         }
-        
+
         private void LoadSimilarGamesUi()
         {
             try
             {
-                SimilarGame1.Visibility = Visibility.Collapsed;
-                SimilarGame2.Visibility = Visibility.Collapsed;
-                SimilarGame3.Visibility = Visibility.Collapsed;
-                var similarGameButtons = new[] { SimilarGame1, SimilarGame2, SimilarGame3 };
-                var similarGameImages = new[] { SimilarGame1Image, SimilarGame2Image, SimilarGame3Image };
-                var similarGameTitles = new[] { SimilarGame1Title, SimilarGame2Title, SimilarGame3Title };
-                var similarGameRatings = new[] { SimilarGame1Rating, SimilarGame2Rating, SimilarGame3Rating };
+                this.SimilarGame1.Visibility = Visibility.Collapsed;
+                this.SimilarGame2.Visibility = Visibility.Collapsed;
+                this.SimilarGame3.Visibility = Visibility.Collapsed;
+                var similarGameButtons = new[] { this.SimilarGame1, this.SimilarGame2, this.SimilarGame3 };
+                var similarGameImages = new[] { this.SimilarGame1Image, this.SimilarGame2Image, this.SimilarGame3Image };
+                var similarGameTitles = new[] { this.SimilarGame1Title, this.SimilarGame2Title, this.SimilarGame3Title };
+                var similarGameRatings = new[] { this.SimilarGame1Rating, this.SimilarGame2Rating, this.SimilarGame3Rating };
 
-                var similarGames = _viewModel.SimilarGames.ToList();
+                var similarGames = this.viewModel.SimilarGames.ToList();
                 for (int similarGameIndex = 0; similarGameIndex < similarGames.Count; similarGameIndex++)
                 {
-                    DisplaySimilarGame(similarGameButtons[similarGameIndex], similarGameImages[similarGameIndex], similarGameTitles[similarGameIndex], similarGameRatings[similarGameIndex], similarGames[similarGameIndex]);
+                    this.DisplaySimilarGame(similarGameButtons[similarGameIndex], similarGameImages[similarGameIndex], similarGameTitles[similarGameIndex], similarGameRatings[similarGameIndex], similarGames[similarGameIndex]);
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Debug.WriteLine($"Error loading similar games: {ex.Message}");
+                Debug.WriteLine($"Error loading similar games: {exception.Message}");
             }
         }
-        
+
         private void DisplaySimilarGame(Button button, Image image, TextBlock title, TextBlock rating, Game game)
         {
             button.Visibility = Visibility.Visible;
             button.Tag = game;
-            
             if (!string.IsNullOrEmpty(game.ImagePath))
             {
                 try
@@ -177,56 +172,53 @@ namespace SteamStore.Pages
                 {
                 }
             }
-            
+
             title.Text = game.Name;
-
-            rating.Text = string.Format(LabelStrings.RATING_FORMAT, game.Rating);
-
+            rating.Text = string.Format(LabelStrings.RATINGFORMAT, game.Rating);
         }
 
         private void BuyButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                _viewModel.AddToCart();
-
-                ShowSuccessNotificationForBuy();
+                this.viewModel.AddToCart();
+                this.ShowSuccessNotificationForBuy();
             }
             catch (Exception ex)
             {
-                NotificationTip.Title = NotificationStrings.AddToCartErrorTitle;
-                NotificationTip.Subtitle = string.Format(NotificationStrings.AddToCartErrorMessage, _viewModel.Game.Name) + " " + ex.Message;
-                NotificationTip.IsOpen = true;
+                this.NotificationTip.Title = NotificationStrings.AddToCartErrorTitle;
+                this.NotificationTip.Subtitle = string.Format(NotificationStrings.AddToCartErrorMessage, this.viewModel.Game.Name) + " " + ex.Message;
+                this.NotificationTip.IsOpen = true;
             }
         }
+
         private void ShowSuccessNotificationForBuy()
         {
-            NotificationTip.Title = NotificationStrings.AddToCartSuccessTitle;
-            NotificationTip.Subtitle = string.Format(NotificationStrings.AddToCartSuccessMessage, _viewModel.Game.Name);
-            NotificationTip.IsOpen = true;
+            this.NotificationTip.Title = NotificationStrings.AddToCartSuccessTitle;
+            this.NotificationTip.Subtitle = string.Format(NotificationStrings.AddToCartSuccessMessage, this.viewModel.Game.Name);
+            this.NotificationTip.IsOpen = true;
         }
-        
 
         private void WishlistButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                _viewModel.AddToWishlist();
-
-                NotificationTip.Title = NotificationStrings.AddToWishlistSuccessTitle;
-                NotificationTip.Subtitle = string.Format(NotificationStrings.AddToWishlistSuccessMessage, _viewModel.Game.Name);
-                NotificationTip.IsOpen = true;
+                this.viewModel.AddToWishlist();
+                this.NotificationTip.Title = NotificationStrings.AddToWishlistSuccessTitle;
+                this.NotificationTip.Subtitle = string.Format(NotificationStrings.AddToWishlistSuccessMessage, this.viewModel.Game.Name);
+                this.NotificationTip.IsOpen = true;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                NotificationTip.Title = NotificationStrings.AddToWishlistErrorTitle;
-                string errorMessage = ex.Message;
-                if (errorMessage.Contains(ErrorStrings.SQL_NON_QUERY_FAILURE_INDICATORr))
+                this.NotificationTip.Title = NotificationStrings.AddToWishlistErrorTitle;
+                string errorMessage = exception.Message;
+                if (errorMessage.Contains(ErrorStrings.SQLNONQUERYFAILUREINDICATORr))
                 {
-                    errorMessage = string.Format(ErrorStrings.ADD_TO_WISHLIST_ALREADY_EXISTS_MESSAGE, _viewModel.Game.Name);
+                    errorMessage = string.Format(ErrorStrings.ADDTOWISHLISTALREADYEXISTSMESSAGE, this.viewModel.Game.Name);
                 }
-                NotificationTip.Subtitle = errorMessage;
-                NotificationTip.IsOpen = true;
+
+                this.NotificationTip.Subtitle = errorMessage;
+                this.NotificationTip.IsOpen = true;
             }
         }
 
@@ -235,21 +227,8 @@ namespace SteamStore.Pages
             if (sender is Button button && button.Tag is Game game)
             {
                 Frame frame = this.Parent as Frame;
-                _viewModel.GetSimilarGames(game, frame);
-                
-                //if (frame != null)
-                //{
-                //    var gamePage = new GamePage(_viewModel._gameService, _viewModel._cartService, _viewModel._userGameService, game);
-                    
-                //    frame.Content = gamePage;
-                   
-                //}
-                //else
-                //{
-                //    Frame.Navigate(typeof(GamePage), game);
-                //}
+                this.viewModel.GetSimilarGames(game, frame);
             }
         }
     }
 }
-

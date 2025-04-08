@@ -155,9 +155,9 @@ public class UserGameService : IUserGameService
         var games = UserGameRepository.getWishlistGames();
         switch (criteria)
         {
-            case FilterCriteria.OVERWHELMINGLY_POSITIVE:
+            case FilterCriteria.OVERWHELMINGLYPOSITIVE:
                 return new Collection<Game>(games.Where(g => g.Rating >= 4.5m).ToList());
-            case FilterCriteria.VERY_POSITIVE:
+            case FilterCriteria.VERYPOSITIVE:
                 return new Collection<Game>(games.Where(g => g.Rating >= 4 && g.Rating < 4.5m).ToList());
             case FilterCriteria.MIXED:
                 return new Collection<Game>(games.Where(g => g.Rating >= 2 && g.Rating < 4m).ToList());

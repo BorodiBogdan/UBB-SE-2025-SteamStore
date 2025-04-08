@@ -25,16 +25,16 @@ namespace SteamStore.ViewModels
         private ObservableCollection<PointShopTransaction> _transactionHistory;
 
         // Filter properties
-        private string _filterType = PointShopConstants.FILTER_TYPE_ALL;
-        private string _searchText = PointShopConstants.INITIAL_SEARCH_STRING;
-        private double _minPrice = PointShopConstants.MIN_PRICE;
-        private double _maxPrice = PointShopConstants.MAX_PRICE;
+        private string _filterType = PointShopConstants.FILTERTYPEALL;
+        private string _searchText = PointShopConstants.INITIALSEARCHSTRING;
+        private double _minPrice = PointShopConstants.MINIMUMPRICE;
+        private double _maxPrice = PointShopConstants.MAXIMUMPRICE;
 
         // Selected item
         private PointShopItem _selectedItem;
 
         private CancellationTokenSource _searchCancellationTokenSource;
-        private int _nextTransactionId = PointShopConstants.TRANSACTION_ID;
+        private int _nextTransactionId = PointShopConstants.TRANSACTIONIDENTIFIER;
 
         public PointShopViewModel(User currentUser, IDataLink dataLink)
         {
@@ -339,7 +339,7 @@ namespace SteamStore.ViewModels
             try
             {
                 // Wait a bit before searching to avoid excessive updates while typing
-                await Task.Delay(PointShopConstants.DELAY_TIME_SEARCH, cancellationToken);
+                await Task.Delay(PointShopConstants.DELAYTIMESEARCH, cancellationToken);
                 
                 // Only apply if not cancelled
                 if (!cancellationToken.IsCancellationRequested)
@@ -452,7 +452,7 @@ namespace SteamStore.ViewModels
 
                     bool transactionExists = TransactionHistory.Any(t =>
                         t.ItemName == itemName &&
-                        Math.Abs(t.PointsSpent - pointPrice) < PointShopConstants.MINMAL_DIFFERENCE_VALUE_COMPARISON);
+                        Math.Abs(t.PointsSpent - pointPrice) < PointShopConstants.MINMALDIFFERENCEVALUECOMPARISON);
 
                     if (!transactionExists)
                     {
