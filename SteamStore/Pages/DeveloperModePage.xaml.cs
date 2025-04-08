@@ -27,10 +27,10 @@ namespace SteamStore.Pages
     {
         private DeveloperViewModel _viewModel;
 
-        public DeveloperModePage(IDeveloperService developerService, IUserGameService userGameService)
+        public DeveloperModePage(IDeveloperService developerService)
         {
             InitializeComponent();
-            _viewModel = new DeveloperViewModel(developerService, userGameService);
+            _viewModel = new DeveloperViewModel(developerService);
             this.DataContext = _viewModel;
 
             this.Loaded += DeveloperModePage_Loaded;

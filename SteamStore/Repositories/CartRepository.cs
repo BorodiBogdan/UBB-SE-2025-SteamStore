@@ -38,7 +38,7 @@ public class CartRepository: ICartRepository
                     Name = (string)row[SqlConstants.NAME_COLUMN ],
                     Description = (string)row[SqlConstants.DESCRIPTION_COLUMN],
                     ImagePath = (string)row[SqlConstants.IMAGE_URL_COLUMN],
-                    Price = Convert.ToDouble(row[SqlConstants.PRICE_COLUMN]),
+                    Price = Convert.ToDecimal(row[SqlConstants.PRICE_COLUMN]),
                     Status = "Approved"
                 };
                 games.Add(game);

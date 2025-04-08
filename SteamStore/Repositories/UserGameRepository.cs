@@ -65,7 +65,7 @@ public class UserGameRepository : IUserGameRepository
 
         try
         {
-            if(_user.WalletBalance < game.Price)
+            if(Convert.ToDecimal(_user.WalletBalance) < game.Price)
             {
                 throw new Exception("Insufficient funds");
             }
@@ -126,6 +126,15 @@ public class UserGameRepository : IUserGameRepository
             throw new Exception($"Error getting tags for game {gameId}: {e.Message}");
         }
     }
+    
+    public int GetGameOwnerCount(int gameId)
+    {
+        var sqlParameters = new SqlParameter[] { new("@game_id", gameId) };
+        var result = _data.ExecuteReader("GetGameOwnerCount", sqlParameters);
+
+        return result is { Rows.Count: > 0 } ? Convert.ToInt32(result.Rows[0]["OwnerCount"]) : 0;
+    }
+
 
     public Collection<Game> getAllUserGames()
     {
@@ -147,7 +156,7 @@ public class UserGameRepository : IUserGameRepository
                     Name = (string)row["name"],
                     Description = (string)row["Description"],
                     ImagePath = (string)row["image_url"],
-                    Price = Convert.ToDouble(row["price"]),
+                    Price = Convert.ToDecimal(row["price"]),
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
@@ -212,12 +221,12 @@ public class UserGameRepository : IUserGameRepository
                     Name = (string)row["name"],
                     Description = (string)row["Description"],
                     ImagePath = (string)row["image_url"],
-                    Price = Convert.ToDouble(row["price"]),
+                    Price = Convert.ToDecimal(row["price"]),
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
-                    Rating = Convert.ToSingle(row["rating"]),
-                    Discount = Convert.ToSingle(row["discount"]),
+                    Rating = Convert.ToDecimal(row["rating"]),
+                    Discount = Convert.ToDecimal(row["discount"]),
                     Tags = GetGameTags((int)row["game_id"])
                 };
                 games.Add(game);

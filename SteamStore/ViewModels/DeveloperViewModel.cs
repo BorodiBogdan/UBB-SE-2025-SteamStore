@@ -17,13 +17,11 @@ public class DeveloperViewModel : INotifyPropertyChanged
     public ObservableCollection<Game> UnvalidatedGames {  get; set; }
     public ObservableCollection<Tag> Tags { get; set; }
 
-    public IDeveloperService _developerService;
-    public IUserGameService _userGameService;
+    private readonly IDeveloperService _developerService;
 
-    public DeveloperViewModel(IDeveloperService developerService, IUserGameService userGameService)
+    public DeveloperViewModel(IDeveloperService developerService)
     {
         _developerService = developerService;
-        _userGameService = userGameService;
         DeveloperGames = new ObservableCollection<Game>();
         UnvalidatedGames = new ObservableCollection<Game>();
         Tags = new ObservableCollection<Tag>();

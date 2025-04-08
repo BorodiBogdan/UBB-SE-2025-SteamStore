@@ -111,7 +111,7 @@ namespace SteamStore.Pages
                 
                 LoadSimilarGamesUi();
                 
-                GameRating.Value = _viewModel.Game.Rating;
+                GameRating.Value = Convert.ToDouble(_viewModel.Game.Rating);
                 OwnedStatus.Text = _viewModel.IsOwned ? LabelStrings.OWNED : LabelStrings.NOT_OWNED;
             }
             catch (Exception ex)

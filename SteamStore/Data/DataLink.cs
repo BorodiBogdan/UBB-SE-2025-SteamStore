@@ -10,12 +10,8 @@ public class DataLink : SteamStore.Data.IDataLink
 
     public DataLink(IConfiguration configuration)
     {
-        //string? localDataSource = configuration["LocalDataSource"];
-        //connectionString = "Data Source=" + localDataSource + ";" +
-        //                "Initial Catalog=SteamStore;" +
-        //                "Integrated Security=True;";
-        connectionString = "Server=DESKTOP-618UFK0\\SQLEXPRESS;Initial Catalog=Steam;Integrated Security=True;TrustServerCertificate=True";
-
+        string? localDataSource = configuration["ConnectionString"];
+        connectionString = localDataSource;
 
         try
         {
