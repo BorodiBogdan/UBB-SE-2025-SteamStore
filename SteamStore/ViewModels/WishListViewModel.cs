@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using SteamStore.Constants;
-using SteamStore.Constants.SteamStore.Constants;
+using SteamStore.Constants;
 
 namespace SteamStore.ViewModels
 {
@@ -22,7 +22,7 @@ namespace SteamStore.ViewModels
         private readonly IGameService _gameService;
         private readonly ICartService _cartService;
         private ObservableCollection<Game> _wishListGames = new ObservableCollection<Game>();
-        private string _searchText = WishListSearchStrings.INITIAL_SEARCH_STRING;
+        private string _searchText = WishListSearchStrings.INITIALSEARCHSTRING;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -58,13 +58,13 @@ namespace SteamStore.ViewModels
 
         public List<string> FilterOptions { get; } = new()
     {
-        WishListSearchStrings.FILTER_ALL, WishListSearchStrings.FILTER_OVERWHELMINGLY_POSITIVE, WishListSearchStrings.FILTER_VERY_POSITIVE,
-        WishListSearchStrings.FILTER_MIXED, WishListSearchStrings.FILTER_NEGATIVE
+        WishListSearchStrings.FILTERALL, WishListSearchStrings.FILTEROVERWHELMINGLYPOSITIVE, WishListSearchStrings.FILTERVERYPOSITIVE,
+        WishListSearchStrings.FILTERMIXED, WishListSearchStrings.FILTERNEGATIVE
     };
 
         public List<string> SortOptions { get; } = new()
     {
-        WishListSearchStrings.SORT_PRICE_ASC, WishListSearchStrings.SORT_PRICE_DESC, WishListSearchStrings.SORT_RATING_DESC, WishListSearchStrings.SORT_DISCOUNT_DESC
+        WishListSearchStrings.SORTPRICEASCENDING, WishListSearchStrings.SORTPRICEDESCENDING, WishListSearchStrings.SORTRATINGDESCENDING, WishListSearchStrings.SORTDISCOUNTDESCENDING
     };
 
         private string _selectedFilter;
@@ -105,10 +105,10 @@ namespace SteamStore.ViewModels
         {
             string criteria = SelectedFilter switch
             {
-                WishListSearchStrings.FILTER_OVERWHELMINGLY_POSITIVE => WishListSearchStrings.OVERWHELMINGLY_POSITIVE,
-                WishListSearchStrings.FILTER_VERY_POSITIVE => WishListSearchStrings.VERY_POSITIVE,
-                WishListSearchStrings.FILTER_MIXED => WishListSearchStrings.MIXED,
-                WishListSearchStrings.FILTER_NEGATIVE => WishListSearchStrings.NEGATIVE,
+                WishListSearchStrings.FILTEROVERWHELMINGLYPOSITIVE => WishListSearchStrings.OVERWHELMINGLYPOSITIVE,
+                WishListSearchStrings.FILTERVERYPOSITIVE => WishListSearchStrings.VERYPOSITIVE,
+                WishListSearchStrings.FILTERMIXED => WishListSearchStrings.MIXED,
+                WishListSearchStrings.FILTERNEGATIVE => WishListSearchStrings.NEGATIVE,
                 _ => WishListSearchStrings.ALL
             };
 
@@ -119,13 +119,13 @@ namespace SteamStore.ViewModels
         {
             switch (SelectedSort)
             {
-                case WishListSearchStrings.SORT_PRICE_ASC:
+                case WishListSearchStrings.SORTPRICEASCENDING:
                     SortWishListGames("price", true); break;
-                case WishListSearchStrings.SORT_PRICE_DESC:
+                case WishListSearchStrings.SORTPRICEDESCENDING:
                     SortWishListGames("price", false); break;
-                case WishListSearchStrings.SORT_RATING_DESC:
+                case WishListSearchStrings.SORTRATINGDESCENDING:
                     SortWishListGames("rating", false); break;
-                case WishListSearchStrings.SORT_DISCOUNT_DESC:
+                case WishListSearchStrings.SORTDISCOUNTDESCENDING:
                     SortWishListGames("discount", false); break;
             }
         }
@@ -134,7 +134,7 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var games = _userGameService.getWishListGames();
+                var games = _userGameService.GetWishListGames();
                 WishListGames = new ObservableCollection<Game>(games);
             }
             catch (Exception ex)
@@ -154,7 +154,7 @@ namespace SteamStore.ViewModels
 
             try
             {
-                var games = _userGameService.searchWishListByName(SearchText);
+                var games = _userGameService.SearchWishListByName(SearchText);
                 WishListGames = new ObservableCollection<Game>(games);
             }
             catch (Exception ex)
@@ -168,7 +168,7 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var games = _userGameService.filterWishListGames(criteria);
+                var games = _userGameService.FilterWishListGames(criteria);
                 WishListGames = new ObservableCollection<Game>(games);
             }
             catch (Exception ex)
@@ -182,7 +182,7 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var games = _userGameService.sortWishListGames(criteria, ascending);
+                var games = _userGameService.SortWishListGames(criteria, ascending);
                 WishListGames = new ObservableCollection<Game>(games);
             }
             catch (Exception ex)
@@ -196,7 +196,7 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                _userGameService.removeGameFromWishlist(game);
+                _userGameService.RemoveGameFromWishlist(game);
                 WishListGames.Remove(game);
             }
             catch (Exception ex)
@@ -211,10 +211,10 @@ namespace SteamStore.ViewModels
             {
                 var dialog = new ContentDialog
                 {
-                    Title = ConfirmationDialogStrings.CONFIRM_REMOVAL_TITLE,
-                    Content = string.Format(ConfirmationDialogStrings.CONFIRM_REMOVAL_MESSAGE, game.Name),
-                    PrimaryButtonText = ConfirmationDialogStrings.YES_BUTTON_TEXT,
-                    CloseButtonText = ConfirmationDialogStrings.NO_BUTTON_TEXT,
+                    Title = ConfirmationDialogStrings.CONFIRMREMOVALTITLE,
+                    Content = string.Format(ConfirmationDialogStrings.CONFIRMREMOVALMESSAGE, game.Name),
+                    PrimaryButtonText = ConfirmationDialogStrings.YESBUTTONTEXT,
+                    CloseButtonText = ConfirmationDialogStrings.NOBUTTONTEXT,
                     DefaultButton = ContentDialogButton.Primary,
                     XamlRoot = App.m_window.Content.XamlRoot
                 };

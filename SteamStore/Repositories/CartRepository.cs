@@ -30,7 +30,7 @@ public class CartRepository : ICartRepository
             new SqlParameter("@user_id", this.user.UserIdentifier),
         };
 
-        var result = this.dataLink.ExecuteReader(SqlConstants.GET_ALL_CART_GAMES, parameters);
+        var result = this.dataLink.ExecuteReader(SqlConstants.GETALLCARTGAMES, parameters);
         List<Game> games = new List<Game>();
 
         if (result != null)
@@ -39,11 +39,11 @@ public class CartRepository : ICartRepository
             {
                 Game game = new Game
                 {
-                    Identifier = (int)row[SqlConstants.GAME_ID_COLUMN],
-                    Name = (string)row[SqlConstants.NAME_COLUMN],
-                    Description = (string)row[SqlConstants.DESCRIPTION_COLUMN],
-                    ImagePath = (string)row[SqlConstants.IMAGE_URL_COLUMN],
-                    Price = Convert.ToDecimal(row[SqlConstants.PRICE_COLUMN]),
+                    Identifier = (int)row[SqlConstants.GAMEIDCOLUMN],
+                    Name = (string)row[SqlConstants.NAMECOLUMN ],
+                    Description = (string)row[SqlConstants.DESCRIPTIONCOLUMN],
+                    ImagePath = (string)row[SqlConstants.IMAGEURLCOLUMN],
+                    Price = Convert.ToDecimal(row[SqlConstants.PRICECOLUMN]),
                     Status = approvedStatus,
                 };
                 games.Add(game);
@@ -63,7 +63,7 @@ public class CartRepository : ICartRepository
 
         try
         {
-            this.dataLink.ExecuteNonQuery(SqlConstants.ADD_GAME_TO_CART, parameters);
+            this.dataLink.ExecuteNonQuery(SqlConstants.ADDGAMETOCART, parameters);
         }
         catch (Exception e)
         {
@@ -81,7 +81,7 @@ public class CartRepository : ICartRepository
 
         try
         {
-            this.dataLink.ExecuteNonQuery(SqlConstants.REMOVE_GAME_FROM_CART, parameters);
+            this.dataLink.ExecuteNonQuery(SqlConstants.REMOVEGAMEFROMCART, parameters);
         }
         catch (Exception e)
         {

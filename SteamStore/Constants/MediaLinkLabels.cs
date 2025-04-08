@@ -1,4 +1,4 @@
-﻿// <copyright file="ResourceKeys.cs" company="PlaceholderCompany">
+﻿// <copyright file="MediaLinkLabels.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -10,8 +10,9 @@ namespace SteamStore.Constants
     using System.Text;
     using System.Threading.Tasks;
 
-    public static class ResourceKeys
+    public static class MediaLinkLabels
     {
-        public const string RecentEarnedPoints = "RecentEarnedPoints";
+        public const string OFFICIALTRAILER = "Official Trailer";
+        public const string GAMEPLAYVIDEO = "Gameplay Video";
     }
 }

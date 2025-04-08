@@ -1,34 +1,39 @@
-﻿using System;
+﻿// <copyright file="DeveloperService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using SteamStore.Constants;
 using SteamStore.Models;
 using SteamStore.Repositories;
 using SteamStore.Repositories.Interfaces;
 using SteamStore.Services.Interfaces;
-using SteamStore.Constants;
 using static SteamStore.Constants.NotificationStrings;
 
 public class DeveloperService : IDeveloperService
 {
-    private static string PENDING_STATE = "Pending";
+    private static string pENDINGSTATE = "Pending";
 
-    public IGameRepository GameRepository{ get; set; }
+    public IGameRepository GameRepository { get; set; }
+
     public ITagRepository TagRepository { get; set; }
-    
+
     public IUserGameRepository UserGameRepository { get; set; }
-    
+
     public User User { get; set; }
-    
+
     public void ValidateGame(int game_id)
     {
-        GameRepository.ValidateGame(game_id);
+        this.GameRepository.ValidateGame(game_id);
     }
-    public Game ValidateInputForAddingAGame(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl,string gameplayUrl,
-                                string minReq, string recReq, string discountText, IList<Tag> selectedTags)
+
+    public Game ValidateInputForAddingAGame(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string reccommendedRequirement, string discountText, IList<Tag> selectedTags)
     {
         if (string.IsNullOrWhiteSpace(gameIdText) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(priceText) ||
-            string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(imageUrl) || string.IsNullOrWhiteSpace(minReq) ||
-            string.IsNullOrWhiteSpace(recReq) || string.IsNullOrWhiteSpace(discountText))
+            string.IsNullOrWhiteSpace(description) || string.IsNullOrWhiteSpace(imageUrl) || string.IsNullOrWhiteSpace(minimumRequirement) ||
+            string.IsNullOrWhiteSpace(reccommendedRequirement) || string.IsNullOrWhiteSpace(discountText))
         {
             throw new Exception(ExceptionMessages.AllFieldsRequired);
         }
@@ -36,7 +41,6 @@ public class DeveloperService : IDeveloperService
         if (!int.TryParse(gameIdText, out int gameId))
         {
             throw new Exception(ExceptionMessages.InvalidGameId);
-            
         }
 
         if (!decimal.TryParse(priceText, out var price) || price < 0)
@@ -64,10 +68,10 @@ public class DeveloperService : IDeveloperService
             ImagePath = imageUrl,
             GameplayPath = gameplayUrl,
             TrailerPath = trailerUrl,
-            MinimumRequirements = minReq,
-            RecommendedRequirements = recReq,
-            Status = PENDING_STATE,
-            Discount = discount
+            MinimumRequirements = minimumRequirement,
+            RecommendedRequirements = reccommendedRequirement,
+            Status = pENDINGSTATE,
+            Discount = discount,
         };
         return game;
     }
@@ -82,47 +86,46 @@ public class DeveloperService : IDeveloperService
             }
         }
 
-        return null; 
+        return null;
     }
-
-
-    
 
     public void CreateGame(Game game)
     {
-        game.PublisherIdentifier = User.UserIdentifier;
-        GameRepository.CreateGame(game);
+        game.PublisherIdentifier = this.User.UserIdentifier;
+        this.GameRepository.CreateGame(game);
     }
 
     public void CreateGameWithTags(Game game, IList<Tag> selectedTags)
-    {   try
+    {
+        try
         {
-            CreateGame(game);
+            this.CreateGame(game);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new Exception(e.Message);
+            throw new Exception(exception.Message);
         }
+
         if (selectedTags != null && selectedTags.Count > 0)
         {
             foreach (var tag in selectedTags)
             {
-                InsertGameTag(game.Identifier, tag.TagId);
+                this.InsertGameTag(game.Identifier, tag.TagId);
             }
         }
     }
+
     public void UpdateGame(Game game)
     {
         try
         {
             game.PublisherIdentifier = User.UserIdentifier;
-            GameRepository.UpdateGame(game.Identifier,game);
+            this.GameRepository.UpdateGame(game.Identifier,game);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new Exception(e.Message);
+            throw new Exception(exception.Message);
         }
-
     }
 
     public void UpdateGameWithTags(Game game, IList<Tag> selectedTags)
@@ -130,99 +133,113 @@ public class DeveloperService : IDeveloperService
         try
         {
             game.PublisherIdentifier = User.UserIdentifier;
-            GameRepository.UpdateGame(game.Identifier, game);
+            this.GameRepository.UpdateGame(game.Identifier, game);
         }
         catch (Exception e)
         {
             throw new Exception(e.Message);
         }
+
         try
         {
             //System.Diagnostics.Debug.WriteLine("deleting the tags!");
             DeleteGameTags(game.Identifier);
             if (selectedTags != null && selectedTags.Count > 0)
+            {
                 foreach (var tag in selectedTags)
-                    InsertGameTag(game.Identifier, tag.TagId);
+                {
+                    this.InsertGameTag(game.Identifier, tag.TagId);
+                }
+            }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception(ex.Message);
+            throw new Exception(exception.Message);
         }
-
     }
+
     public void DeleteGame(int game_id)
     {
         try
         {
-            GameRepository.DeleteGame(game_id);
+            this.GameRepository.DeleteGame(game_id);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new Exception(e.Message);
+            throw new Exception(exception.Message);
         }
     }
+
     public List<Game> GetDeveloperGames()
     {
-        return GameRepository.GetDeveloperGames(User.UserIdentifier);
+        return this.GameRepository.GetDeveloperGames(this.User.UserIdentifier);
     }
+
     public List<Game> GetUnvalidated()
     {
-        return GameRepository.GetUnvalidated(User.UserIdentifier);
+        return this.GameRepository.GetUnvalidated(this.User.UserIdentifier);
     }
+
     public void RejectGame(int game_id)
     {
-        GameRepository.RejectGame(game_id);
+        this.GameRepository.RejectGame(game_id);
     }
+
     public void RejectGameWithMessage(int game_id, string message)
     {
-        GameRepository.RejectGameWithMessage(game_id, message);
+        this.GameRepository.RejectGameWithMessage(game_id, message);
     }
+
     public string GetRejectionMessage(int game_id)
     {
-        return GameRepository.GetRejectionMessage(game_id);
+        return this.GameRepository.GetRejectionMessage(game_id);
     }
+
     public void InsertGameTag(int gameId, int tagId)
     {
-        GameRepository.InsertGameTag(gameId, tagId);
+        this.GameRepository.InsertGameTag(gameId, tagId);
     }
 
-   
     public Collection<Tag> GetAllTags()
     {
-        return TagRepository.GetAllTags();
+        return this.TagRepository.GetAllTags();
     }
+
     public bool IsGameIdInUse(int gameId)
     {
-        return GameRepository.IsGameIdInUse(gameId);
+        return this.GameRepository.IsGameIdInUse(gameId);
     }
+
     public List<Tag> GetGameTags(int gameId)
     {
-        return GameRepository.GetGameTags(gameId);
+        return this.GameRepository.GetGameTags(gameId);
     }
+
     public void DeleteGameTags(int gameId)
     {
-        GameRepository.DeleteGameTags(gameId);
+        this.GameRepository.DeleteGameTags(gameId);
     }
+
     public int GetGameOwnerCount(int gameId)
     {
-        return UserGameRepository.GetGameOwnerCount(gameId);
+        return this.UserGameRepository.GetGameOwnerCount(gameId);
     }
+
     public User GetCurrentUser()
     {
-        return User;
+        return this.User;
     }
-    public Game CreateValidatedGame(string gameIdText, string name, string priceText, string description, string imageUrl,
-                                string trailerUrl, string gameplayUrl, string minReq, string recReq,
-                                string discountText, IList<Tag> selectedTags)
+
+    public Game CreateValidatedGame(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string reccommendedRequirement, string discountText, IList<Tag> selectedTags)
     {
-        var game = ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minReq, recReq, discountText, selectedTags);
+        var game = this.ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minimumRequirement, reccommendedRequirement, discountText, selectedTags);
 
-        if (IsGameIdInUse(game.Identifier))
+        if (this.IsGameIdInUse(game.Identifier))
+        {
             throw new Exception(ExceptionMessages.IdAlreadyInUse);
+        }
 
-        CreateGameWithTags(game, selectedTags);
+        this.CreateGameWithTags(game, selectedTags);
         return game;
     }
-
-
 }

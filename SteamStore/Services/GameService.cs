@@ -15,17 +15,17 @@ public class GameService : IGameService
     public ITagRepository TagRepository { get; set; }
 
 
-    public Collection<Game> getAllGames()
+    public Collection<Game> GetAllGames()
     {
         return GameRepository.GetAllGames();
     }
 
-    public Collection<Tag> getAllTags()
+    public Collection<Tag> GetAllTags()
     {
         return TagRepository.GetAllTags();
     }
 
-    public Collection<Tag> getAllGameTags(Game game)
+    public Collection<Tag> GetAllGameTags(Game game)
     {
         return new Collection<Tag>(TagRepository
             .GetAllTags()
@@ -33,7 +33,7 @@ public class GameService : IGameService
             .ToList());
     }
 
-    public Collection<Game> searchGames(string searchQuery)
+    public Collection<Game> SearchGames(string searchQuery)
     {
         return new Collection<Game>(GameRepository
             .GetAllGames()
@@ -41,7 +41,7 @@ public class GameService : IGameService
             .ToList());
     }
 
-    public Collection<Game> filterGames(int minRating, int minPrice, int maxPrice, string[] tags)
+    public Collection<Game> FilterGames(int minRating, int minPrice, int maxPrice, string[] tags)
     {
         if (tags == null) throw new ArgumentNullException(nameof(tags));
         return new Collection<Game>(
@@ -54,7 +54,7 @@ public class GameService : IGameService
                 .ToList());
     }
 
-    public void computeTrendingScores(Collection<Game> games)
+    public void ComputeTrendingScores(Collection<Game> games)
     {
         var maxRecentSales = games.Max(game => game.NumberOfRecentPurchases);
         foreach (var game in games)
@@ -63,21 +63,21 @@ public class GameService : IGameService
         }
     }
 
-    public Collection<Game> getTrendingGames()
+    public Collection<Game> GetTrendingGames()
     {
         return GetSortedAndFilteredVideoGames(GameRepository.GetAllGames());
     }
 
     private Collection<Game> GetSortedAndFilteredVideoGames(Collection<Game> games)
     {
-        computeTrendingScores(games);
+        ComputeTrendingScores(games);
         return new Collection<Game>(games
             .OrderByDescending(game => game.TrendingScore)
             .Take(10)
             .ToList());
     }
 
-    public Collection<Game> getDiscountedGames()
+    public Collection<Game> GetDiscountedGames()
     {
         var discountedGames = GameRepository.GetAllGames()
             .Where(game => game.Discount > 0).ToList();

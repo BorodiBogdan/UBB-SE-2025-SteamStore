@@ -27,7 +27,7 @@ public class GameServiceTest
         var repoReturnedColl = new Collection<Game>();
         _repoMock.Setup(r => r.GetAllGames())
             .Returns(repoReturnedColl);
-        Assert.Same(repoReturnedColl, _subject.getAllGames());
+        Assert.Same(repoReturnedColl, _subject.GetAllGames());
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class GameServiceTest
         var repoReturnedColl = new Collection<Tag>();
         _tagRepoMock.Setup(r => r.GetAllTags())
             .Returns(repoReturnedColl);
-        Assert.Same(repoReturnedColl, _subject.getAllTags());
+        Assert.Same(repoReturnedColl, _subject.GetAllTags());
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class GameServiceTest
         _tagRepoMock.Setup(r => r.GetAllTags())
             .Returns(new Collection<Tag> { expectedTag });
 
-        var actualTag = _subject.getAllGameTags(game);
+        var actualTag = _subject.GetAllGameTags(game);
         Assert.Same(actualTag[0], expectedTag);
         Assert.Equal(actualTag[0].tag_name, expectedTag.tag_name);
         Assert.Single(actualTag);
@@ -66,7 +66,7 @@ public class GameServiceTest
         _repoMock.Setup(r => r.GetAllGames())
             .Returns(new Collection<Game> { game1, game2, game3 });
 
-        var actualGames = _subject.searchGames(searchQuery);
+        var actualGames = _subject.SearchGames(searchQuery);
 
         Assert.Equal(expectedCount, actualGames.Count);
 
@@ -108,7 +108,7 @@ public class GameServiceTest
         _repoMock.Setup(r => r.GetAllGames())
             .Returns(new Collection<Game> { game1, game2 });
 
-        var actualGames = _subject.filterGames(minRating, minPrice, maxPrice, tags);
+        var actualGames = _subject.FilterGames(minRating, minPrice, maxPrice, tags);
 
         Assert.Equal(foundElems, actualGames.Count);
 
@@ -143,7 +143,7 @@ public class GameServiceTest
         _repoMock.Setup(r => r.GetAllGames())
             .Returns(new Collection<Game> { game1, game2 });
 
-        var actualGames = _subject.getTrendingGames();
+        var actualGames = _subject.GetTrendingGames();
 
 
         Assert.Same(actualGames[0], game1);
@@ -171,8 +171,8 @@ public class GameServiceTest
 
         var actualGames = methodName switch
         {
-            "getTrendingGames" => _subject.getTrendingGames(),
-            "getDiscountedGames" => _subject.getDiscountedGames(),
+            "getTrendingGames" => _subject.GetTrendingGames(),
+            "getDiscountedGames" => _subject.GetDiscountedGames(),
             _ => throw new ArgumentException("Invalid method name", nameof(methodName))
         };
 
@@ -202,7 +202,7 @@ public class GameServiceTest
         _repoMock.Setup(r => r.GetAllGames())
             .Returns(new Collection<Game> { game1, game2, game3 });
 
-        var actualGames = _subject.getDiscountedGames();
+        var actualGames = _subject.GetDiscountedGames();
 
 
         Assert.Same(actualGames[0], game1);

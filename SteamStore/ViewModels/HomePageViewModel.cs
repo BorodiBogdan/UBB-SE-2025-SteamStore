@@ -65,7 +65,7 @@ public class HomePageViewModel : INotifyPropertyChanged
     private void LoadTrendingGames()
     {
         trendingGames.Clear();
-        var games = _gameService.getTrendingGames();
+        var games = _gameService.GetTrendingGames();
         foreach (var game in games)
         {
             trendingGames.Add(game);
@@ -73,7 +73,7 @@ public class HomePageViewModel : INotifyPropertyChanged
     }
     private void LoadTags()
     {
-        var tagsList = _gameService.getAllTags();
+        var tagsList = _gameService.GetAllTags();
         foreach (var tag in tagsList)
         {
             tags.Add(tag);
@@ -83,7 +83,7 @@ public class HomePageViewModel : INotifyPropertyChanged
     private void LoadRecommendedGames()
     {
         recommendedGames.Clear();
-        var games = _userGameService.getRecommendedGames();
+        var games = _userGameService.GetRecommendedGames();
         foreach (var game in games)
         {
             recommendedGames.Add(game);
@@ -93,7 +93,7 @@ public class HomePageViewModel : INotifyPropertyChanged
     private void LoadDiscountedGames()
     {
         discountedGames.Clear();
-        var games = _gameService.getDiscountedGames();
+        var games = _gameService.GetDiscountedGames();
         foreach (var game in games)
         {
             discountedGames.Add(game);
@@ -105,8 +105,8 @@ public class HomePageViewModel : INotifyPropertyChanged
     public void LoadAllGames()
     {
         searchedOrFilteredGames.Clear();
-        search_filter_text = HomePageConstants.ALL_GAMES_FILTER;
-        var games = _gameService.getAllGames();
+        search_filter_text = HomePageConstants.ALLGAMESFILTER;
+        var games = _gameService.GetAllGames();
         foreach (var game in games)
         {
             searchedOrFilteredGames.Add(game);
@@ -116,38 +116,38 @@ public class HomePageViewModel : INotifyPropertyChanged
     public void SearchGames(string search_query)
     {
         searchedOrFilteredGames.Clear();
-        var games = _gameService.searchGames(search_query);
+        var games = _gameService.SearchGames(search_query);
         foreach (var game in games)
         {
             searchedOrFilteredGames.Add(game);
         }
         if(search_query == "")
         {
-            search_filter_text = HomePageConstants.ALL_GAMES_FILTER;
+            search_filter_text = HomePageConstants.ALLGAMESFILTER;
             return;
         }
         if(games.Count == 0)
         {
-            search_filter_text = HomePageConstants.NO_GAMES_FOUND + search_query;
+            search_filter_text = HomePageConstants.NOGAMESFOUND + search_query;
             return;
         }
-        search_filter_text = HomePageConstants.SEARCH_RESULTS_FOR + search_query;
+        search_filter_text = HomePageConstants.SEARCHRESULTSFOR + search_query;
     }
 
     public void FilterGames(int minRating, int minPrice, int maxPrice, String[] Tags)
     {
         searchedOrFilteredGames.Clear();
-        var games = _gameService.filterGames(minRating, minPrice, maxPrice, Tags);
+        var games = _gameService.FilterGames(minRating, minPrice, maxPrice, Tags);
         foreach (var game in games)
         {
             searchedOrFilteredGames.Add(game);
         }
         if (games.Count == 0)
         {
-            search_filter_text = HomePageConstants.NO_GAMES_FOUND;
+            search_filter_text = HomePageConstants.NOGAMESFOUND;
             return;
         }
-        search_filter_text = HomePageConstants.FILTERED_GAMES;
+        search_filter_text = HomePageConstants.FILTEREDGAMES;
     }
 
     public void SwitchToGamePage(Microsoft.UI.Xaml.DependencyObject parent, Game selectedGame)

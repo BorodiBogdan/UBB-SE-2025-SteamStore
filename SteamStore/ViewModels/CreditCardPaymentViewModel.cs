@@ -76,7 +76,7 @@ namespace SteamStore.ViewModels
             _cartService = cartService;
             _userGameService = userGameService;
             _creditCardProcessor = new CreditCardProcessor();
-            TotalAmount = _cartService.getCartGames().Sum(game => (decimal)game.Price);
+            TotalAmount = _cartService.GetCartGames().Sum(game => (decimal)game.Price);
            
         }
         public async Task ProcessPaymentAsync(Frame frame)
@@ -84,9 +84,9 @@ namespace SteamStore.ViewModels
             bool paymentSuccess = await _creditCardProcessor.ProcessPaymentAsync(_cardNumber, _expirationDate, _cvv, _ownerName);
             if (paymentSuccess)
             {
-                List<Game> purchasedGames = _cartService.getCartGames();
+                List<Game> purchasedGames = _cartService.GetCartGames();
                 _cartService.RemoveGamesFromCart(purchasedGames);
-                _userGameService.purchaseGames(purchasedGames);
+                _userGameService.PurchaseGames(purchasedGames);
                 LastEarnedPoints = _userGameService.LastEarnedPoints;
 
             
@@ -103,12 +103,12 @@ namespace SteamStore.ViewModels
                 
                 if (LastEarnedPoints > ThresholdForNotEarningPoints)
                 {
-                    await ShowNotification(PaymentDialogStrings.PAYMENT_SUCCESS_TITLE,
-                        string.Format(PaymentDialogStrings.PAYMENT_SUCCESS_WITH_POINTS_MESSAGE, LastEarnedPoints));
+                    await ShowNotification(PaymentDialogStrings.PAYMENTSUCCESSTITLE,
+                        string.Format(PaymentDialogStrings.PAYMENTSUCCESSWITHPOINTSMESSAGE, LastEarnedPoints));
                 }
                 else
                 {
-                    await ShowNotification(PaymentDialogStrings.PAYMENT_SUCCESS_TITLE, PaymentDialogStrings.PAYMENT_SUCCESS_MESSAGE);
+                    await ShowNotification(PaymentDialogStrings.PAYMENTSUCCESSTITLE, PaymentDialogStrings.PAYMENTSUCCESSMESSAGE);
                 }
 
                 CartPage cartPage = new CartPage(_cartService, _userGameService);
@@ -116,7 +116,7 @@ namespace SteamStore.ViewModels
             }
             else
             {
-                await ShowNotification(PaymentDialogStrings.PAYMENT_FAILED_TITLE, PaymentDialogStrings.PAYMENT_FAILED_MESSAGE);
+                await ShowNotification(PaymentDialogStrings.PAYMENTFAILEDTITLE, PaymentDialogStrings.PAYMENTFAILEDMESSAGE);
             }
 
         }
@@ -126,7 +126,7 @@ namespace SteamStore.ViewModels
             {
                 Title = title,
                 Content = message,
-                CloseButtonText = PaymentDialogStrings.OK_BUTTON_TEXT,
+                CloseButtonText = PaymentDialogStrings.OKBUTTONTEXT,
                 XamlRoot = App.m_window.Content.XamlRoot
             };
             await dialog.ShowAsync();
