@@ -1,166 +1,129 @@
-﻿using Microsoft.UI.Xaml.Controls;
-using SteamStore.Models;
-using SteamStore.Pages;
-using SteamStore.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using SteamStore.Constants;
-using SteamStore.Constants;
+﻿// <copyright file="WishListViewModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.ViewModels
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.ComponentModel;
+    using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
+    using System.Windows.Input;
+    using Microsoft.UI.Xaml.Controls;
+    using SteamStore.Constants;
+    using SteamStore.Models;
+    using SteamStore.Pages;
+    using SteamStore.Services.Interfaces;
+
     public class WishListViewModel : INotifyPropertyChanged
     {
-     
+        private readonly IUserGameService userGameService;
+        private readonly IGameService gameService;
+        private readonly ICartService cartService;
+        private ObservableCollection<Game> wishListGames = new ObservableCollection<Game>();
+        private string searchText = WishListSearchStrings.INITIALSEARCHSTRING;
 
-        private readonly IUserGameService _userGameService;
-        private readonly IGameService _gameService;
-        private readonly ICartService _cartService;
-        private ObservableCollection<Game> _wishListGames = new ObservableCollection<Game>();
-        private string _searchText = WishListSearchStrings.INITIALSEARCHSTRING;
+        private string selectedFilter;
+        private string selectedSort;
+
+        public WishListViewModel(IUserGameService userGameService, IGameService gameService, ICartService cartService)
+        {
+            this.userGameService = userGameService;
+            this.gameService = gameService;
+            this.cartService = cartService;
+            this.wishListGames = new ObservableCollection<Game>();
+            this.RemoveFromWishlistCommand = new RelayCommand<Game>(async (game) => await this.ConfirmAndRemoveFromWishlist(game));
+            this.LoadWishListGames();
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ObservableCollection<Game> WishListGames
+        public string SelectedFilter
         {
-            get => _wishListGames;
+            get => this.selectedFilter;
             set
             {
-                _wishListGames = value;
-                OnPropertyChanged();
+                this.selectedFilter = value;
+                this.OnPropertyChanged();
+                this.HandleFilterChange();
+            }
+        }
+
+        public string SelectedSort
+        {
+            get => this.selectedSort;
+            set
+            {
+                this.selectedSort = value;
+                this.OnPropertyChanged();
+                this.HandleSortChange();
+            }
+        }
+
+        public ObservableCollection<Game> WishListGames
+        {
+            get => this.wishListGames;
+            set
+            {
+                this.wishListGames = value;
+                this.OnPropertyChanged();
             }
         }
 
         public string SearchText
         {
-            get => _searchText;
+            get => this.searchText;
             set
             {
-                _searchText = value;
-                OnPropertyChanged();
-                HandleSearchWishListGames();
+                this.searchText = value;
+                this.OnPropertyChanged();
+                this.HandleSearchWishListGames();
             }
         }
 
         // Expose services for navigation
-        public IGameService GameService => _gameService;
-        public ICartService CartService => _cartService;
-        public IUserGameService UserGameService => _userGameService;
+        public IGameService GameService => this.gameService;
+
+        public ICartService CartService => this.cartService;
+
+        public IUserGameService UserGameService => this.userGameService;
 
         public ICommand RemoveFromWishlistCommand { get; }
+
         public ICommand ViewDetailsCommand { get; }
+
         public ICommand BackCommand { get; }
 
-        public List<string> FilterOptions { get; } = new()
+        public List<string> FilterOptions { get; } = new ()
     {
         WishListSearchStrings.FILTERALL, WishListSearchStrings.FILTEROVERWHELMINGLYPOSITIVE, WishListSearchStrings.FILTERVERYPOSITIVE,
-        WishListSearchStrings.FILTERMIXED, WishListSearchStrings.FILTERNEGATIVE
+        WishListSearchStrings.FILTERMIXED, WishListSearchStrings.FILTERNEGATIVE,
     };
 
-        public List<string> SortOptions { get; } = new()
+        public List<string> SortOptions { get; } = new ()
     {
-        WishListSearchStrings.SORTPRICEASCENDING, WishListSearchStrings.SORTPRICEDESCENDING, WishListSearchStrings.SORTRATINGDESCENDING, WishListSearchStrings.SORTDISCOUNTDESCENDING
+        WishListSearchStrings.SORTPRICEASCENDING, WishListSearchStrings.SORTPRICEDESCENDING, WishListSearchStrings.SORTRATINGDESCENDING, WishListSearchStrings.SORTDISCOUNTDESCENDING,
     };
-
-        private string _selectedFilter;
-        public string SelectedFilter
-        {
-            get => _selectedFilter;
-            set
-            {
-                _selectedFilter = value;
-                OnPropertyChanged();
-                HandleFilterChange();
-            }
-        }
-
-        private string _selectedSort;
-        public string SelectedSort
-        {
-            get => _selectedSort;
-            set
-            {
-                _selectedSort = value;
-                OnPropertyChanged();
-                HandleSortChange();
-            }
-        }
-
-        public WishListViewModel(IUserGameService userGameService, IGameService gameService, ICartService cartService)
-        {
-            _userGameService = userGameService;
-            _gameService = gameService;
-            _cartService = cartService;
-            _wishListGames = new ObservableCollection<Game>();
-            RemoveFromWishlistCommand = new RelayCommand<Game>(async (game) => await ConfirmAndRemoveFromWishlist(game));
-            LoadWishListGames();
-            
-        }
-        private void HandleFilterChange()
-        {
-            string criteria = SelectedFilter switch
-            {
-                WishListSearchStrings.FILTEROVERWHELMINGLYPOSITIVE => WishListSearchStrings.OVERWHELMINGLYPOSITIVE,
-                WishListSearchStrings.FILTERVERYPOSITIVE => WishListSearchStrings.VERYPOSITIVE,
-                WishListSearchStrings.FILTERMIXED => WishListSearchStrings.MIXED,
-                WishListSearchStrings.FILTERNEGATIVE => WishListSearchStrings.NEGATIVE,
-                _ => WishListSearchStrings.ALL
-            };
-
-            FilterWishListGames(criteria);
-        }
-
-        private void HandleSortChange()
-        {
-            switch (SelectedSort)
-            {
-                case WishListSearchStrings.SORTPRICEASCENDING:
-                    SortWishListGames("price", true); break;
-                case WishListSearchStrings.SORTPRICEDESCENDING:
-                    SortWishListGames("price", false); break;
-                case WishListSearchStrings.SORTRATINGDESCENDING:
-                    SortWishListGames("rating", false); break;
-                case WishListSearchStrings.SORTDISCOUNTDESCENDING:
-                    SortWishListGames("discount", false); break;
-            }
-        }
-
-        private void LoadWishListGames()
-        {
-            try
-            {
-                var games = _userGameService.GetWishListGames();
-                WishListGames = new ObservableCollection<Game>(games);
-            }
-            catch (Exception ex)
-            {
-                // Handle error appropriately
-                Console.WriteLine($"Error loading wishlist games: {ex.Message}");
-            }
-        }
 
         public void HandleSearchWishListGames()
         {
-            if (string.IsNullOrWhiteSpace(SearchText))
+            if (string.IsNullOrWhiteSpace(this.SearchText))
             {
-                LoadWishListGames();
+                this.LoadWishListGames();
                 return;
             }
 
             try
             {
-                var games = _userGameService.SearchWishListByName(SearchText);
-                WishListGames = new ObservableCollection<Game>(games);
+                var games = this.userGameService.SearchWishListByName(this.SearchText);
+                this.WishListGames = new ObservableCollection<Game>(games);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 // Handle error appropriately
-                Console.WriteLine($"Error searching wishlist games: {ex.Message}");
+                Console.WriteLine($"Error searching wishlist games: {exception.Message}");
             }
         }
 
@@ -168,13 +131,13 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var games = _userGameService.FilterWishListGames(criteria);
-                WishListGames = new ObservableCollection<Game>(games);
+                var games = this.userGameService.FilterWishListGames(criteria);
+                this.WishListGames = new ObservableCollection<Game>(games);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 // Handle error appropriately
-                Console.WriteLine($"Error filtering wishlist games: {ex.Message}");
+                Console.WriteLine($"Error filtering wishlist games: {exception.Message}");
             }
         }
 
@@ -182,13 +145,13 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var games = _userGameService.SortWishListGames(criteria, ascending);
-                WishListGames = new ObservableCollection<Game>(games);
+                var games = this.userGameService.SortWishListGames(criteria, ascending);
+                this.WishListGames = new ObservableCollection<Game>(games);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 // Handle error appropriately
-                Console.WriteLine($"Error sorting wishlist games: {ex.Message}");
+                Console.WriteLine($"Error sorting wishlist games: {exception.Message}");
             }
         }
 
@@ -196,15 +159,33 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                _userGameService.RemoveGameFromWishlist(game);
-                WishListGames.Remove(game);
+                this.userGameService.RemoveGameFromWishlist(game);
+                this.WishListGames.Remove(game);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 // Handle error appropriately
-                Console.WriteLine($"Error removing game from wishlist: {ex.Message}");
+                Console.WriteLine($"Error removing game from wishlist: {exception.Message}");
             }
         }
+
+        public void BackToHomePage(Frame frame)
+        {
+            HomePage homePage = new HomePage(this.GameService, this.CartService, this.UserGameService);
+            frame.Content = homePage;
+        }
+
+        public void ViewGameDetails(Frame frame, Game game)
+        {
+            GamePage gamePage = new GamePage(this.GameService, this.CartService, this.UserGameService, game);
+            frame.Content = gamePage;
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private async Task ConfirmAndRemoveFromWishlist(Game game)
         {
             try
@@ -216,36 +197,61 @@ namespace SteamStore.ViewModels
                     PrimaryButtonText = ConfirmationDialogStrings.YESBUTTONTEXT,
                     CloseButtonText = ConfirmationDialogStrings.NOBUTTONTEXT,
                     DefaultButton = ContentDialogButton.Primary,
-                    XamlRoot = App.m_window.Content.XamlRoot
+                    XamlRoot = App.MainWindow.Content.XamlRoot,
                 };
                 var result = await dialog.ShowAsync();
                 if (result == ContentDialogResult.Primary)
                 {
-                    RemoveFromWishlist(game);
+                    this.RemoveFromWishlist(game);
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Error showing dialog: {ex.Message}");
+                Console.WriteLine($"Error showing dialog: {exception.Message}");
             }
         }
 
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void HandleFilterChange()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            string criteria = this.SelectedFilter switch
+            {
+                WishListSearchStrings.FILTEROVERWHELMINGLYPOSITIVE => WishListSearchStrings.OVERWHELMINGLYPOSITIVE,
+                WishListSearchStrings.FILTERVERYPOSITIVE => WishListSearchStrings.VERYPOSITIVE,
+                WishListSearchStrings.FILTERMIXED => WishListSearchStrings.MIXED,
+                WishListSearchStrings.FILTERNEGATIVE => WishListSearchStrings.NEGATIVE,
+                _ => WishListSearchStrings.ALL
+            };
+
+            this.FilterWishListGames(criteria);
         }
 
-        public void BackToHomePage(Frame frame)
+        private void HandleSortChange()
         {
-            HomePage homePage = new HomePage(GameService,CartService,UserGameService);
-            frame.Content = homePage;
+            switch (this.SelectedSort)
+            {
+                case WishListSearchStrings.SORTPRICEASCENDING:
+                    this.SortWishListGames("price", true); break;
+                case WishListSearchStrings.SORTPRICEDESCENDING:
+                    this.SortWishListGames("price", false); break;
+                case WishListSearchStrings.SORTRATINGDESCENDING:
+                    this.SortWishListGames("rating", false); break;
+                case WishListSearchStrings.SORTDISCOUNTDESCENDING:
+                    this.SortWishListGames("discount", false); break;
+            }
         }
 
-        public void ViewGameDetails(Frame frame, Game game)
+        private void LoadWishListGames()
         {
-            GamePage gamePage = new GamePage(GameService, CartService, UserGameService, game);
-            frame.Content = gamePage;
+            try
+            {
+                var games = this.userGameService.GetWishListGames();
+                this.WishListGames = new ObservableCollection<Game>(games);
+            }
+            catch (Exception exception)
+            {
+                // Handle error appropriately
+                Console.WriteLine($"Error loading wishlist games: {exception.Message}");
+            }
         }
     }
-} 
+}

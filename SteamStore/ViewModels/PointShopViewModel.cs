@@ -1,193 +1,213 @@
-using SteamStore.Models;
-using SteamStore.Services;
-using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Linq;
-using System.Threading;
-using Microsoft.UI.Xaml.Controls;
-using SteamStore.Services.Interfaces;
-using SteamStore.Data;
-using SteamStore.Constants;
+// <copyright file="PointShopViewModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.ViewModels
 {
+    using System;
+    using System.Collections.ObjectModel;
+    using System.ComponentModel;
+    using System.Linq;
+    using System.Runtime.CompilerServices;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.UI.Xaml.Controls;
+    using SteamStore.Constants;
+    using SteamStore.Data;
+    using SteamStore.Models;
+    using SteamStore.Services;
+    using SteamStore.Services.Interfaces;
+
     public class PointShopViewModel : INotifyPropertyChanged
     {
-        private readonly IPointShopService _pointShopService;
-        private User _user;
-        
+        private readonly IPointShopService pointShopService;
+        private User user;
+
         // Collections
-        private ObservableCollection<PointShopItem> _shopItems;
-        private ObservableCollection<PointShopItem> _userItems;
-        private ObservableCollection<PointShopTransaction> _transactionHistory;
+        private ObservableCollection<PointShopItem> shopItems;
+        private ObservableCollection<PointShopItem> userItems;
+        private ObservableCollection<PointShopTransaction> transactionHistory;
 
         // Filter properties
-        private string _filterType = PointShopConstants.FILTERTYPEALL;
-        private string _searchText = PointShopConstants.INITIALSEARCHSTRING;
-        private double _minPrice = PointShopConstants.MINIMUMPRICE;
-        private double _maxPrice = PointShopConstants.MAXIMUMPRICE;
+        private string filterType = PointShopConstants.FILTERTYPEALL;
+        private string searchText = PointShopConstants.INITIALSEARCHSTRING;
+        private double minimumPrice = PointShopConstants.MINIMUMPRICE;
+        private double maximumPrice = PointShopConstants.MAXIMUMPRICE;
 
         // Selected item
-        private PointShopItem _selectedItem;
+        private PointShopItem selectedItem;
 
-        private CancellationTokenSource _searchCancellationTokenSource;
-        private int _nextTransactionId = PointShopConstants.TRANSACTIONIDENTIFIER;
+        private CancellationTokenSource searchCancellationTokenSource;
+        private int nextTransactionId = PointShopConstants.TRANSACTIONIDENTIFIER;
+        private bool isDetailPanelVisible;
 
         public PointShopViewModel(User currentUser, IDataLink dataLink)
         {
             // Store the current user reference
-            _user = currentUser;
-            
+            this.user = currentUser;
+
             // Initialize service and collections
-            _pointShopService = new PointShopService(currentUser, dataLink);
-            ShopItems = new ObservableCollection<PointShopItem>();
-            UserItems = new ObservableCollection<PointShopItem>();
-            TransactionHistory = new ObservableCollection<PointShopTransaction>();
-            
+            this.pointShopService = new PointShopService(currentUser, dataLink);
+            this.ShopItems = new ObservableCollection<PointShopItem>();
+            this.UserItems = new ObservableCollection<PointShopItem>();
+            this.TransactionHistory = new ObservableCollection<PointShopTransaction>();
+
             // Load initial data
-            LoadItems();
-            LoadUserItems();
+            this.LoadItems();
+            this.LoadUserItems();
         }
 
         public PointShopViewModel(IPointShopService pointShopService)
         {
             // Initialize with existing service
-            _pointShopService = pointShopService;
-            
+            this.pointShopService = pointShopService;
+
             // Get the user reference from the service's internal repository
-            _user = _pointShopService.GetCurrentUser();
-            
+            this.user = this.pointShopService.GetCurrentUser();
+
             // Initialize collections
-            ShopItems = new ObservableCollection<PointShopItem>();
-            UserItems = new ObservableCollection<PointShopItem>();
-            TransactionHistory = new ObservableCollection<PointShopTransaction>();
-            
+            this.ShopItems = new ObservableCollection<PointShopItem>();
+            this.UserItems = new ObservableCollection<PointShopItem>();
+            this.TransactionHistory = new ObservableCollection<PointShopTransaction>();
+
             // Load initial data
-            LoadItems();
-            LoadUserItems();
+            this.LoadItems();
+            this.LoadUserItems();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string SelectedItemImageUri { get; private set; }
+
+        public bool IsDetailPanelVisible
+        {
+            get => this.isDetailPanelVisible;
+            set
+            {
+                this.isDetailPanelVisible = value;
+                this.OnPropertyChanged();
+            }
         }
 
         public ObservableCollection<PointShopItem> ShopItems
         {
-            get => _shopItems;
+            get => this.shopItems;
             set
             {
-                _shopItems = value;
-                OnPropertyChanged();
+                this.shopItems = value;
+                this.OnPropertyChanged();
             }
         }
 
         public ObservableCollection<PointShopItem> UserItems
         {
-            get => _userItems;
+            get => this.userItems;
             set
             {
-                _userItems = value;
-                OnPropertyChanged();
+                this.userItems = value;
+                this.OnPropertyChanged();
             }
         }
 
         public ObservableCollection<PointShopTransaction> TransactionHistory
         {
-            get => _transactionHistory;
+            get => this.transactionHistory;
             set
             {
-                _transactionHistory = value;
-                OnPropertyChanged();
+                this.transactionHistory = value;
+                this.OnPropertyChanged();
             }
         }
 
         public string FilterType
         {
-            get => _filterType;
+            get => this.filterType;
             set
             {
-                if (_filterType != value)
+                if (this.filterType != value)
                 {
-                    _filterType = value;
-                    OnPropertyChanged();
-                    ApplyFilters();
+                    this.filterType = value;
+                    this.OnPropertyChanged();
+                    this.ApplyFilters();
                 }
             }
         }
 
         public string SearchText
         {
-            get => _searchText;
+            get => this.searchText;
             set
             {
-                if (_searchText != value)
+                if (this.searchText != value)
                 {
-                    _searchText = value;
-                    OnPropertyChanged();
-                    
+                    this.searchText = value;
+                    this.OnPropertyChanged();
+
                     // Cancel any existing search operation
-                    _searchCancellationTokenSource?.Cancel();
-                    _searchCancellationTokenSource = new CancellationTokenSource();
-                    
+                    this.searchCancellationTokenSource?.Cancel();
+                    this.searchCancellationTokenSource = new CancellationTokenSource();
+
                     // Apply search with a small delay to avoid too many updates
-                    DelayedSearch(_searchCancellationTokenSource.Token);
+                    this.DelayedSearch(this.searchCancellationTokenSource.Token);
                 }
             }
         }
 
         public double MinPrice
         {
-            get => _minPrice;
+            get => this.minimumPrice;
             set
             {
-                if (_minPrice != value)
+                if (this.minimumPrice != value)
                 {
-                    _minPrice = value;
-                    OnPropertyChanged();
-                    ApplyFilters();
+                    this.minimumPrice = value;
+                    this.OnPropertyChanged();
+                    this.ApplyFilters();
                 }
             }
         }
 
         public double MaxPrice
         {
-            get => _maxPrice;
-            set
+            get => this.maximumPrice; set
             {
-                if (_maxPrice != value)
+                if (this.maximumPrice != value)
                 {
-                    _maxPrice = value;
-                    OnPropertyChanged();
-                    ApplyFilters();
+                    this.maximumPrice = value;
+                    this.OnPropertyChanged();
+                    this.ApplyFilters();
                 }
             }
         }
 
         public PointShopItem SelectedItem
         {
-            get => _selectedItem;
+            get => this.selectedItem;
             set
             {
-                _selectedItem = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(CanPurchase));
+                this.selectedItem = value;
+                this.OnPropertyChanged();
+                this.OnPropertyChanged(nameof(this.CanPurchase));
             }
         }
 
-        public float UserPointBalance => _user?.PointsBalance ?? 0;
+        public float UserPointBalance => this.user?.PointsBalance ?? 0;
 
         public bool CanPurchase
         {
             get
             {
-                if (SelectedItem == null || _user == null)
+                if (this.SelectedItem == null || this.user == null)
+                {
                     return false;
+                }
 
                 // Check if user already owns this item
-                bool alreadyOwns = UserItems.Any(item => item.ItemIdentifier == SelectedItem.ItemIdentifier);
-                
+                bool alreadyOwns = this.UserItems.Any(item => item.ItemIdentifier == this.SelectedItem.ItemIdentifier);
+
                 // Check if user has enough points
-                bool hasEnoughPoints = _user.PointsBalance >= SelectedItem.PointPrice;
-                
+                bool hasEnoughPoints = this.user.PointsBalance >= this.SelectedItem.PointPrice;
+
                 return !alreadyOwns && hasEnoughPoints;
             }
         }
@@ -197,28 +217,28 @@ namespace SteamStore.ViewModels
             try
             {
                 // Get all available items
-                var allItems = _pointShopService.GetAllItems();
-                
+                var allItems = this.pointShopService.GetAllItems();
+
                 // Get user's items to filter them out
-                var userItems = _pointShopService.GetUserItems();
-                
+                var userItems = this.pointShopService.GetUserItems();
+
                 // Filter out items the user already owns
-                var availableItems = allItems.Where(item => 
+                var availableItems = allItems.Where(item =>
                     !userItems.Any(userItem => userItem.ItemIdentifier == item.ItemIdentifier)).ToList();
-                
+
                 // Update the shop items
-                ShopItems.Clear();
+                this.ShopItems.Clear();
                 foreach (var item in availableItems)
                 {
-                    ShopItems.Add(item);
+                    this.ShopItems.Add(item);
                 }
-                
-                ApplyFilters();
+
+                this.ApplyFilters();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 // Log the error
-                System.Diagnostics.Debug.WriteLine($"Error loading items: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error loading items: {exception.Message}");
             }
         }
 
@@ -226,11 +246,11 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var items = _pointShopService.GetUserItems();
-                UserItems.Clear();
+                var items = this.pointShopService.GetUserItems();
+                this.UserItems.Clear();
                 foreach (var item in items)
                 {
-                    UserItems.Add(item);
+                    this.UserItems.Add(item);
                 }
             }
             catch (Exception ex)
@@ -242,7 +262,7 @@ namespace SteamStore.ViewModels
 
         public async Task<bool> PurchaseSelectedItem()
         {
-            if (SelectedItem == null)
+            if (this.SelectedItem == null)
             {
                 System.Diagnostics.Debug.WriteLine("Cannot purchase: SelectedItem is null");
                 return false;
@@ -251,165 +271,123 @@ namespace SteamStore.ViewModels
             try
             {
                 // Store a local copy of the item to prevent issues after state changes
-                var itemToPurchase = SelectedItem;
-                
-                _pointShopService.PurchaseItem(itemToPurchase);
-                
+                var itemToPurchase = this.SelectedItem;
+
+                this.pointShopService.PurchaseItem(itemToPurchase);
+
                 // Add transaction to history
                 var transaction = new PointShopTransaction(
-                    _nextTransactionId++, 
-                    itemToPurchase.Name, 
-                    itemToPurchase.PointPrice, 
+                    this.nextTransactionId++,
+                    itemToPurchase.Name,
+                    itemToPurchase.PointPrice,
                     itemToPurchase.ItemType);
-                TransactionHistory.Add(transaction);
-                
+                this.TransactionHistory.Add(transaction);
+
                 // Point balance is updated in the repository
-                OnPropertyChanged(nameof(UserPointBalance));
-                OnPropertyChanged(nameof(CanPurchase));
-                
+                this.OnPropertyChanged(nameof(this.UserPointBalance));
+                this.OnPropertyChanged(nameof(this.CanPurchase));
+
                 // Reload user items to show the new purchase
-                LoadUserItems();
-                
+                this.LoadUserItems();
+
                 // Reload shop items to remove the purchased item
-                LoadItems();
-                
+                this.LoadItems();
+
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 // Rethrow for handling in the UI
-                throw new Exception($"Failed to purchase item: {ex.Message}", ex);
+                throw new Exception($"Failed to purchase item: {exception.Message}", exception);
             }
         }
 
         public async Task<bool> ActivateItem(PointShopItem item)
         {
             if (item == null)
+            {
                 return false;
+            }
 
             try
             {
-                _pointShopService.ActivateItem(item);
-                
+                this.pointShopService.ActivateItem(item);
+
                 // Refresh user items to reflect the activation change
-                LoadUserItems();
-                
+                this.LoadUserItems();
+
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 // Rethrow for handling in the UI
-                throw new Exception($"Failed to activate item: {ex.Message}", ex);
+                throw new Exception($"Failed to activate item: {exception.Message}", exception);
             }
         }
 
         public async Task<bool> DeactivateItem(PointShopItem item)
         {
             if (item == null)
+            {
                 return false;
+            }
 
             try
             {
-                _pointShopService.DeactivateItem(item);
-                
+                this.pointShopService.DeactivateItem(item);
+
                 // Refresh user items to reflect the deactivation change
-                LoadUserItems();
-                
+                this.LoadUserItems();
+
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 // Rethrow for handling in the UI
-                throw new Exception($"Failed to deactivate item: {ex.Message}", ex);
+                throw new Exception($"Failed to deactivate item: {exception.Message}", exception);
             }
-        }
-        private void ApplyFilters()
-        {
-            try
-            {
-                var filteredItems = _pointShopService.GetFilteredItems(_filterType, _searchText, _minPrice, _maxPrice);
-                ShopItems.Clear();
-                foreach (var item in filteredItems) ShopItems.Add(item);
-            }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Error applying filters: {ex.Message}"); }
         }
 
-        private async void DelayedSearch(CancellationToken cancellationToken)
-        {
-            try
-            {
-                // Wait a bit before searching to avoid excessive updates while typing
-                await Task.Delay(PointShopConstants.DELAYTIMESEARCH, cancellationToken);
-                
-                // Only apply if not cancelled
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    ApplyFilters();
-                }
-            }
-            catch (TaskCanceledException)
-            {
-                // Search was cancelled, do nothing
-            }
-        }
         public bool HandleItemSelection()
         {
-            if (SelectedItem != null)
+            if (this.SelectedItem != null)
             {
-                SelectedItemImageUri = SelectedItem.ImagePath;
-                IsDetailPanelVisible = true;
+                this.SelectedItemImageUri = this.SelectedItem.ImagePath;
+                this.IsDetailPanelVisible = true;
             }
             else
             {
-                IsDetailPanelVisible = false;
+                this.IsDetailPanelVisible = false;
             }
 
-            OnPropertyChanged(nameof(SelectedItemImageUri));
-            OnPropertyChanged(nameof(IsDetailPanelVisible));
-            return IsDetailPanelVisible;
+            this.OnPropertyChanged(nameof(this.SelectedItemImageUri));
+            this.OnPropertyChanged(nameof(this.IsDetailPanelVisible));
+            return this.IsDetailPanelVisible;
         }
+
         public void ClearSelection()
         {
-            SelectedItem = null;
-            IsDetailPanelVisible = false;
+            this.SelectedItem = null;
+            this.IsDetailPanelVisible = false;
 
-            OnPropertyChanged(nameof(IsDetailPanelVisible));
-        }
-        public string SelectedItemImageUri { get; private set; }
-        private bool _isDetailPanelVisible;
-        public bool IsDetailPanelVisible
-        {
-            get => _isDetailPanelVisible;
-            set
-            {
-                _isDetailPanelVisible = value;
-                OnPropertyChanged();
-            }
-        }
-
-        #region INotifyPropertyChanged
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            this.OnPropertyChanged(nameof(this.IsDetailPanelVisible));
         }
 
         public (string Name, string Type, string Description, string Price, string ImageUri) GetSelectedItemDetails()
         {
             try
             {
-                if (SelectedItem == null)
+                if (this.SelectedItem == null)
+                {
                     return (string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
+                }
 
                 return (
-                    Name: SelectedItem.Name,
-                    Type: SelectedItem.ItemType,
-                    Description: SelectedItem.Description,
-                    Price: $"{SelectedItem.PointPrice} Points",
-                    ImageUri: SelectedItem.ImagePath
-                );
+                    Name: this.SelectedItem.Name,
+                    Type: this.SelectedItem.ItemType,
+                    Description: this.SelectedItem.Description,
+                    Price: $"{this.SelectedItem.PointPrice} Points",
+                    ImageUri: this.SelectedItem.ImagePath);
             }
             catch (Exception ex)
             {
@@ -417,65 +395,54 @@ namespace SteamStore.ViewModels
                 return (string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
             }
         }
-        private async System.Threading.Tasks.Task ShowDialog(string title, string message)
-        {
-            ContentDialog dialog = new ContentDialog
-            {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = App.m_window.Content.XamlRoot
-            };
 
-            await dialog.ShowAsync();
-        }
         public async Task<bool> TryPurchaseSelectedItemAsync()
         {
-            if (SelectedItem == null)
+            if (this.SelectedItem == null)
             {
-                await ShowDialog("Error","No item selected");
+                await this.ShowDialog("Error", "No item selected");
                 return false;
             }
-                
 
-            string itemName = SelectedItem.Name;
-            double pointPrice = SelectedItem.PointPrice;
-            string itemType = SelectedItem.ItemType;
+            string itemName = this.SelectedItem.Name;
+            double pointPrice = this.SelectedItem.PointPrice;
+            string itemType = this.SelectedItem.ItemType;
 
             try
             {
-                bool success = await PurchaseSelectedItem();
+                bool success = await this.PurchaseSelectedItem();
 
                 if (success)
                 {
-                    TransactionHistory ??= new ObservableCollection<PointShopTransaction>();
+                    this.TransactionHistory ??= new ObservableCollection<PointShopTransaction>();
 
-                    bool transactionExists = TransactionHistory.Any(t =>
+                    bool transactionExists = this.TransactionHistory.Any(t =>
                         t.ItemName == itemName &&
                         Math.Abs(t.PointsSpent - pointPrice) < PointShopConstants.MINMALDIFFERENCEVALUECOMPARISON);
 
                     if (!transactionExists)
                     {
                         var transaction = new PointShopTransaction(
-                            TransactionHistory.Count + 1,
+                            this.TransactionHistory.Count + 1,
                             itemName,
                             pointPrice,
                             itemType);
-                        TransactionHistory.Add(transaction);
+                        this.TransactionHistory.Add(transaction);
                     }
 
-                    LoadUserItems();
-                    LoadItems();
+                    this.LoadUserItems();
+                    this.LoadItems();
 
-                    await ShowDialog("Congrats!", $"You have successfully purchased {itemName}. Check your inventory to view it.");
+                    await this.ShowDialog("Congrats!", $"You have successfully purchased {itemName}. Check your inventory to view it.");
                     return true;
                 }
-                await ShowDialog("Error", "Purchase failed. Please try again.");
+
+                await this.ShowDialog("Error", "Purchase failed. Please try again.");
                 return false;
             }
             catch (Exception ex)
             {
-                await ShowDialog("Error", $"Purchase Failed: {ex.Message}");
+                await this.ShowDialog("Error", $"Purchase Failed: {ex.Message}");
                 return false;
             }
         }
@@ -484,28 +451,29 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var item = UserItems.FirstOrDefault(i => i.ItemIdentifier == itemId);
+                var item = this.UserItems.FirstOrDefault(i => i.ItemIdentifier == itemId);
                 if (item == null)
                 {
-                    await ShowDialog("Item Not Found", "The selected item could not be found.");
+                    await this.ShowDialog("Item Not Found", "The selected item could not be found.");
                 }
 
                 if (item.IsActive)
                 {
-                    await DeactivateItem(item);
-                    await ShowDialog("Item Deactivated", $"{item.Name} has been deactivated.");
+                    await this.DeactivateItem(item);
+                    await this.ShowDialog("Item Deactivated", $"{item.Name} has been deactivated.");
                 }
                 else
                 {
-                    await ActivateItem(item);
-                    await ShowDialog("Item Activated", $"{item.Name} has been activated.");
+                    await this.ActivateItem(item);
+                    await this.ShowDialog("Item Activated", $"{item.Name} has been activated.");
                 }
             }
             catch (Exception ex)
             {
-                await ShowDialog("Error", $"An error occurred while updating the item: {ex.Message}");
+                await this.ShowDialog("Error", $"An error occurred while updating the item: {ex.Message}");
             }
         }
+
         public bool ShouldShowPointsEarnedNotification()
         {
             return Microsoft.UI.Xaml.Application.Current.Resources.TryGetValue("RecentEarnedPoints", out object pointsObj)
@@ -518,6 +486,7 @@ namespace SteamStore.ViewModels
             {
                 return $"You earned {earnedPoints} points from your recent purchase!";
             }
+
             return string.Empty;
         }
 
@@ -526,8 +495,58 @@ namespace SteamStore.ViewModels
             Microsoft.UI.Xaml.Application.Current.Resources["RecentEarnedPoints"] = 0;
         }
 
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
+        private async System.Threading.Tasks.Task ShowDialog(string title, string message)
+        {
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "OK",
+                XamlRoot = App.MainWindow.Content.XamlRoot,
+            };
 
-        #endregion
+            await dialog.ShowAsync();
+        }
+
+        private void ApplyFilters()
+        {
+            try
+            {
+                var filteredItems = this.pointShopService.GetFilteredItems(this.filterType, this.searchText, this.minimumPrice, this.maximumPrice);
+                this.ShopItems.Clear();
+                foreach (var item in filteredItems)
+                {
+                    this.ShopItems.Add(item);
+                }
+            }
+            catch (Exception exception)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error applying filters: {exception.Message}");
+            }
+        }
+
+        private async void DelayedSearch(CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Wait a bit before searching to avoid excessive updates while typing
+                await Task.Delay(PointShopConstants.DELAYTIMESEARCH, cancellationToken);
+
+                // Only apply if not cancelled
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    this.ApplyFilters();
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Search was cancelled, do nothing
+            }
+        }
     }
-} 
+}

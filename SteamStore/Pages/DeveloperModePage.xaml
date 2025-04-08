@@ -54,18 +54,18 @@
                                 Margin="10,0"
                                 Click="EditButton_Click"
                                 Background="DarkGray"
-                                CommandParameter="{Binding Id}"/>
+                                CommandParameter="{Binding Identifier}"/>
                         <Button Content="Remove" 
                                 Grid.Column="3"
                                 Margin="10,0"
                                 Click="RemoveButton_Click"
                                 Background="Red"
-                                CommandParameter="{Binding Id}"/>
+                                CommandParameter="{Binding Identifier}"/>
                         <Button Content="Reject Message" 
                                 Grid.Column="4"
                                 Background="Orange"
                                 Click="RejectionButton_Click"
-                                CommandParameter="{Binding Id}"/>
+                                CommandParameter="{Binding Identifier}"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -101,12 +101,12 @@
                                 Margin="10,0"
                                 Background="Green"
                                 Click="AcceptButton_Click"
-                                CommandParameter="{Binding Id}"/>
+                                CommandParameter="{Binding Identifier}"/>
                         <Button Content="Reject" 
                                 Grid.Column="3"
                                 Background="Red"
                                 Click="RejectButton_Click"
-                                CommandParameter="{Binding Id}"/>
+                                CommandParameter="{Binding Identifier}"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -252,7 +252,7 @@
                              ItemsSource="{Binding Tags}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding tag_name}"/>
+                                <TextBlock Text="{Binding Tag_name}"/>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
