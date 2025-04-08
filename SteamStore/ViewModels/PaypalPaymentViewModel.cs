@@ -1,89 +1,105 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using SteamStore.Pages;
-using SteamStore.Services.Interfaces;
-using SteamStore.Constants;
+﻿// <copyright file="PaypalPaymentViewModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.ViewModels
 {
-    class PaypalPaymentViewModel:INotifyPropertyChanged
-    {
-        private ICartService _cartService;
-        private IUserGameService _userGameService;
-        private List<Game> _purchasedGames;
-        private PaypalProcessor _paypalProcessor;
-        private decimal _amountToPay;
-        private string _email;
-        private string _password;
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Linq;
+    using System.Runtime.CompilerServices;
+    using System.Text;
+    using System.Threading.Tasks;
+    using Microsoft.UI.Xaml;
+    using Microsoft.UI.Xaml.Controls;
+    using SteamStore.Constants;
+    using SteamStore.Pages;
+    using SteamStore.Services.Interfaces;
 
+    public class PaypalPaymentViewModel : INotifyPropertyChanged
+    {
+        private ICartService cartService;
+        private IUserGameService userGameService;
+        private List<Game> purchasedGames;
+        private PaypalProcessor paypalProcessor;
+        private decimal amountToPay;
+        private string email;
+        private string password;
+
+        public PaypalPaymentViewModel(ICartService cartService, IUserGameService userGameService)
+        {
+            this.cartService = cartService;
+            this.userGameService = userGameService;
+            this.purchasedGames = cartService.GetCartGames();
+            this.paypalProcessor = new PaypalProcessor();
+            this.amountToPay = cartService.GetTotalSumToBePaid();
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string Email
         {
-            get => _email;
-            set { _email = value; OnPropertyChanged(); }
+            get => this.email;
+            set
+            {
+                this.email = value;
+                this.OnPropertyChanged();
+            }
         }
 
         public string Password
         {
-            get => _password;
-            set { _password = value; OnPropertyChanged(); }
-        }
-
-        public PaypalPaymentViewModel(ICartService cartService, IUserGameService userGameService)
-        {
-            this._cartService = cartService;
-            this._userGameService = userGameService;
-            _purchasedGames = cartService.GetCartGames();
-            _paypalProcessor = new PaypalProcessor();
-            _amountToPay = cartService.GetTotalSumToBePaid();
+            get => this.password;
+            set
+            {
+                this.password = value;
+                this.OnPropertyChanged();
+            }
         }
 
         public async Task ValidatePayment(Frame frame)
         {
-            bool paymentSuccess = await _paypalProcessor.ProcessPaymentAsync(Email, Password, _amountToPay);
-            if (paymentSuccess) 
+            bool paymentSuccess = await this.paypalProcessor.ProcessPaymentAsync(this.Email, this.Password, this.amountToPay);
+            if (paymentSuccess)
             {
-                _cartService.RemoveGamesFromCart(_purchasedGames);
-                _userGameService.PurchaseGames(_purchasedGames);
+                this.cartService.RemoveGamesFromCart(this.purchasedGames);
+                this.userGameService.PurchaseGames(this.purchasedGames);
 
                 // Get points earned from the purchase
-                int pointsEarned = _userGameService.LastEarnedPoints;
+                int pointsEarned = this.userGameService.LastEarnedPoints;
 
                 // Store points in App resources for PointsShopPage to access
                 try
                 {
                     Application.Current.Resources[ResourceKeys.RecentEarnedPoints] = pointsEarned;
                 }
-                catch (Exception ex)
+                catch (Exception exception)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error storing points: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Error storing points: {exception.Message}");
                 }
 
                 // Show points earned notification if points were earned
                 if (pointsEarned > 0)
                 {
-                    await ShowNotification(PaymentDialogStrings.PAYMENTSUCCESSMESSAGE,
-                        string.Format(PaymentDialogStrings.PAYMENTSUCCESSWITHPOINTSMESSAGE, pointsEarned));
+                    await this.ShowNotification(PaymentDialogStrings.PAYMENTSUCCESSMESSAGE, string.Format(PaymentDialogStrings.PAYMENTSUCCESSWITHPOINTSMESSAGE, pointsEarned));
                 }
                 else
                 {
-                    await ShowNotification(PaymentDialogStrings.PAYMENTSUCCESSTITLE, PaymentDialogStrings.PAYMENTSUCCESSMESSAGE);
+                    await this.ShowNotification(PaymentDialogStrings.PAYMENTSUCCESSTITLE, PaymentDialogStrings.PAYMENTSUCCESSMESSAGE);
                 }
-                frame.Content = new CartPage(_cartService, _userGameService);
+
+                frame.Content = new CartPage(this.cartService, this.userGameService);
             }
             else
             {
-                await ShowNotification(PaymentDialogStrings.PAYMENTFAILEDTITLE, PaymentDialogStrings.PAYMENTFAILEDMESSAGE);
+                await this.ShowNotification(PaymentDialogStrings.PAYMENTFAILEDTITLE, PaymentDialogStrings.PAYMENTFAILEDMESSAGE);
             }
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private async Task ShowNotification(string title, string message)
@@ -93,14 +109,9 @@ namespace SteamStore.ViewModels
                 Title = title,
                 Content = message,
                 CloseButtonText = PaymentDialogStrings.OKBUTTONTEXT,
-                XamlRoot = App.m_window.Content.XamlRoot
+                XamlRoot = App.MainWindow.Content.XamlRoot,
             };
             await dialog.ShowAsync();
-        }
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

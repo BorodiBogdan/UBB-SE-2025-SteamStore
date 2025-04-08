@@ -1,11 +1,15 @@
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Media;
-using Windows.UI;
-using System;
-using Microsoft.UI.Xaml;
+// <copyright file="Converters.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.Utils
 {
+    using System;
+    using Microsoft.UI.Xaml;
+    using Microsoft.UI.Xaml.Data;
+    using Microsoft.UI.Xaml.Media;
+    using Windows.UI;
+
     public class BoolToActivateButtonTextConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
@@ -14,6 +18,7 @@ namespace SteamStore.Utils
             {
                 return isActive ? "Deactivate" : "Activate";
             }
+
             return "Activate";
         }
 
@@ -31,6 +36,7 @@ namespace SteamStore.Utils
             {
                 return isActive ? "Active" : "Inactive";
             }
+
             return "Inactive";
         }
 
@@ -48,6 +54,7 @@ namespace SteamStore.Utils
             {
                 return isActive ? new SolidColorBrush(Microsoft.UI.Colors.Green) : new SolidColorBrush(Microsoft.UI.Colors.Gray);
             }
+
             return new SolidColorBrush(Microsoft.UI.Colors.Gray);
         }
 
@@ -65,7 +72,7 @@ namespace SteamStore.Utils
             {
                 return dateTime.ToString("MMM dd, yyyy HH:mm"); // Format: Mar 23, 2023 14:30
             }
-            
+
             return string.Empty;
         }
 
@@ -80,13 +87,15 @@ namespace SteamStore.Utils
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             if (value == null)
+            {
                 return Visibility.Visible;
-                
+            }
+
             if (value is int count)
             {
                 return count == 0 ? Visibility.Visible : Visibility.Collapsed;
             }
-            
+
             // Try to handle ICollection types
             try
             {
@@ -99,7 +108,7 @@ namespace SteamStore.Utils
             {
                 // Ignore errors :D
             }
-            
+
             return Visibility.Collapsed;
         }
 
@@ -117,9 +126,10 @@ namespace SteamStore.Utils
         {
             if (value is int count)
             {
-                return string.Format(Format, count);
+                return string.Format(this.Format, count);
             }
-            return string.Format(Format, 0);
+
+            return string.Format(this.Format, 0);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -127,4 +137,4 @@ namespace SteamStore.Utils
             throw new NotImplementedException();
         }
     }
-} 
+}
