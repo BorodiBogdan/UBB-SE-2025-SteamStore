@@ -1,50 +1,54 @@
-﻿using System.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
+﻿// <copyright file="DataLink.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 using System;
 using System.Data;
+using System.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 
 public class DataLink : SteamStore.Data.IDataLink
 {
-    private SqlConnection sqlConnection;
     private readonly string connectionString;
+    private SqlConnection sqlConnection;
 
     public DataLink(IConfiguration configuration)
     {
-        string? localDataSource = configuration["ConnectionString"];
-        connectionString = localDataSource;
+        // string? localDataSource = configuration["ConnectionString"];
+        this.connectionString = "Data Source=DESKTOP-618UFK0\\SQLEXPRESS;Initial Catalog=Steam;Integrated Security=True;TrustServerCertificate=True";
 
         try
         {
-            sqlConnection = new SqlConnection(connectionString);
+            this.sqlConnection = new SqlConnection(this.connectionString);
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error initializing SQL connection: {connectionString}", ex);
+            throw new Exception($"Error initializing SQL connection: {this.connectionString}", ex);
         }
     }
 
     public void OpenConnection()
     {
-        if (sqlConnection.State != ConnectionState.Open)
+        if (this.sqlConnection.State != ConnectionState.Open)
         {
-            sqlConnection.Open();
+            this.sqlConnection.Open();
         }
     }
 
     public void CloseConnection()
     {
-        if (sqlConnection.State != ConnectionState.Closed)
+        if (this.sqlConnection.State != ConnectionState.Closed)
         {
-            sqlConnection.Close();
+            this.sqlConnection.Close();
         }
     }
 
-    public T? ExecuteScalar<T>(string storedProcedure, SqlParameter[]? sqlParameters = null)
+    public T ? ExecuteScalar<T>(string storedProcedure, SqlParameter[] ? sqlParameters = null)
     {
         try
         {
-            OpenConnection();
-            using (SqlCommand command = new SqlCommand(storedProcedure, sqlConnection))
+            this.OpenConnection();
+            using (SqlCommand command = new SqlCommand(storedProcedure, this.sqlConnection))
             {
                 command.CommandType = CommandType.StoredProcedure;
 
@@ -62,22 +66,22 @@ public class DataLink : SteamStore.Data.IDataLink
                 return (T)Convert.ChangeType(result, typeof(T));
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception($"Error - ExecutingScalar: {ex.Message}");
+            throw new Exception($"Error - ExecutingScalar: {exception.Message}");
         }
         finally
         {
-            CloseConnection();
+            this.CloseConnection();
         }
     }
 
-    public DataTable ExecuteReader(string storedProcedure, SqlParameter[]? sqlParameters = null)
+    public DataTable ExecuteReader(string storedProcedure, SqlParameter[] ? sqlParameters = null)
     {
         try
         {
-            OpenConnection();
-            using (SqlCommand command = new SqlCommand(storedProcedure, sqlConnection))
+            this.OpenConnection();
+            using (SqlCommand command = new SqlCommand(storedProcedure, this.sqlConnection))
             {
                 command.CommandType = CommandType.StoredProcedure;
 
@@ -94,22 +98,22 @@ public class DataLink : SteamStore.Data.IDataLink
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception($"Error - ExecuteReader: {ex.Message}");
+            throw new Exception($"Error - ExecuteReader: {exception.Message}");
         }
         finally
         {
-            CloseConnection();
+            this.CloseConnection();
         }
     }
 
-    public int ExecuteNonQuery(string storedProcedure, SqlParameter[]? sqlParameters = null)
+    public int ExecuteNonQuery(string storedProcedure, SqlParameter[] ? sqlParameters = null)
     {
         try
         {
-            OpenConnection();
-            using (SqlCommand command = new SqlCommand(storedProcedure, sqlConnection))
+            this.OpenConnection();
+            using (SqlCommand command = new SqlCommand(storedProcedure, this.sqlConnection))
             {
                 command.CommandType = CommandType.StoredProcedure;
 
@@ -121,13 +125,13 @@ public class DataLink : SteamStore.Data.IDataLink
                 return command.ExecuteNonQuery();
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception($"Error - ExecuteNonQuery: {ex.Message}");
+            throw new Exception($"Error - ExecuteNonQuery: {exception.Message}");
         }
         finally
         {
-            CloseConnection();
+            this.CloseConnection();
         }
     }
 }

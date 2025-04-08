@@ -315,7 +315,7 @@ namespace SteamStore.Pages
 
         private void PopulateEditForm(Game game)
         {
-            this.EditGameId.Text = game.Id.ToString();
+            this.EditGameId.Text = game.Identifier.ToString();
             this.EditGameId.IsEnabled = false;
             this.EditGameName.Text = game.Name;
             this.EditGameDescription.Text = game.Description;
@@ -335,12 +335,12 @@ namespace SteamStore.Pages
 
             try
             {
-                var gameTags = this.viewModel.GetGameTags(game.Id);
+                var gameTags = this.viewModel.GetGameTags(game.Identifier);
                 if (gameTags.Any())
                 {
                     foreach (var tag in this.EditGameTagList.Items)
                     {
-                        if (tag is Tag tagItem && gameTags.Any(t => t.tag_id == tagItem.tag_id))
+                        if (tag is Tag tagItem && gameTags.Any(t => t.TagId == tagItem.TagId))
                         {
                             this.EditGameTagList.SelectedItems.Add(tag);
                         }

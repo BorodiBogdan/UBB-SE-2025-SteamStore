@@ -1,3 +1,7 @@
+// <copyright file="PointShopItem.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace SteamStore.Models
 {
     using System;
@@ -8,9 +12,9 @@ namespace SteamStore.Models
 
     public class PointShopItem
     {
-        public PointShopItem(int itemId, string name, string description, string imagePath, double pointPrice, string itemType)
+        public PointShopItem(int itemIdentifier, string name, string description, string imagePath, double pointPrice, string itemType)
         {
-            this.ItemId = itemId;
+            this.ItemIdentifier = itemIdentifier;
             this.Name = name;
             this.Description = description;
             this.ImagePath = imagePath;
@@ -23,7 +27,7 @@ namespace SteamStore.Models
         {
         }
 
-        public int ItemId { get; set; }
+        public int ItemIdentifier { get; set; }
 
         public string Name { get; set; }
 
@@ -36,27 +40,5 @@ namespace SteamStore.Models
         public string ItemType { get; set; } // E.g., "ProfileBackground", "Avatar", "Emoticon", etc.
 
         public bool IsActive { get; set; }
-    }
-
-    public class PointShopTransaction
-    {
-        public PointShopTransaction(int id, string itemName, double pointsSpent, string itemType)
-        {
-            this.Id = id;
-            this.ItemName = itemName;
-            this.PointsSpent = pointsSpent;
-            this.PurchaseDate = DateTime.Now;
-            this.ItemType = itemType;
-        }
-
-        public int Id { get; set; }
-
-        public string ItemName { get; set; }
-
-        public double PointsSpent { get; set; }
-
-        public DateTime PurchaseDate { get; set; }
-
-        public string ItemType { get; set; }
     }
 }

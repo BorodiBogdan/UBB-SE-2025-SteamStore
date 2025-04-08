@@ -1,5 +1,7 @@
-﻿using SteamStore.Data;
-using SteamStore.Repositories.Interfaces;
+﻿// <copyright file="UserGameRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,89 +11,94 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using SteamStore.Data;
+using SteamStore.Repositories.Interfaces;
 using Windows.Gaming.Input;
 
 public class UserGameRepository : IUserGameRepository
 {
-    private User _user;
-    private IDataLink _data;
+    private User user;
+    private IDataLink dataLink;
 
     public UserGameRepository(IDataLink data, User user)
     {
-        this._user = user;
-        this._data = data;
+        this.user = user;
+        this.dataLink = data;
     }
 
-    public bool isGamePurchased(Game game)
+    public bool IsGamePurchased(Game game)
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@game_id", game.Id),
-            new SqlParameter("@user_id", _user.UserId),
+            new SqlParameter("@game_id", game.Identifier),
+            new SqlParameter("@user_id", this.user.UserIdentifier),
         };
         try
         {
-            return _data.ExecuteScalar<int>("IsGamePurchased", parameters) > 0;
+            return this.dataLink.ExecuteScalar<int>("IsGamePurchased", parameters) > 0;
+        }
+        catch (Exception exception)
+        {
+            throw new Exception(exception.Message);
+        }
+    }
+
+    public void RemoveGameFromWishlist(Game game)
+    {
+        SqlParameter[] parameters = new SqlParameter[]
+        {
+            new SqlParameter("@user_id", this.user.UserIdentifier),
+            new SqlParameter("@game_id", game.Identifier),
+        };
+
+        try
+        {
+            this.dataLink.ExecuteNonQuery("RemoveGameFromWishlist", parameters);
         }
         catch (Exception e)
         {
             throw new Exception(e.Message);
         }
     }
-    public void removeGameFromWishlist(Game game)
+
+    public void AddGameToPurchased(Game game)
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", _user.UserId),
-            new SqlParameter("@game_id", game.Id)
+            new SqlParameter("@user_id", this.user.UserIdentifier),
+            new SqlParameter("@game_id", game.Identifier),
         };
 
         try
         {
-            _data.ExecuteNonQuery("RemoveGameFromWishlist", parameters);
-        }
-        catch (Exception e)
-        {
-            throw new Exception(e.Message);
-        }
-    }
-    public void addGameToPurchased(Game game)
-    {
-        SqlParameter[] parameters = new SqlParameter[]
-        {
-            new SqlParameter("@user_id", _user.UserId),
-            new SqlParameter("@game_id", game.Id)
-        };
-
-        try
-        {
-            if(Convert.ToDecimal(_user.WalletBalance) < game.Price)
+            if (Convert.ToDecimal(this.user.WalletBalance) < game.Price)
             {
                 throw new Exception("Insufficient funds");
             }
 
-            _data.ExecuteNonQuery("AddGameToPurchased", parameters);
-            _user.WalletBalance -= (float)game.Price;
-            
+            this.dataLink.ExecuteNonQuery("AddGameToPurchased", parameters);
+            this.user.WalletBalance -= (float)game.Price;
+
             // Calculate and add points (121 points for every $1 spent)
-            AddPointsForPurchase((float)game.Price);
+            this.AddPointsForPurchase((float)game.Price);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new Exception(e.Message);
+            throw new Exception(exception.Message);
         }
     }
-    public void addGameToWishlist(Game game)
+
+    public void AddGameToWishlist(Game game)
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", _user.UserId),
-            new SqlParameter("@game_id", game.Id)
+            new SqlParameter("@user_id", this.user.UserIdentifier),
+            new SqlParameter("@game_id", game.Identifier),
         };
 
         try
         {
-            _data.ExecuteNonQuery("AddGameToWishlist", parameters);
+            this.dataLink.ExecuteNonQuery("AddGameToWishlist", parameters);
         }
         catch (Exception e)
         {
@@ -103,12 +110,12 @@ public class UserGameRepository : IUserGameRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@gid", gameId)
+            new SqlParameter("@gid", gameId),
         };
 
         try
         {
-            DataTable result = _data.ExecuteReader("getGameTags", parameters);
+            DataTable result = this.dataLink.ExecuteReader("getGameTags", parameters);
             List<string> tags = new List<string>();
 
             if (result != null)
@@ -126,24 +133,23 @@ public class UserGameRepository : IUserGameRepository
             throw new Exception($"Error getting tags for game {gameId}: {e.Message}");
         }
     }
-    
+
     public int GetGameOwnerCount(int gameId)
     {
-        var sqlParameters = new SqlParameter[] { new("@game_id", gameId) };
-        var result = _data.ExecuteReader("GetGameOwnerCount", sqlParameters);
+        var sqlParameters = new SqlParameter[] { new ("@game_id", gameId) };
+        var result = this.dataLink.ExecuteReader("GetGameOwnerCount", sqlParameters);
 
         return result is { Rows.Count: > 0 } ? Convert.ToInt32(result.Rows[0]["OwnerCount"]) : 0;
     }
 
-
-    public Collection<Game> getAllUserGames()
+    public Collection<Game> GetAllUserGames()
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@uid", _user.UserId)
+            new SqlParameter("@uid", this.user.UserIdentifier),
         };
 
-        DataTable? result = _data.ExecuteReader("getUserGames",parameters);
+        var result = this.dataLink.ExecuteReader("getUserGames", parameters);
         List<Game> games = new List<Game>();
 
         if (result != null)
@@ -152,7 +158,7 @@ public class UserGameRepository : IUserGameRepository
             {
                 Game game = new Game
                 {
-                    Id = (int)row["game_id"],
+                    Identifier = (int)row["game_id"],
                     Name = (string)row["name"],
                     Description = (string)row["Description"],
                     ImagePath = (string)row["image_url"],
@@ -160,8 +166,8 @@ public class UserGameRepository : IUserGameRepository
                     MinimumRequirements = (string)row["minimum_requirements"],
                     RecommendedRequirements = (string)row["recommended_requirements"],
                     Status = (string)row["status"],
-                    Tags = GetGameTags((int)row["game_id"]),
-                    trendingScore = Game.NOT_COMPUTED
+                    Tags = this.GetGameTags((int)row["game_id"]),
+                    TrendingScore = Game.NOTCOMPUTED,
                 };
                 games.Add(game);
             }
@@ -176,39 +182,39 @@ public class UserGameRepository : IUserGameRepository
         {
             // Calculate points (121 points for every $1 spent)
             int earnedPoints = (int)(purchaseAmount * 121);
-            
+
             // Update user's point balance
-            _user.PointsBalance += earnedPoints;
-            
+            this.user.PointsBalance += earnedPoints;
+
             // Update in database
             SqlParameter[] parameters = new SqlParameter[]
             {
-                new SqlParameter("@UserId", _user.UserId),
-                new SqlParameter("@PointBalance", _user.PointsBalance)
+                new SqlParameter("@UserId", this.user.UserIdentifier),
+                new SqlParameter("@PointBalance", this.user.PointsBalance),
             };
 
-            _data.ExecuteNonQuery("UpdateUserPointBalance", parameters);
+            this.dataLink.ExecuteNonQuery("UpdateUserPointBalance", parameters);
         }
-        catch (Exception ex)
+        catch (Exception example)
         {
-            throw new Exception($"Failed to add points for purchase: {ex.Message}");
+            throw new Exception($"Failed to add points for purchase: {example.Message}");
         }
     }
 
     public float GetUserPointsBalance()
     {
         // Simply return the user's current points balance from the model
-        return _user.PointsBalance;
+        return this.user.PointsBalance;
     }
 
-    public Collection<Game> getWishlistGames()
+    public Collection<Game> GetWishlistGames()
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", _user.UserId)
+            new SqlParameter("@user_id", this.user.UserIdentifier),
         };
 
-        DataTable? result = _data.ExecuteReader("GetWishlistGames", parameters);
+        var result = this.dataLink.ExecuteReader("GetWishlistGames", parameters);
         List<Game> games = new List<Game>();
 
         if (result != null)
@@ -217,7 +223,7 @@ public class UserGameRepository : IUserGameRepository
             {
                 Game game = new Game
                 {
-                    Id = (int)row["game_id"],
+                    Identifier = (int)row["game_id"],
                     Name = (string)row["name"],
                     Description = (string)row["Description"],
                     ImagePath = (string)row["image_url"],
@@ -227,7 +233,7 @@ public class UserGameRepository : IUserGameRepository
                     Status = (string)row["status"],
                     Rating = Convert.ToDecimal(row["rating"]),
                     Discount = Convert.ToDecimal(row["discount"]),
-                    Tags = GetGameTags((int)row["game_id"])
+                    Tags = this.GetGameTags((int)row["game_id"]),
                 };
                 games.Add(game);
             }
@@ -235,5 +241,4 @@ public class UserGameRepository : IUserGameRepository
 
         return new Collection<Game>(games);
     }
-
 }

@@ -1,12 +1,12 @@
-﻿using SteamStore.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Diagnostics;
 using Microsoft.UI.Xaml.Controls;
+using SteamStore.Models;
 using SteamStore.Pages;
 using SteamStore.Services.Interfaces;
 
@@ -91,7 +91,7 @@ public class GamePageViewModel : INotifyPropertyChanged
         if (_gameService == null) return;
         
         var allGames = _gameService.GetAllGames();
-        Game = allGames.FirstOrDefault(g => g.Id == gameId);
+        Game = allGames.FirstOrDefault(g => g.Identifier == gameId);
         
         if (Game != null)
         {
@@ -132,7 +132,7 @@ public class GamePageViewModel : INotifyPropertyChanged
             GameTags.Clear();
             foreach (var tag in tags)
             {
-                GameTags.Add(tag.tag_name);
+                GameTags.Add(tag.Tag_name);
             }
         }
         catch (Exception ex)
@@ -145,7 +145,7 @@ public class GamePageViewModel : INotifyPropertyChanged
     private void LoadSimilarGames()
     {
         if (Game == null || _gameService == null) return;
-        var similarGames = _gameService.GetSimilarGames(Game.Id);
+        var similarGames = _gameService.GetSimilarGames(Game.Identifier);
         SimilarGames = new ObservableCollection<Game>(similarGames.Take(MaxSimilarGamesToDisplay));
     }
     

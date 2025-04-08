@@ -141,7 +141,7 @@ namespace SteamStore.Services
                 var userItems = GetUserItems();
 
                 var availableItems = allItems.Where(item =>
-                    !userItems.Any(userItem => userItem.ItemId == item.ItemId)).ToList();
+                    !userItems.Any(userItem => userItem.ItemIdentifier == item.ItemIdentifier)).ToList();
 
                 if (!string.IsNullOrEmpty(filterType) && filterType != FILTER_TYPE_ALL)
                 {

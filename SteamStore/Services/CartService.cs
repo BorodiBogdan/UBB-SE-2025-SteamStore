@@ -21,19 +21,19 @@ public class CartService : ICartService
 
     public List<Game> GetCartGames()
     {
-        return this.cartRepository.getCartGames();
+        return this.cartRepository.GetCartGames();
     }
 
     public void RemoveGameFromCart(Game game)
     {
-        this.cartRepository.removeGameFromCart(game);
+        this.cartRepository.RemoveGameFromCart(game);
     }
 
     public void AddGameToCart(Game game)
     {
         try
         {
-            this.cartRepository.addGameToCart(game);
+            this.cartRepository.AddGameToCart(game);
         }
         catch (Exception exception)
         {
@@ -45,17 +45,17 @@ public class CartService : ICartService
     {
         foreach (var game in games)
         {
-            this.cartRepository.removeGameFromCart(game);
+            this.cartRepository.RemoveGameFromCart(game);
         }
     }
 
     public float GetUserFunds()
     {
-        return this.cartRepository.getUserFunds();
+        return this.cartRepository.GetUserFunds();
     }
 
     public decimal GetTotalSumToBePaid()
     {
-        return this.cartRepository.getCartGames().Sum(game => (decimal)game.Price);
+        return this.cartRepository.GetCartGames().Sum(game => (decimal)game.Price);
     }
 }

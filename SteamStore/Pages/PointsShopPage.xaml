@@ -299,7 +299,7 @@
                                 <!-- Controls -->
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Padding="10">
                                     <Button Content="{x:Bind IsActive, Converter={StaticResource BoolToActivateButtonTextConverter}}" 
-                                            Tag="{x:Bind ItemId}" 
+                                            Tag="{x:Bind ItemIdentifier}" 
                                             Click="RemoveButtons_Click"/>
                                 </StackPanel>
                             </Grid>

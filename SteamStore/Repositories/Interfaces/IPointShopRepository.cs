@@ -1,20 +1,28 @@
-﻿using SteamStore.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// <copyright file="IPointShopRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.Repositories.Interfaces
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using SteamStore.Models;
+
     public interface IPointShopRepository
     {
         List<PointShopItem> GetAllItems();
-        List<PointShopItem> GetUserItems();
-        void PurchaseItem(PointShopItem item);
-        void ActivateItem(PointShopItem item);
-        void DeactivateItem(PointShopItem item);
-        void UpdateUserPointBalance();
 
+        List<PointShopItem> GetUserItems();
+
+        void PurchaseItem(PointShopItem item);
+
+        void ActivateItem(PointShopItem item);
+
+        void DeactivateItem(PointShopItem item);
+
+        void UpdateUserPointBalance();
     }
 }

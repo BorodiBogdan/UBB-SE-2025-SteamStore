@@ -29,7 +29,7 @@ public class GameService : IGameService
     {
         return new Collection<Tag>(TagRepository
             .GetAllTags()
-            .Where(tag => game.Tags.Contains(tag.tag_name))
+            .Where(tag => game.Tags.Contains(tag.Tag_name))
             .ToList());
     }
 
@@ -56,10 +56,10 @@ public class GameService : IGameService
 
     public void ComputeTrendingScores(Collection<Game> games)
     {
-        var maxRecentSales = games.Max(game => game.noOfRecentPurchases);
+        var maxRecentSales = games.Max(game => game.NumberOfRecentPurchases);
         foreach (var game in games)
         {
-            game.trendingScore = maxRecentSales < 1 ? 0m : Convert.ToDecimal(game.noOfRecentPurchases) / maxRecentSales;
+            game.TrendingScore = maxRecentSales < 1 ? 0m : Convert.ToDecimal(game.NumberOfRecentPurchases) / maxRecentSales;
         }
     }
 
@@ -72,7 +72,7 @@ public class GameService : IGameService
     {
         ComputeTrendingScores(games);
         return new Collection<Game>(games
-            .OrderByDescending(game => game.trendingScore)
+            .OrderByDescending(game => game.TrendingScore)
             .Take(10)
             .ToList());
     }
@@ -89,7 +89,7 @@ public class GameService : IGameService
         var randy = new Random(DateTime.Now.Millisecond);
         var allGames = GameRepository.GetAllGames();
         return allGames
-            .Where(g => g.Id != gameId)
+            .Where(g => g.Identifier != gameId)
             .OrderBy(_ => randy.Next())
             .Take(3)
             .ToList();
