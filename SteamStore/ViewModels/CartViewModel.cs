@@ -84,7 +84,7 @@ public class CartViewModel : INotifyPropertyChanged
 
     private void LoadGames()
     {
-        var games = _cartService.getCartGames();
+        var games = _cartService.GetCartGames();
         foreach (var game in games)
         {
             CartGames.Add(game);
@@ -107,7 +107,7 @@ public class CartViewModel : INotifyPropertyChanged
 
     public void PurchaseGames()
     {
-        _userGameService.purchaseGames(CartGames.ToList());
+        _userGameService.PurchaseGames(CartGames.ToList());
 
         // Get the points earned from the user game service
         LastEarnedPoints = _userGameService.LastEarnedPoints;
@@ -213,7 +213,7 @@ public class CartViewModel : INotifyPropertyChanged
 
     public float showUserFunds()
     {
-        return _cartService.getUserFunds();
+        return _cartService.GetUserFunds();
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

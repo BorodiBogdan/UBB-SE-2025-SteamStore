@@ -76,7 +76,7 @@ namespace SteamStore.ViewModels
             _cartService = cartService;
             _userGameService = userGameService;
             _creditCardProcessor = new CreditCardProcessor();
-            TotalAmount = _cartService.getCartGames().Sum(game => (decimal)game.Price);
+            TotalAmount = _cartService.GetCartGames().Sum(game => (decimal)game.Price);
            
         }
         public async Task ProcessPaymentAsync(Frame frame)
@@ -84,9 +84,9 @@ namespace SteamStore.ViewModels
             bool paymentSuccess = await _creditCardProcessor.ProcessPaymentAsync(_cardNumber, _expirationDate, _cvv, _ownerName);
             if (paymentSuccess)
             {
-                List<Game> purchasedGames = _cartService.getCartGames();
+                List<Game> purchasedGames = _cartService.GetCartGames();
                 _cartService.RemoveGamesFromCart(purchasedGames);
-                _userGameService.purchaseGames(purchasedGames);
+                _userGameService.PurchaseGames(purchasedGames);
                 LastEarnedPoints = _userGameService.LastEarnedPoints;
 
             
