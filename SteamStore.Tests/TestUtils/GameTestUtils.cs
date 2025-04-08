@@ -12,7 +12,7 @@ public static class GameTestUtils
     {
         return new Game
         {
-            Id = (int)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            Identifier = (int)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             Name = CommonTestUtils.RandomName(50),
             Description = CommonTestUtils.RandomName(100),
             ImagePath = CommonTestUtils.RandomPath(),
@@ -25,7 +25,7 @@ public static class GameTestUtils
             Tags = null,
             Rating = CommonTestUtils.RandomNumber(0, 10, 2),
             Discount = CommonTestUtils.RandomNumber(0, 100, 0),
-            PublisherId = 1
+            PublisherIdentifier = 1
         };
     }
 
@@ -33,27 +33,27 @@ public static class GameTestUtils
     {
         Tag[] allTags =
         {
-            new() { tag_id = 1, tag_name = "Rogue-Like" },
-            new() { tag_id = 2, tag_name = "Third-Person Shooter" },
-            new() { tag_id = 3, tag_name = "Multiplayer" },
-            new() { tag_id = 4, tag_name = "Horror" },
-            new() { tag_id = 5, tag_name = "First-Person Shooter" },
-            new() { tag_id = 6, tag_name = "Action" },
-            new() { tag_id = 7, tag_name = "Platformer" },
-            new() { tag_id = 8, tag_name = "Adventure" },
-            new() { tag_id = 9, tag_name = "Puzzle" },
-            new() { tag_id = 10, tag_name = "Exploration" },
-            new() { tag_id = 11, tag_name = "Sandbox" },
-            new() { tag_id = 12, tag_name = "Survival" },
-            new() { tag_id = 13, tag_name = "Arcade" },
-            new() { tag_id = 14, tag_name = "RPG" },
-            new() { tag_id = 15, tag_name = "Racing" }
+            new() { TagId = 1, Tag_name = "Rogue-Like" },
+            new() { TagId = 2, Tag_name = "Third-Person Shooter" },
+            new() { TagId = 3, Tag_name = "Multiplayer" },
+            new() { TagId = 4, Tag_name = "Horror" },
+            new() { TagId = 5, Tag_name = "First-Person Shooter" },
+            new() { TagId = 6, Tag_name = "Action" },
+            new() { TagId = 7, Tag_name = "Platformer" },
+            new() { TagId = 8, Tag_name = "Adventure" },
+            new() { TagId = 9, Tag_name = "Puzzle" },
+            new() { TagId = 10, Tag_name = "Exploration" },
+            new() { TagId = 11, Tag_name = "Sandbox" },
+            new() { TagId = 12, Tag_name = "Survival" },
+            new() { TagId = 13, Tag_name = "Arcade" },
+            new() { TagId = 14, Tag_name = "RPG" },
+            new() { TagId = 15, Tag_name = "Racing" }
         };
 
         var shuffled = allTags.OrderBy(tag => Random.Next()).ToList();
 
         var subsetSize = Random.Next(1, allTags.Length + 1);
 
-        return shuffled.Take(subsetSize).OrderBy(tag => tag.tag_name).ToArray();
+        return shuffled.Take(subsetSize).OrderBy(tag => tag.Tag_name).ToArray();
     }
 }

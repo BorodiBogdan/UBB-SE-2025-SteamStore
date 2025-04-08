@@ -12,7 +12,7 @@ public class TagRepositoryTest
     {
         var tags = _subject.GetAllTags();
         Assert.Equal(15, tags.Count);
-        var tagNames = tags.Select(tag => tag.tag_name).ToList();
+        var tagNames = tags.Select(tag => tag.Tag_name).ToList();
         Assert.Equal(new List<string>
         {
             "Rogue-Like",
