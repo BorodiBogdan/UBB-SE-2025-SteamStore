@@ -1,23 +1,35 @@
-﻿using SteamStore.Models;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// <copyright file="IGameService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.Services.Interfaces
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using SteamStore.Models;
+
     public interface IGameService
     {
-        Collection<Game> getAllGames();
-        Collection<Tag> getAllTags();
-        Collection<Tag> getAllGameTags(Game game);
-        Collection<Game> searchGames(String search_query);
-        Collection<Game> filterGames(int minRating, int minPrice, int maxPrice, String[] Tags);
-        void computeTrendingScores(Collection<Game> games);
-        Collection<Game> getTrendingGames();
-        Collection<Game> getDiscountedGames();
+        Collection<Game> GetAllGames();
+
+        Collection<Tag> GetAllTags();
+
+        Collection<Tag> GetAllGameTags(Game game);
+
+        Collection<Game> SearchGames(string search_query);
+
+        Collection<Game> FilterGames(int minRating, int minPrice, int maxPrice, string[] tags);
+
+        void ComputeTrendingScores(Collection<Game> games);
+
+        Collection<Game> GetTrendingGames();
+
+        Collection<Game> GetDiscountedGames();
+
         List<Game> GetSimilarGames(int gameId);
     }
 }

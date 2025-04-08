@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using SteamStore.Constants;
-using SteamStore.Constants.SteamStore.Constants;
+using SteamStore.Constants;
 
 namespace SteamStore.ViewModels
 {
@@ -134,7 +134,7 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var games = _userGameService.getWishListGames();
+                var games = _userGameService.GetWishListGames();
                 WishListGames = new ObservableCollection<Game>(games);
             }
             catch (Exception ex)
@@ -154,7 +154,7 @@ namespace SteamStore.ViewModels
 
             try
             {
-                var games = _userGameService.searchWishListByName(SearchText);
+                var games = _userGameService.SearchWishListByName(SearchText);
                 WishListGames = new ObservableCollection<Game>(games);
             }
             catch (Exception ex)
@@ -168,7 +168,7 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var games = _userGameService.filterWishListGames(criteria);
+                var games = _userGameService.FilterWishListGames(criteria);
                 WishListGames = new ObservableCollection<Game>(games);
             }
             catch (Exception ex)
@@ -182,7 +182,7 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var games = _userGameService.sortWishListGames(criteria, ascending);
+                var games = _userGameService.SortWishListGames(criteria, ascending);
                 WishListGames = new ObservableCollection<Game>(games);
             }
             catch (Exception ex)
@@ -196,7 +196,7 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                _userGameService.removeGameFromWishlist(game);
+                _userGameService.RemoveGameFromWishlist(game);
                 WishListGames.Remove(game);
             }
             catch (Exception ex)

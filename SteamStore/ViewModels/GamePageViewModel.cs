@@ -90,7 +90,7 @@ public class GamePageViewModel : INotifyPropertyChanged
     {
         if (_gameService == null) return;
         
-        var allGames = _gameService.getAllGames();
+        var allGames = _gameService.GetAllGames();
         Game = allGames.FirstOrDefault(g => g.Id == gameId);
         
         if (Game != null)
@@ -109,7 +109,7 @@ public class GamePageViewModel : INotifyPropertyChanged
 
         try
         {
-            IsOwned = _userGameService.isGamePurchased(Game);
+            IsOwned = _userGameService.IsGamePurchased(Game);
         }
         catch (Exception)
         {
@@ -127,7 +127,7 @@ public class GamePageViewModel : INotifyPropertyChanged
 
         try
         {
-            var tags = _gameService.getAllGameTags(Game);
+            var tags = _gameService.GetAllGameTags(Game);
             
             GameTags.Clear();
             foreach (var tag in tags)
@@ -173,7 +173,7 @@ public class GamePageViewModel : INotifyPropertyChanged
         {
             try
             {
-                _userGameService.addGameToWishlist(Game);
+                _userGameService.AddGameToWishlist(Game);
             }
             catch (Exception e)
             {

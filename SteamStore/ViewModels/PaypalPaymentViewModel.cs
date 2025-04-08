@@ -42,7 +42,7 @@ namespace SteamStore.ViewModels
         {
             this._cartService = cartService;
             this._userGameService = userGameService;
-            _purchasedGames = cartService.getCartGames();
+            _purchasedGames = cartService.GetCartGames();
             _paypalProcessor = new PaypalProcessor();
             _amountToPay = cartService.GetTotalSumToBePaid();
         }
@@ -53,7 +53,7 @@ namespace SteamStore.ViewModels
             if (paymentSuccess) 
             {
                 _cartService.RemoveGamesFromCart(_purchasedGames);
-                _userGameService.purchaseGames(_purchasedGames);
+                _userGameService.PurchaseGames(_purchasedGames);
 
                 // Get points earned from the purchase
                 int pointsEarned = _userGameService.LastEarnedPoints;

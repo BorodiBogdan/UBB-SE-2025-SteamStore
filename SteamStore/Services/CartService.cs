@@ -1,55 +1,61 @@
-﻿using SteamStore.Repositories.Interfaces;
-using SteamStore.Services.Interfaces;
+﻿// <copyright file="CartService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SteamStore.Repositories.Interfaces;
+using SteamStore.Services.Interfaces;
 
 public class CartService : ICartService
 {
-    private ICartRepository _cartRepository;
+    private ICartRepository cartRepository;
 
     public CartService(ICartRepository cartRepository)
     {
-        _cartRepository = cartRepository;
+        this.cartRepository = cartRepository;
     }
 
-    public List<Game> getCartGames()
+    public List<Game> GetCartGames()
     {
-        return _cartRepository.getCartGames();
+        return this.cartRepository.getCartGames();
     }
+
     public void RemoveGameFromCart(Game game)
     {
-        _cartRepository.removeGameFromCart(game);
+        this.cartRepository.removeGameFromCart(game);
     }
+
     public void AddGameToCart(Game game)
     {
         try
         {
-            _cartRepository.addGameToCart(game);
+            this.cartRepository.addGameToCart(game);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new Exception(e.Message);
-        }   
+            throw new Exception(exception.Message);
+        }
     }
+
     public void RemoveGamesFromCart(List<Game> games)
     {
         foreach (var game in games)
         {
-            _cartRepository.removeGameFromCart(game);
+            this.cartRepository.removeGameFromCart(game);
         }
-    }   
+    }
 
-    public float getUserFunds()
+    public float GetUserFunds()
     {
-        return _cartRepository.getUserFunds();
+        return this.cartRepository.getUserFunds();
     }
 
     public decimal GetTotalSumToBePaid()
     {
-        return _cartRepository.getCartGames().Sum(game => (decimal)game.Price);
+        return this.cartRepository.getCartGames().Sum(game => (decimal)game.Price);
     }
 }
-
