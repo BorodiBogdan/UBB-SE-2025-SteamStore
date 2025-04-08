@@ -1,34 +1,64 @@
-﻿using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Controls;
-using SteamStore.Models;
-using SteamStore.Pages;
-using SteamStore.Services.Interfaces;
+﻿// <copyright file="HomePageViewModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
 using SteamStore.Constants;
+using SteamStore.Models;
+using SteamStore.Pages;
+using SteamStore.Services.Interfaces;
+
 public class HomePageViewModel : INotifyPropertyChanged
 {
-    public ObservableCollection<Game> searchedOrFilteredGames{get;set;}
-    public ObservableCollection<Game> trendingGames { get; set; }
-    public ObservableCollection<Game> recommendedGames { get; set; }
-    public ObservableCollection<Game> discountedGames { get; set;}
-    public string _search_filter_text;
-    public ObservableCollection<Tag> tags { get; set; }
-    private readonly IGameService _gameService;
-    private readonly IUserGameService _userGameService;
-    private readonly ICartService _cartService;
+    private readonly IGameService gameService;
+    private readonly IUserGameService userGameService;
+    private readonly ICartService cartService;
+    private string searchFilterText;
 
-    public string search_filter_text
+    public HomePageViewModel(IGameService gameService, IUserGameService userGameService, ICartService cartService)
     {
-        get => _search_filter_text;
+        this.gameService = gameService;
+        this.userGameService = userGameService;
+        this.cartService = cartService;
+        this.GameService = gameService; // Assign to public property
+        this.SearchedOrFilteredGames = new ObservableCollection<Game>();
+        this.TrendingGames = new ObservableCollection<Game>();
+        this.RecommendedGames = new ObservableCollection<Game>();
+        this.DiscountedGames = new ObservableCollection<Game>();
+        this.LoadAllGames();
+        this.LoadTrendingGames();
+        this.LoadRecommendedGames();
+        this.LoadDiscountedGames();
+        this.Tags = new ObservableCollection<Tag>();
+        this.LoadTags();
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public ObservableCollection<Game> SearchedOrFilteredGames { get; set; }
+
+    public ObservableCollection<Game> TrendingGames { get; set; }
+
+    public ObservableCollection<Game> RecommendedGames { get; set; }
+
+    public ObservableCollection<Game> DiscountedGames { get; set; }
+
+    public ObservableCollection<Tag> Tags { get; set; }
+
+    public string Search_filter_text
+    {
+        get => this.searchFilterText;
         set
         {
-            if (_search_filter_text != value)
+            if (this.searchFilterText != value)
             {
-                _search_filter_text = value;
-                OnPropertyChanged();
+                this.searchFilterText = value;
+                this.OnPropertyChanged();
             }
         }
     }
@@ -36,126 +66,109 @@ public class HomePageViewModel : INotifyPropertyChanged
     // Expose GameService so it can be accessed by the view
     public IGameService GameService { get; private set; }
 
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    public HomePageViewModel(IGameService gameService, IUserGameService userGameService, ICartService cartService)
-    {
-        _gameService = gameService;
-        _userGameService = userGameService;
-        _cartService = cartService;
-        GameService = gameService; // Assign to public property
-        searchedOrFilteredGames = new ObservableCollection<Game>();
-        trendingGames = new ObservableCollection<Game>();
-        recommendedGames = new ObservableCollection<Game>();
-        discountedGames = new ObservableCollection<Game>();
-        LoadAllGames();
-        LoadTrendingGames();
-        LoadRecommendedGames();
-        LoadDiscountedGames();
-        tags = new ObservableCollection<Tag>();
-        LoadTags();
-    }
-
-    
-    private void LoadTrendingGames()
-    {
-        trendingGames.Clear();
-        var games = _gameService.GetTrendingGames();
-        foreach (var game in games)
-        {
-            trendingGames.Add(game);
-        }
-    }
-    private void LoadTags()
-    {
-        var tagsList = _gameService.GetAllTags();
-        foreach (var tag in tagsList)
-        {
-            tags.Add(tag);
-        }
-    }
-
-    private void LoadRecommendedGames()
-    {
-        recommendedGames.Clear();
-        var games = _userGameService.GetRecommendedGames();
-        foreach (var game in games)
-        {
-            recommendedGames.Add(game);
-        }
-    }
-    
-    private void LoadDiscountedGames()
-    {
-        discountedGames.Clear();
-        var games = _gameService.GetDiscountedGames();
-        foreach (var game in games)
-        {
-            discountedGames.Add(game);
-        }
-    }
-
-
-
     public void LoadAllGames()
     {
-        searchedOrFilteredGames.Clear();
-        search_filter_text = HomePageConstants.ALLGAMESFILTER;
-        var games = _gameService.GetAllGames();
+        this.SearchedOrFilteredGames.Clear();
+        this.Search_filter_text = HomePageConstants.ALLGAMESFILTER;
+        var games = this.gameService.GetAllGames();
         foreach (var game in games)
         {
-            searchedOrFilteredGames.Add(game);
+            this.SearchedOrFilteredGames.Add(game);
         }
     }
 
     public void SearchGames(string search_query)
     {
-        searchedOrFilteredGames.Clear();
-        var games = _gameService.SearchGames(search_query);
+        this.SearchedOrFilteredGames.Clear();
+        var games = this.gameService.SearchGames(search_query);
         foreach (var game in games)
         {
-            searchedOrFilteredGames.Add(game);
+            this.SearchedOrFilteredGames.Add(game);
         }
-        if(search_query == "")
-        {
-            search_filter_text = HomePageConstants.ALLGAMESFILTER;
-            return;
-        }
-        if(games.Count == 0)
-        {
-            search_filter_text = HomePageConstants.NOGAMESFOUND + search_query;
-            return;
-        }
-        search_filter_text = HomePageConstants.SEARCHRESULTSFOR + search_query;
-    }
 
-    public void FilterGames(int minRating, int minPrice, int maxPrice, String[] Tags)
-    {
-        searchedOrFilteredGames.Clear();
-        var games = _gameService.FilterGames(minRating, minPrice, maxPrice, Tags);
-        foreach (var game in games)
+        if (search_query == string.Empty)
         {
-            searchedOrFilteredGames.Add(game);
+            this.Search_filter_text = HomePageConstants.ALLGAMESFILTER;
+            return;
         }
+
         if (games.Count == 0)
         {
-            search_filter_text = HomePageConstants.NOGAMESFOUND;
+            this.Search_filter_text = HomePageConstants.NOGAMESFOUND + search_query;
             return;
         }
-        search_filter_text = HomePageConstants.FILTEREDGAMES;
+
+        this.Search_filter_text = HomePageConstants.SEARCHRESULTSFOR + search_query;
+    }
+
+    public void FilterGames(int minRating, int minPrice, int maxPrice, string[] tags)
+    {
+        this.SearchedOrFilteredGames.Clear();
+        var games = this.gameService.FilterGames(minRating, minPrice, maxPrice, tags);
+        foreach (var game in games)
+        {
+            this.SearchedOrFilteredGames.Add(game);
+        }
+
+        if (games.Count == 0)
+        {
+            this.Search_filter_text = HomePageConstants.NOGAMESFOUND;
+            return;
+        }
+
+        this.Search_filter_text = HomePageConstants.FILTEREDGAMES;
     }
 
     public void SwitchToGamePage(Microsoft.UI.Xaml.DependencyObject parent, Game selectedGame)
     {
         if (parent is Frame frame)
         {
-            var gamePage = new GamePage(GameService, _cartService, _userGameService, selectedGame);
+            var gamePage = new GamePage(this.GameService, this.cartService, this.userGameService, selectedGame);
             frame.Content = gamePage;
+        }
+    }
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private void LoadTrendingGames()
+    {
+        this.TrendingGames.Clear();
+        var games = this.gameService.GetTrendingGames();
+        foreach (var game in games)
+        {
+            this.TrendingGames.Add(game);
+        }
+    }
+
+    private void LoadTags()
+    {
+        var tagsList = this.gameService.GetAllTags();
+        foreach (var tag in tagsList)
+        {
+            this.Tags.Add(tag);
+        }
+    }
+
+    private void LoadRecommendedGames()
+    {
+        this.RecommendedGames.Clear();
+        var games = this.userGameService.GetRecommendedGames();
+        foreach (var game in games)
+        {
+            this.RecommendedGames.Add(game);
+        }
+    }
+
+    private void LoadDiscountedGames()
+    {
+        this.DiscountedGames.Clear();
+        var games = this.gameService.GetDiscountedGames();
+        foreach (var game in games)
+        {
+            this.DiscountedGames.Add(game);
         }
     }
 }
