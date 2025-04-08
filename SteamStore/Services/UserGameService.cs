@@ -1,31 +1,31 @@
-﻿using SteamStore.Models;
-using SteamStore.Repositories.Interfaces;
-using SteamStore.Services.Interfaces;
+﻿// <copyright file="UserGameService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SteamStore.Constants;
-using SteamStore.Constants;
-using static SteamStore.Constants.NotificationStrings;
+using SteamStore.Models;
 using SteamStore.Repositories;
+using SteamStore.Repositories.Interfaces;
+using SteamStore.Services.Interfaces;
 
 public class UserGameService : IUserGameService
 {
     public IUserGameRepository UserGameRepository { get; set; }
+
     public IGameRepository GameRepository { get; set; }
-    
+
     public ITagRepository TagRepository { get; set; }
-    
+
     // Property to track points earned in the last purchase
     public int LastEarnedPoints { get; private set; }
-    
+
     public void RemoveGameFromWishlist(Game game)
     {
-        UserGameRepository.RemoveGameFromWishlist(game);
+        this.UserGameRepository.RemoveGameFromWishlist(game);
     }
 
     public void AddGameToWishlist(Game game)
@@ -33,58 +33,61 @@ public class UserGameService : IUserGameService
         try
         {
             // Check if game is already purchased
-            if (IsGamePurchased(game))
+            if (this.IsGamePurchased(game))
             {
                 throw new Exception(string.Format(ExceptionMessages.GameAlreadyOwned, game.Name));
 
-                //throw new Exception($"Failed to add {game.Name} to your wishlist: Game already owned");
+                // throw new Exception($"Failed to add {game.Name} to your wishlist: Game already owned");
             }
-            
-            UserGameRepository.AddGameToWishlist(game);
+
+            this.UserGameRepository.AddGameToWishlist(game);
         }
-        catch (Exception e) 
-        { 
+        catch (Exception e)
+        {
             // Clean up the error message
             string message = e.Message;
             if (message.Contains("ExecuteNonQuery"))
             {
                 message = string.Format(ExceptionMessages.GameAlreadyInWishlist, game.Name);
             }
+
             throw new Exception(message);
         }
     }
+
     public void PurchaseGames(List<Game> games)
     {
         // Reset points counter
-        LastEarnedPoints = 0;
-        
+        this.LastEarnedPoints = 0;
+
         // Track user's points before purchase
-        float pointsBalanceBefore = UserGameRepository.GetUserPointsBalance();
-        
+        float pointsBalanceBefore = this.UserGameRepository.GetUserPointsBalance();
+
         // Purchase games
         foreach (var game in games)
         {
-            UserGameRepository.AddGameToPurchased(game);
-            UserGameRepository.RemoveGameFromWishlist(game);
+            this.UserGameRepository.AddGameToPurchased(game);
+            this.UserGameRepository.RemoveGameFromWishlist(game);
         }
-        
+
         // Calculate earned points by comparing balances
-        float pointsBalanceAfter = UserGameRepository.GetUserPointsBalance();
-        LastEarnedPoints = (int)(pointsBalanceAfter - pointsBalanceBefore);
+        float pointsBalanceAfter = this.UserGameRepository.GetUserPointsBalance();
+        this.LastEarnedPoints = (int)(pointsBalanceAfter - pointsBalanceBefore);
     }
 
     public void ComputeNoOfUserGamesForEachTag(Collection<Tag> all_tags)
     {
-        var user_games = UserGameRepository.GetAllUserGames();
+        var user_games = this.UserGameRepository.GetAllUserGames();
         Dictionary<string, Tag> tagsDictionary = all_tags
             .ToDictionary(tag => tag.Tag_name);
         foreach (var tag in tagsDictionary.Values)
         {
             tag.NumberOfUserGamesWithTag = 0;
         }
-        foreach(var user_game in user_games)
+
+        foreach (var user_game in user_games)
         {
-            foreach(string tag_name in user_game.Tags)
+            foreach (string tag_name in user_game.Tags)
             {
                 tagsDictionary[tag_name].NumberOfUserGamesWithTag++;
             }
@@ -93,8 +96,8 @@ public class UserGameService : IUserGameService
 
     public Collection<Tag> GetFavoriteUserTags()
     {
-        var allTags = TagRepository.GetAllTags();
-        ComputeNoOfUserGamesForEachTag(allTags);
+        var allTags = this.TagRepository.GetAllTags();
+        this.ComputeNoOfUserGamesForEachTag(allTags);
         return new Collection<Tag>(allTags
             .OrderByDescending(tag => tag.NumberOfUserGamesWithTag)
             .Take(3)
@@ -103,7 +106,7 @@ public class UserGameService : IUserGameService
 
     public void ComputeTagScoreForGames(Collection<Game> games)
     {
-        var favorite_tags = GetFavoriteUserTags();
+        var favorite_tags = this.GetFavoriteUserTags();
         foreach (var game in games)
         {
             game.TagScore = 0;
@@ -113,7 +116,8 @@ public class UserGameService : IUserGameService
                 {
                     game.TagScore += tag.NumberOfUserGamesWithTag;
                 }
-                game.TagScore = game.TagScore * ( 1/3m);
+
+                game.TagScore = game.TagScore * (1 / 3m);
             }
         }
     }
@@ -129,30 +133,30 @@ public class UserGameService : IUserGameService
 
     public Collection<Game> GetRecommendedGames()
     {
-        var games = GameRepository.GetAllGames();
-        ComputeTrendingScores(games);
-        ComputeTagScoreForGames(games);
+        var games = this.GameRepository.GetAllGames();
+        this.ComputeTrendingScores(games);
+        this.ComputeTagScoreForGames(games);
         return new Collection<Game>(games
-                .OrderByDescending(game => game.TagScore *0.5m + game.TrendingScore *0.5m)
+                .OrderByDescending(game => (game.TagScore * 0.5m) + (game.TrendingScore * 0.5m))
                 .Take(10)
                 .ToList());
     }
 
     public Collection<Game> GetWishListGames()
     {
-        return UserGameRepository.GetWishlistGames();
+        return this.UserGameRepository.GetWishlistGames();
     }
 
     public Collection<Game> SearchWishListByName(string searchText)
     {
-        return new Collection<Game>(UserGameRepository.GetWishlistGames()
+        return new Collection<Game>(this.UserGameRepository.GetWishlistGames()
             .Where(game => game.Name.ToLower().Contains(searchText.ToLower()))
             .ToList());
     }
 
     public Collection<Game> FilterWishListGames(string criteria)
     {
-        var games = UserGameRepository.GetWishlistGames();
+        var games = this.UserGameRepository.GetWishlistGames();
         switch (criteria)
         {
             case FilterCriteria.OVERWHELMINGLYPOSITIVE:
@@ -170,11 +174,12 @@ public class UserGameService : IUserGameService
 
     public bool IsGamePurchased(Game game)
     {
-        return UserGameRepository.IsGamePurchased(game);
+        return this.UserGameRepository.IsGamePurchased(game);
     }
+
     public Collection<Game> SortWishListGames(string criteria, bool ascending)
     {
-        var games = UserGameRepository.GetWishlistGames();
+        var games = this.UserGameRepository.GetWishlistGames();
         IOrderedEnumerable<Game> orderedGames = criteria switch
         {
             FilterCriteria.PRICE => ascending ? games.OrderBy(g => g.Price) : games.OrderByDescending(g => g.Price),
