@@ -119,8 +119,8 @@ public class DeveloperService : IDeveloperService
     {
         try
         {
-            game.PublisherIdentifier = User.UserIdentifier;
-            this.GameRepository.UpdateGame(game.Identifier,game);
+            game.PublisherIdentifier = this.User.UserIdentifier;
+            this.GameRepository.UpdateGame(game.Identifier, game);
         }
         catch (Exception exception)
         {
@@ -132,7 +132,7 @@ public class DeveloperService : IDeveloperService
     {
         try
         {
-            game.PublisherIdentifier = User.UserIdentifier;
+            game.PublisherIdentifier = this.User.UserIdentifier;
             this.GameRepository.UpdateGame(game.Identifier, game);
         }
         catch (Exception e)
@@ -142,8 +142,8 @@ public class DeveloperService : IDeveloperService
 
         try
         {
-            //System.Diagnostics.Debug.WriteLine("deleting the tags!");
-            DeleteGameTags(game.Identifier);
+            // System.Diagnostics.Debug.WriteLine("deleting the tags!");
+            this.DeleteGameTags(game.Identifier);
             if (selectedTags != null && selectedTags.Count > 0)
             {
                 foreach (var tag in selectedTags)

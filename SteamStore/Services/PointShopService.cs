@@ -1,40 +1,44 @@
-using SteamStore.Data;
-using SteamStore.Models;
-using SteamStore.Repositories;
-using SteamStore.Repositories.Interfaces;
-using SteamStore.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+// <copyright file="PointShopService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.Services
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using SteamStore.Data;
+    using SteamStore.Models;
+    using SteamStore.Repositories;
+    using SteamStore.Repositories.Interfaces;
+    using SteamStore.Services.Interfaces;
+
     public class PointShopService : IPointShopService
     {
-        private readonly IPointShopRepository _repository;
-        private readonly User _currentUser;
-        private const string FILTER_TYPE_ALL = "All";
+        private const string FILTERTYPEALL = "All";
+        private readonly IPointShopRepository repository;
+        private readonly User currentUser;
 
         public PointShopService(User currentUser, IDataLink dataLink)
         {
-            _currentUser = currentUser;
-            _repository = new PointShopRepository(currentUser, dataLink);
+            this.currentUser = currentUser;
+            this.repository = new PointShopRepository(currentUser, dataLink);
         }
 
         public User GetCurrentUser()
         {
-            return _currentUser;
+            return this.currentUser;
         }
 
         public List<PointShopItem> GetAllItems()
         {
             try
             {
-                return _repository.GetAllItems();
+                return this.repository.GetAllItems();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Error retrieving items: {ex.Message}", ex);
+                throw new Exception($"Error retrieving items: {exception.Message}", exception);
             }
         }
 
@@ -42,11 +46,11 @@ namespace SteamStore.Services
         {
             try
             {
-                return _repository.GetUserItems();
+                return this.repository.GetUserItems();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Error retrieving user items: {ex.Message}", ex);
+                throw new Exception($"Error retrieving user items: {exception.Message}", exception);
             }
         }
 
@@ -54,11 +58,11 @@ namespace SteamStore.Services
         {
             try
             {
-                _repository.PurchaseItem(item);
+                this.repository.PurchaseItem(item);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Error purchasing item: {ex.Message}", ex);
+                throw new Exception($"Error purchasing item: {exception.Message}", exception);
             }
         }
 
@@ -66,11 +70,11 @@ namespace SteamStore.Services
         {
             try
             {
-                _repository.ActivateItem(item);
+                this.repository.ActivateItem(item);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Error activating item: {ex.Message}", ex);
+                throw new Exception($"Error activating item: {exception.Message}", exception);
             }
         }
 
@@ -78,77 +82,31 @@ namespace SteamStore.Services
         {
             try
             {
-                _repository.DeactivateItem(item);
+                this.repository.DeactivateItem(item);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Error deactivating item: {ex.Message}", ex);
+                throw new Exception($"Error deactivating item: {exception.Message}", exception);
             }
         }
-
-        //// Filter items by type
-        //public List<PointShopItem> FilterItemsByType(string itemType)
-        //{
-        //    try
-        //    {
-        //        return GetAllItems()
-        //            .Where(item => item.ItemType.Equals(itemType, StringComparison.OrdinalIgnoreCase))
-        //            .ToList();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"Error filtering items by type: {ex.Message}", ex);
-        //    }
-        //}
-
-        //// Filter items by price range
-        //public List<PointShopItem> FilterItemsByPriceRange(double minPrice, double maxPrice)
-        //{
-        //    try
-        //    {
-        //        return GetAllItems()
-        //            .Where(item => item.PointPrice >= minPrice && item.PointPrice <= maxPrice)
-        //            .ToList();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"Error filtering items by price range: {ex.Message}", ex);
-        //    }
-        //}
-
-        //// Search items by name or description
-        //public List<PointShopItem> SearchItems(string searchTerm)
-        //{
-        //    try
-        //    {
-        //        return GetAllItems()
-        //            .Where(item => 
-        //                item.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || 
-        //                item.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-        //            .ToList();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"Error searching items: {ex.Message}", ex);
-        //    }
-        //}
 
         public List<PointShopItem> GetFilteredItems(string filterType, string searchText, double minPrice, double maxPrice)
         {
             try
             {
-                var allItems = GetAllItems();
-                var userItems = GetUserItems();
+                var allItems = this.GetAllItems();
+                var userItems = this.GetUserItems();
 
                 var availableItems = allItems.Where(item =>
                     !userItems.Any(userItem => userItem.ItemIdentifier == item.ItemIdentifier)).ToList();
 
-                if (!string.IsNullOrEmpty(filterType) && filterType != FILTER_TYPE_ALL)
+                if (!string.IsNullOrEmpty(filterType) && filterType != FILTERTYPEALL)
                 {
                     availableItems = availableItems
                         .Where(item => item.ItemType.Equals(filterType, StringComparison.OrdinalIgnoreCase))
                         .ToList();
                 }
+
                 availableItems = availableItems
                     .Where(item => item.PointPrice >= minPrice && item.PointPrice <= maxPrice)
                     .ToList();
@@ -163,11 +121,11 @@ namespace SteamStore.Services
 
                 return availableItems;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in GetFilteredItems: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error in GetFilteredItems: {exception.Message}");
                 return new List<PointShopItem>();
             }
         }
     }
-} 
+}
