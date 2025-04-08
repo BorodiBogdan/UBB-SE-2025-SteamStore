@@ -1,17 +1,20 @@
-﻿using System;
+﻿// <copyright file="Game.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+using System;
 using System.Runtime.Intrinsics.X86;
 using Windows.Devices.Pwm;
 
 public class Game
 {
-   
- public Game()
+    public const decimal NOTCOMPUTED = -111111;
+
+    public Game()
     {
     }
 
-    public const decimal NOT_COMPUTED = -111111;
-
-    public int Id { get; set; }
+    public int Identifier { get; set; }
 
     public string Name { get; set; }
 
@@ -31,9 +34,9 @@ public class Game
 
     public decimal Rating { get; set; }
 
-    public int noOfRecentPurchases { get; set; }
+    public int NumberOfRecentPurchases { get; set; }
 
-    public decimal trendingScore { get; set; }
+    public decimal TrendingScore { get; set; }
 
     public string TrailerPath { get; set; }
 
@@ -41,8 +44,7 @@ public class Game
 
     public decimal Discount { get; set; }
 
-    public decimal tagScore { get; set; }
+    public decimal TagScore { get; set; }
 
-    public int PublisherId { get; set; }
-    
+    public int PublisherIdentifier { get; set; }
 }

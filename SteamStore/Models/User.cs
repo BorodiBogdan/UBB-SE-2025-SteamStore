@@ -1,11 +1,16 @@
-﻿public class User
+﻿// <copyright file="User.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+public class User
 {
     public User()
     {
     }
-    public User(int userId, string name, string email, float walletBalance, float pointsBalance, Role userRole)
+
+    public User(int userIdentifier, string name, string email, float walletBalance, float pointsBalance, Role userRole)
     {
-        this.UserId = userId;
+        this.UserIdentifier = userIdentifier;
         this.Name = name;
         this.Email = email;
         this.WalletBalance = walletBalance;
@@ -13,9 +18,13 @@
         this.UserRole = userRole;
     }
 
-    public enum Role { Developer, User }
+    public enum Role
+    {
+        Developer,
+        User,
+    }
 
-    public int UserId { get; set; }
+    public int UserIdentifier { get; set; }
 
     public string Name { get; set; }
 

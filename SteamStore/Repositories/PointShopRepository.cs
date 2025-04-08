@@ -1,25 +1,29 @@
-using SteamStore.Data;
-using SteamStore.Models;
-using SteamStore.Repositories.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// <copyright file="PointShopRepository.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace SteamStore.Repositories
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Data.SqlClient;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using SteamStore.Data;
+    using SteamStore.Models;
+    using SteamStore.Repositories.Interfaces;
+
     public class PointShopRepository : IPointShopRepository
     {
-        private User _user;
-        private IDataLink _data;
+        private User user;
+        private IDataLink data;
 
         public PointShopRepository(User user, IDataLink data)
         {
-            _user = user;
-            _data = data;
+            this.user = user;
+            this.data = data;
         }
 
         public List<PointShopItem> GetAllItems()
@@ -28,20 +32,20 @@ namespace SteamStore.Repositories
 
             try
             {
-                DataTable result = _data.ExecuteReader("GetAllPointShopItems");
-                
+                DataTable result = this.data.ExecuteReader("GetAllPointShopItems");
+
                 foreach (DataRow row in result.Rows)
                 {
                     var item = new PointShopItem
                     {
-                        ItemId = Convert.ToInt32(row["ItemId"]),
+                        ItemIdentifier = Convert.ToInt32(row["ItemId"]),
                         Name = row["Name"].ToString(),
                         Description = row["Description"].ToString(),
                         ImagePath = row["ImagePath"].ToString(),
                         PointPrice = Convert.ToDouble(row["PointPrice"]),
-                        ItemType = row["ItemType"].ToString()
+                        ItemType = row["ItemType"].ToString(),
                     };
-                    
+
                     items.Add(item);
                 }
             }
@@ -61,24 +65,23 @@ namespace SteamStore.Repositories
             {
                 SqlParameter[] parameters = new SqlParameter[]
                 {
-                    new SqlParameter("@UserId", _user.UserId)
+                    new SqlParameter("@UserId", this.user.UserIdentifier),
                 };
 
-                DataTable result = _data.ExecuteReader("GetUserPointShopItems", parameters);
-                
+                DataTable result = this.data.ExecuteReader("GetUserPointShopItems", parameters);
+
                 foreach (DataRow row in result.Rows)
                 {
                     var item = new PointShopItem
                     {
-                        ItemId = Convert.ToInt32(row["ItemId"]),
+                        ItemIdentifier = Convert.ToInt32(row["ItemId"]),
                         Name = row["Name"].ToString(),
                         Description = row["Description"].ToString(),
                         ImagePath = row["ImagePath"].ToString(),
                         PointPrice = Convert.ToDouble(row["PointPrice"]),
                         ItemType = row["ItemType"].ToString(),
-                        IsActive = Convert.ToBoolean(row["IsActive"])
+                        IsActive = Convert.ToBoolean(row["IsActive"]),
                     };
-                    
                     items.Add(item);
                 }
             }
@@ -96,13 +99,13 @@ namespace SteamStore.Repositories
             {
                 throw new ArgumentNullException(nameof(item), "Cannot purchase a null item");
             }
-            
-            if (_user == null)
+
+            if (this.user == null)
             {
                 throw new InvalidOperationException("User is not initialized");
             }
-            
-            if (_user.PointsBalance < item.PointPrice)
+
+            if (this.user.PointsBalance < item.PointPrice)
             {
                 throw new Exception("Insufficient points to purchase this item");
             }
@@ -111,21 +114,21 @@ namespace SteamStore.Repositories
             {
                 SqlParameter[] parameters = new SqlParameter[]
                 {
-                    new SqlParameter("@UserId", _user.UserId),
-                    new SqlParameter("@ItemId", item.ItemId)
+                    new SqlParameter("@UserId", this.user.UserIdentifier),
+                    new SqlParameter("@ItemId", item.ItemIdentifier),
                 };
 
-                _data.ExecuteNonQuery("PurchasePointShopItem", parameters);
-                
+                this.data.ExecuteNonQuery("PurchasePointShopItem", parameters);
+
                 // Update user's point balance in memory
-                _user.PointsBalance -= (float)item.PointPrice;
-                
+                this.user.PointsBalance -= (float)item.PointPrice;
+
                 // Update user's point balance in the database
-                UpdateUserPointBalance();
+                this.UpdateUserPointBalance();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Failed to purchase item: {ex.Message}");
+                throw new Exception($"Failed to purchase item: {exception.Message}");
             }
         }
 
@@ -135,25 +138,25 @@ namespace SteamStore.Repositories
             {
                 throw new ArgumentNullException(nameof(item), "Cannot activate a null item");
             }
-            
-            if (_user == null)
+
+            if (this.user == null)
             {
                 throw new InvalidOperationException("User is not initialized");
             }
-            
+
             try
             {
                 SqlParameter[] parameters = new SqlParameter[]
                 {
-                    new SqlParameter("@UserId", _user.UserId),
-                    new SqlParameter("@ItemId", item.ItemId)
+                    new SqlParameter("@UserId", this.user.UserIdentifier),
+                    new SqlParameter("@ItemId", item.ItemIdentifier),
                 };
 
-                _data.ExecuteNonQuery("ActivatePointShopItem", parameters);
+                this.data.ExecuteNonQuery("ActivatePointShopItem", parameters);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Failed to activate item: {ex.Message}");
+                throw new Exception($"Failed to activate item: {exception.Message}");
             }
         }
 
@@ -163,21 +166,21 @@ namespace SteamStore.Repositories
             {
                 throw new ArgumentNullException(nameof(item), "Cannot deactivate a null item");
             }
-            
-            if (_user == null)
+
+            if (this.user == null)
             {
                 throw new InvalidOperationException("User is not initialized");
             }
-            
+
             try
             {
                 SqlParameter[] parameters = new SqlParameter[]
                 {
-                    new SqlParameter("@UserId", _user.UserId),
-                    new SqlParameter("@ItemId", item.ItemId)
+                    new SqlParameter("@UserId", this.user.UserIdentifier),
+                    new SqlParameter("@ItemId", item.ItemIdentifier),
                 };
 
-                _data.ExecuteNonQuery("DeactivatePointShopItem", parameters);
+                this.data.ExecuteNonQuery("DeactivatePointShopItem", parameters);
             }
             catch (Exception ex)
             {
@@ -191,16 +194,16 @@ namespace SteamStore.Repositories
             {
                 SqlParameter[] parameters = new SqlParameter[]
                 {
-                    new SqlParameter("@UserId", _user.UserId),
-                    new SqlParameter("@PointBalance", _user.PointsBalance)
+                    new SqlParameter("@UserId", this.user.UserIdentifier),
+                    new SqlParameter("@PointBalance", this.user.PointsBalance),
                 };
 
-                _data.ExecuteNonQuery("UpdateUserPointBalance", parameters);
+                this.data.ExecuteNonQuery("UpdateUserPointBalance", parameters);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Failed to update user point balance: {ex.Message}");
+                throw new Exception($"Failed to update user point balance: {exception.Message}");
             }
         }
     }
-} 
+}

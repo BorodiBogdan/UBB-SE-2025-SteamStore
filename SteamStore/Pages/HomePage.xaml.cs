@@ -61,7 +61,7 @@ namespace SteamStore.Pages
             int maxPrice = ((int)MaxPriceSlider.Value);
             var selectedTags = TagListView.SelectedItems
             .Cast<Tag>() 
-            .Select(tag => tag.tag_name)
+            .Select(tag => tag.Tag_name)
             .ToList();
 
             if (this.DataContext is HomePageViewModel viewModel)

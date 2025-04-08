@@ -183,7 +183,7 @@ namespace SteamStore.ViewModels
                     return false;
 
                 // Check if user already owns this item
-                bool alreadyOwns = UserItems.Any(item => item.ItemId == SelectedItem.ItemId);
+                bool alreadyOwns = UserItems.Any(item => item.ItemIdentifier == SelectedItem.ItemIdentifier);
                 
                 // Check if user has enough points
                 bool hasEnoughPoints = _user.PointsBalance >= SelectedItem.PointPrice;
@@ -204,7 +204,7 @@ namespace SteamStore.ViewModels
                 
                 // Filter out items the user already owns
                 var availableItems = allItems.Where(item => 
-                    !userItems.Any(userItem => userItem.ItemId == item.ItemId)).ToList();
+                    !userItems.Any(userItem => userItem.ItemIdentifier == item.ItemIdentifier)).ToList();
                 
                 // Update the shop items
                 ShopItems.Clear();
@@ -484,7 +484,7 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var item = UserItems.FirstOrDefault(i => i.ItemId == itemId);
+                var item = UserItems.FirstOrDefault(i => i.ItemIdentifier == itemId);
                 if (item == null)
                 {
                     await ShowDialog("Item Not Found", "The selected item could not be found.");

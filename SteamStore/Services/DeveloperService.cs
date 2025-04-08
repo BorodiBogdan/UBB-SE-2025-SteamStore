@@ -57,7 +57,7 @@ public class DeveloperService : IDeveloperService
        // var game = new Game(gameId, name,price, description, imageUrl, gameplayUrl, trailerUrl, minReq, recReq, "Pending", discount);
         var game = new Game
         {
-            Id = gameId,
+            Identifier = gameId,
             Name = name,
             Price = price,
             Description = description,
@@ -76,7 +76,7 @@ public class DeveloperService : IDeveloperService
     {
         foreach (Game game in gameList)
         {
-            if (game.Id == gameId)
+            if (game.Identifier == gameId)
             {
                 return game;
             }
@@ -90,7 +90,7 @@ public class DeveloperService : IDeveloperService
 
     public void CreateGame(Game game)
     {
-        game.PublisherId = User.UserId;
+        game.PublisherIdentifier = User.UserIdentifier;
         GameRepository.CreateGame(game);
     }
 
@@ -107,7 +107,7 @@ public class DeveloperService : IDeveloperService
         {
             foreach (var tag in selectedTags)
             {
-                InsertGameTag(game.Id, tag.tag_id);
+                InsertGameTag(game.Identifier, tag.TagId);
             }
         }
     }
@@ -115,8 +115,8 @@ public class DeveloperService : IDeveloperService
     {
         try
         {
-            game.PublisherId = User.UserId;
-            GameRepository.UpdateGame(game.Id,game);
+            game.PublisherIdentifier = User.UserIdentifier;
+            GameRepository.UpdateGame(game.Identifier,game);
         }
         catch (Exception e)
         {
@@ -129,8 +129,8 @@ public class DeveloperService : IDeveloperService
     {
         try
         {
-            game.PublisherId = User.UserId;
-            GameRepository.UpdateGame(game.Id, game);
+            game.PublisherIdentifier = User.UserIdentifier;
+            GameRepository.UpdateGame(game.Identifier, game);
         }
         catch (Exception e)
         {
@@ -139,10 +139,10 @@ public class DeveloperService : IDeveloperService
         try
         {
             //System.Diagnostics.Debug.WriteLine("deleting the tags!");
-            DeleteGameTags(game.Id);
+            DeleteGameTags(game.Identifier);
             if (selectedTags != null && selectedTags.Count > 0)
                 foreach (var tag in selectedTags)
-                    InsertGameTag(game.Id, tag.tag_id);
+                    InsertGameTag(game.Identifier, tag.TagId);
         }
         catch (Exception ex)
         {
@@ -163,11 +163,11 @@ public class DeveloperService : IDeveloperService
     }
     public List<Game> GetDeveloperGames()
     {
-        return GameRepository.GetDeveloperGames(User.UserId);
+        return GameRepository.GetDeveloperGames(User.UserIdentifier);
     }
     public List<Game> GetUnvalidated()
     {
-        return GameRepository.GetUnvalidated(User.UserId);
+        return GameRepository.GetUnvalidated(User.UserIdentifier);
     }
     public void RejectGame(int game_id)
     {
@@ -217,7 +217,7 @@ public class DeveloperService : IDeveloperService
     {
         var game = ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minReq, recReq, discountText, selectedTags);
 
-        if (IsGameIdInUse(game.Id))
+        if (IsGameIdInUse(game.Identifier))
             throw new Exception(ExceptionMessages.IdAlreadyInUse);
 
         CreateGameWithTags(game, selectedTags);

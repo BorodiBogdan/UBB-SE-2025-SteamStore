@@ -320,7 +320,7 @@ namespace SteamStore.Pages
         }
         private void PopulateEditForm(Game game)
         {
-            EditGameId.Text = game.Id.ToString();
+            EditGameId.Text = game.Identifier.ToString();
             EditGameId.IsEnabled = false;
             EditGameName.Text = game.Name;
             EditGameDescription.Text = game.Description;
@@ -341,7 +341,7 @@ namespace SteamStore.Pages
 
             try
             {
-                var gameTags = _viewModel.GetGameTags(game.Id);
+                var gameTags = _viewModel.GetGameTags(game.Identifier);
                 //System.Diagnostics.Debug.WriteLine(gameTags.Count);
                 //foreach (var tag in gameTags)
                 //{
@@ -352,7 +352,7 @@ namespace SteamStore.Pages
                 {
                     foreach (var tag in EditGameTagList.Items)
                     {
-                        if (tag is Tag tagItem && gameTags.Any(t => t.tag_id == tagItem.tag_id))
+                        if (tag is Tag tagItem && gameTags.Any(t => t.TagId == tagItem.TagId))
                         {
                             EditGameTagList.SelectedItems.Add(tag);
                         }

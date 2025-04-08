@@ -82,7 +82,7 @@ public class DeveloperViewModel : INotifyPropertyChanged
 
     public void UpdateGame(Game game)
     {
-        DeveloperGames.Remove(DeveloperGames.FirstOrDefault(g => g.Id == game.Id));
+        DeveloperGames.Remove(DeveloperGames.FirstOrDefault(g => g.Identifier == game.Identifier));
         _developerService.UpdateGame(game);
         DeveloperGames.Add(game);
     }
@@ -93,7 +93,7 @@ public class DeveloperViewModel : INotifyPropertyChanged
 
     public void DeleteGame(int game_id)
     {
-        var game = DeveloperGames.FirstOrDefault(g => g.Id == game_id);
+        var game = DeveloperGames.FirstOrDefault(g => g.Identifier == game_id);
         DeveloperGames.Remove(game);
         _developerService.DeleteGame(game_id);
     }
@@ -101,7 +101,7 @@ public class DeveloperViewModel : INotifyPropertyChanged
     public void RejectGame(int game_id)
     {
         _developerService.RejectGame(game_id);
-        var game = DeveloperGames.FirstOrDefault(x => x.Id == game_id);
+        var game = DeveloperGames.FirstOrDefault(x => x.Identifier == game_id);
         UnvalidatedGames.Remove(game);
     }
 
@@ -119,13 +119,13 @@ public class DeveloperViewModel : INotifyPropertyChanged
     public bool IsGameIdInUse(int gameId)
     {
         // Check in the developer's own games first
-        if (DeveloperGames.Any(g => g.Id == gameId))
+        if (DeveloperGames.Any(g => g.Identifier == gameId))
         {
             return true;
         }
         
         // Check in unvalidated games
-        if (UnvalidatedGames.Any(g => g.Id == gameId))
+        if (UnvalidatedGames.Any(g => g.Identifier == gameId))
         {
             return true;
         }

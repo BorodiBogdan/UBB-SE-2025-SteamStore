@@ -91,7 +91,7 @@ public class GamePageViewModel : INotifyPropertyChanged
         if (_gameService == null) return;
         
         var allGames = _gameService.getAllGames();
-        Game = allGames.FirstOrDefault(g => g.Id == gameId);
+        Game = allGames.FirstOrDefault(g => g.Identifier == gameId);
         
         if (Game != null)
         {
@@ -132,7 +132,7 @@ public class GamePageViewModel : INotifyPropertyChanged
             GameTags.Clear();
             foreach (var tag in tags)
             {
-                GameTags.Add(tag.tag_name);
+                GameTags.Add(tag.Tag_name);
             }
         }
         catch (Exception ex)
@@ -145,7 +145,7 @@ public class GamePageViewModel : INotifyPropertyChanged
     private void LoadSimilarGames()
     {
         if (Game == null || _gameService == null) return;
-        var similarGames = _gameService.GetSimilarGames(Game.Id);
+        var similarGames = _gameService.GetSimilarGames(Game.Identifier);
         SimilarGames = new ObservableCollection<Game>(similarGames.Take(MaxSimilarGamesToDisplay));
     }
     

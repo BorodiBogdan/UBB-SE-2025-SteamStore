@@ -1,4 +1,8 @@
-﻿namespace SteamStore.Models
+﻿// <copyright file="Tag.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SteamStore.Models
 {
     using System;
     using System.Collections.Generic;
@@ -8,12 +12,12 @@
 
     public class Tag
     {
-        public const int NOT_COMPUTED = -11111;
+        public const int NOTCOMPUTED = -11111;
 
-        public int tag_id { get; set; }
+        public int TagId { get; set; }
 
-        public string tag_name { get; set; }
+        public string Tag_name { get; set; }
 
-        public int no_of_user_games_with_tag { get; set; }
+        public int NumberOfUserGamesWithTag { get; set; }
     }
 }

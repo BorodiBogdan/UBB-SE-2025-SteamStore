@@ -17,17 +17,17 @@ public class CartService : ICartService
 
     public List<Game> getCartGames()
     {
-        return _cartRepository.getCartGames();
+        return _cartRepository.GetCartGames();
     }
     public void RemoveGameFromCart(Game game)
     {
-        _cartRepository.removeGameFromCart(game);
+        _cartRepository.RemoveGameFromCart(game);
     }
     public void AddGameToCart(Game game)
     {
         try
         {
-            _cartRepository.addGameToCart(game);
+            _cartRepository.AddGameToCart(game);
         }
         catch (Exception e)
         {
@@ -38,18 +38,18 @@ public class CartService : ICartService
     {
         foreach (var game in games)
         {
-            _cartRepository.removeGameFromCart(game);
+            _cartRepository.RemoveGameFromCart(game);
         }
     }   
 
     public float getUserFunds()
     {
-        return _cartRepository.getUserFunds();
+        return _cartRepository.GetUserFunds();
     }
 
     public decimal GetTotalSumToBePaid()
     {
-        return _cartRepository.getCartGames().Sum(game => (decimal)game.Price);
+        return _cartRepository.GetCartGames().Sum(game => (decimal)game.Price);
     }
 }
 
