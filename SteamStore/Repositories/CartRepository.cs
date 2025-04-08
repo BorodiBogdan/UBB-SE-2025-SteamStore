@@ -13,7 +13,9 @@ using SteamStore.Repositories.Interfaces;
 
 public class CartRepository : ICartRepository
 {
-    private static string approvedStatus = "Approved";
+    private static readonly string GameIdColumn = "@game_id";
+    private static readonly string UserIdColumn = "@user_id";
+    private static readonly string ApprovedStatus = "Approved";
     private readonly IDataLink dataLink;
     private readonly User user;
 
@@ -27,7 +29,7 @@ public class CartRepository : ICartRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", this.user.UserIdentifier),
+            new SqlParameter(UserIdColumn, this.user.UserIdentifier),
         };
 
         var result = this.dataLink.ExecuteReader(SqlConstants.GETALLCARTGAMES, parameters);
@@ -40,11 +42,11 @@ public class CartRepository : ICartRepository
                 Game game = new Game
                 {
                     Identifier = (int)row[SqlConstants.GAMEIDCOLUMN],
-                    Name = (string)row[SqlConstants.NAMECOLUMN ],
+                    Name = (string)row[SqlConstants.NAMECOLUMN],
                     Description = (string)row[SqlConstants.DESCRIPTIONCOLUMN],
                     ImagePath = (string)row[SqlConstants.IMAGEURLCOLUMN],
                     Price = Convert.ToDecimal(row[SqlConstants.PRICECOLUMN]),
-                    Status = approvedStatus,
+                    Status = ApprovedStatus,
                 };
                 games.Add(game);
             }
@@ -57,8 +59,8 @@ public class CartRepository : ICartRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", this.user.UserIdentifier),
-            new SqlParameter("@game_id", game.Identifier),
+            new SqlParameter(UserIdColumn, this.user.UserIdentifier),
+            new SqlParameter(GameIdColumn, game.Identifier),
         };
 
         try
@@ -75,17 +77,17 @@ public class CartRepository : ICartRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", this.user.UserIdentifier),
-            new SqlParameter("@game_id", game.Identifier),
+            new SqlParameter(UserIdColumn, this.user.UserIdentifier),
+            new SqlParameter(GameIdColumn, game.Identifier),
         };
 
         try
         {
             this.dataLink.ExecuteNonQuery(SqlConstants.REMOVEGAMEFROMCART, parameters);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            Console.WriteLine(e.Message);
+            Console.WriteLine(exception.Message);
         }
     }
 
