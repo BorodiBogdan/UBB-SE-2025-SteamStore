@@ -119,23 +119,23 @@ public class CartViewModel : INotifyPropertyChanged
 
     public async void ChangeToPaymentPage(Frame frame)
     {
-        if (SelectedPaymentMethod == PaymentMethods.PAYPAL_PAYMENT_METHOD)
+        if (SelectedPaymentMethod == PaymentMethods.PAYPALPAYMENTMETHOD)
         {
             PaypalPaymentPage paypalPaymentPage = new PaypalPaymentPage(_cartService, _userGameService);
             frame.Content = paypalPaymentPage;
         }
-        else if (SelectedPaymentMethod == PaymentMethods.CREDIT_CARD_PAYMENT_METHOD)
+        else if (SelectedPaymentMethod == PaymentMethods.CREDITCARDPAYMENTMETHOD)
         {
             CreditCardPaymentPage creditCardPaymentPage = new CreditCardPaymentPage(_cartService, _userGameService);
             frame.Content = creditCardPaymentPage;
         }
-        else if(SelectedPaymentMethod == PaymentMethods.STEAM_WALLET_PAYMENT_METHOD)
+        else if(SelectedPaymentMethod == PaymentMethods.STEAMWALLETPAYMENTMETHOD)
         {
             float totalPrice = CartGames.Sum(game => (float)game.Price);
             float userFunds = showUserFunds();
             if ( userFunds < totalPrice)
             {
-                await ShowDialog(InsufficientFundsErrors.INSUFFICIENT_FUNDS_ERROR_TITLE, InsufficientFundsErrors.INSUFFICIENT_FUNDS_ERROR_MESSAGE);
+                await ShowDialog(InsufficientFundsErrors.INSUFFICIENTFUNDSERRORTITLE, InsufficientFundsErrors.INSUFFICIENTFUNDSERRORMESSAGE);
             }
             bool isConfirmed = await ShowConfirmationDialogAsync();
             if (!isConfirmed)
@@ -170,7 +170,7 @@ public class CartViewModel : INotifyPropertyChanged
         {
             Title = title,
             Content = message,
-            CloseButtonText = DialogStrings.OK_BUTTON_TEXT,
+            CloseButtonText = DialogStrings.OKBUTTONTEXT,
             XamlRoot = App.m_window.Content.XamlRoot
         };
 
@@ -180,10 +180,10 @@ public class CartViewModel : INotifyPropertyChanged
     {
         ContentDialog confirmDialog = new ContentDialog
         {
-            Title = DialogStrings.CONFIRM_PURCHASE_TITLE,
-            Content = DialogStrings.CONFIRM_PURCHASE_MESSAGE,
-            PrimaryButtonText = DialogStrings.YES_BUTTON_TEXT,
-            CloseButtonText = DialogStrings.NO_BUTTON_TEXT,
+            Title = DialogStrings.CONFIRMPURCHASETITLE,
+            Content = DialogStrings.CONFIRMPURCHASEMESSAGE,
+            PrimaryButtonText = DialogStrings.YESBUTTONTEXT,
+            CloseButtonText = DialogStrings.NOBUTTONTEXT,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = App.m_window.Content.XamlRoot
         };
@@ -199,9 +199,9 @@ public class CartViewModel : INotifyPropertyChanged
     {
         ContentDialog pointsDialog = new ContentDialog
         {
-            Title = DialogStrings.POINTS_EARNED_TITLE,
-            Content = string.Format(DialogStrings.POINTS_EARNED_MESSAGE, pointsEarned),
-            CloseButtonText = DialogStrings.OK_BUTTON_TEXT,
+            Title = DialogStrings.POINTSEARNEDTITLE,
+            Content = string.Format(DialogStrings.POINTSEARNEDMESSAGE, pointsEarned),
+            CloseButtonText = DialogStrings.OKBUTTONTEXT,
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = App.m_window.Content.XamlRoot
         };
