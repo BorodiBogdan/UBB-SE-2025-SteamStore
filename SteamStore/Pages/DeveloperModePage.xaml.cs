@@ -29,6 +29,8 @@ namespace SteamStore.Pages
     public sealed partial class DeveloperModePage : Page
     {
         private const int NoOwnersCount = 0;
+        private const int OneOwnerCount = 1;
+        private const string StringPlural = "s";
         private DeveloperViewModel viewModel;
 
         public DeveloperModePage(IDeveloperService developerService)
@@ -230,7 +232,7 @@ namespace SteamStore.Pages
                         this.DeleteWarningDialog.XamlRoot = this.Content.XamlRoot;
 
                         // OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
-                        this.OwnerCountText.Text = string.Format(DeveloperDialogStrings.DELETECONFIRMATIONOWNED, ownerCount, ownerCount == 1 ? string.Empty : "s");
+                        this.OwnerCountText.Text = string.Format(DeveloperDialogStrings.DELETECONFIRMATIONOWNED, ownerCount, ownerCount == OneOwnerCount ? string.Empty : StringPlural);
                         result = await this.DeleteWarningDialog.ShowAsync();
                     }
                     else

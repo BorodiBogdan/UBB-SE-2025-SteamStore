@@ -193,4 +193,10 @@ public class DeveloperViewModel : INotifyPropertyChanged
         };
         await errorDialog.ShowAsync();
     }
+
+    public IList<Tag> GetMatchingTags(int gameId, IList<Tag> allTags)
+    {
+        return this.developerService.GetMatchingTagsForGame(gameId, allTags);
+    }
+
 }

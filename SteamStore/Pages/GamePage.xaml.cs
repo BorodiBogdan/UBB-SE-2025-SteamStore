@@ -27,6 +27,8 @@ namespace SteamStore.Pages
     public sealed partial class GamePage : Page
     {
         private const int MaxNumberOfSimilarGamesToDisplay = 3;
+        private const int InitialIndex = 0;
+        private const string SpaceString = " ";
         private GamePageViewModel viewModel;
 
         public GamePage()
@@ -147,7 +149,7 @@ namespace SteamStore.Pages
                 var similarGameRatings = new[] { this.SimilarGame1Rating, this.SimilarGame2Rating, this.SimilarGame3Rating };
 
                 var similarGames = this.viewModel.SimilarGames.ToList();
-                for (int similarGameIndex = 0; similarGameIndex < similarGames.Count; similarGameIndex++)
+                for (int similarGameIndex = InitialIndex; similarGameIndex < similarGames.Count; similarGameIndex++)
                 {
                     this.DisplaySimilarGame(similarGameButtons[similarGameIndex], similarGameImages[similarGameIndex], similarGameTitles[similarGameIndex], similarGameRatings[similarGameIndex], similarGames[similarGameIndex]);
                 }
@@ -184,10 +186,10 @@ namespace SteamStore.Pages
                 this.viewModel.AddToCart();
                 this.ShowSuccessNotificationForBuy();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 this.NotificationTip.Title = NotificationStrings.AddToCartErrorTitle;
-                this.NotificationTip.Subtitle = string.Format(NotificationStrings.AddToCartErrorMessage, this.viewModel.Game.Name) + " " + ex.Message;
+                this.NotificationTip.Subtitle = string.Format(NotificationStrings.AddToCartErrorMessage, this.viewModel.Game.Name) + SpaceString + exception.Message;
                 this.NotificationTip.IsOpen = true;
             }
         }

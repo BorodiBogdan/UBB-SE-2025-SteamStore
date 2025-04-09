@@ -14,6 +14,19 @@ using SteamStore.Services.Interfaces;
 
 public class UserGameService : IUserGameService
 {
+    private const int InitialValueForLastEarnedPoints = 0;
+    private const int ResetValueForNumberOfUserGamesWithTag = 0;
+    private const int NumberOfFavouriteTagsToTake = 3;
+    private const int StartingIndexValue = 0;
+    private const int InitialTagScore = 0;
+    private const int TagScoreMultiplierNumerator = 1;
+    private const decimal TagScoreMultiplierDenominator = 3m;
+    private const decimal WeightedScoreMultiplier = 0.5m;
+    private const int NumberOfSortegGamesShown = 10;
+    private const decimal MinimumValueForOverwhelminglyPositive = 4.5m;
+    private const decimal MinimumValueForVeryPositive = 4m;
+    private const decimal MinimumValueForMixed = 2m;
+
     public IUserGameRepository UserGameRepository { get; set; }
 
     public IGameRepository GameRepository { get; set; }
@@ -42,10 +55,10 @@ public class UserGameService : IUserGameService
 
             this.UserGameRepository.AddGameToWishlist(game);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
             // Clean up the error message
-            string message = e.Message;
+            string message = exception.Message;
             if (message.Contains("ExecuteNonQuery"))
             {
                 message = string.Format(ExceptionMessages.GameAlreadyInWishlist, game.Name);
@@ -58,7 +71,7 @@ public class UserGameService : IUserGameService
     public void PurchaseGames(List<Game> games)
     {
         // Reset points counter
-        this.LastEarnedPoints = 0;
+        this.LastEarnedPoints = InitialValueForLastEarnedPoints;
 
         // Track user's points before purchase
         float pointsBalanceBefore = this.UserGameRepository.GetUserPointsBalance();
@@ -78,18 +91,30 @@ public class UserGameService : IUserGameService
     public void ComputeNoOfUserGamesForEachTag(Collection<Tag> all_tags)
     {
         var user_games = this.UserGameRepository.GetAllUserGames();
-        Dictionary<string, Tag> tagsDictionary = all_tags
-            .ToDictionary(tag => tag.Tag_name);
+
+        // Manually build the dictionary instead of using ToDictionary
+        Dictionary<string, Tag> tagsDictionary = new Dictionary<string, Tag>();
+        foreach (var tag in all_tags)
+        {
+            if (!tagsDictionary.ContainsKey(tag.Tag_name))
+            {
+                tagsDictionary.Add(tag.Tag_name, tag);
+            }
+        }
+
         foreach (var tag in tagsDictionary.Values)
         {
-            tag.NumberOfUserGamesWithTag = 0;
+            tag.NumberOfUserGamesWithTag = ResetValueForNumberOfUserGamesWithTag;
         }
 
         foreach (var user_game in user_games)
         {
             foreach (string tag_name in user_game.Tags)
             {
-                tagsDictionary[tag_name].NumberOfUserGamesWithTag++;
+                if (tagsDictionary.ContainsKey(tag_name))
+                {
+                    tagsDictionary[tag_name].NumberOfUserGamesWithTag++;
+                }
             }
         }
     }
@@ -98,10 +123,29 @@ public class UserGameService : IUserGameService
     {
         var allTags = this.TagRepository.GetAllTags();
         this.ComputeNoOfUserGamesForEachTag(allTags);
-        return new Collection<Tag>(allTags
-            .OrderByDescending(tag => tag.NumberOfUserGamesWithTag)
-            .Take(3)
-            .ToList());
+
+        List<Tag> sortedTags = new List<Tag>(allTags);
+
+        for (int currentIndex = StartingIndexValue; currentIndex < sortedTags.Count - 1; currentIndex++)
+        {
+            for (int comparisonIndex = currentIndex + 1; comparisonIndex < sortedTags.Count; comparisonIndex++)
+            {
+                if (sortedTags[comparisonIndex].NumberOfUserGamesWithTag > sortedTags[currentIndex].NumberOfUserGamesWithTag)
+                {
+                    var temp = sortedTags[currentIndex];
+                    sortedTags[currentIndex] = sortedTags[comparisonIndex];
+                    sortedTags[comparisonIndex] = temp;
+                }
+            }
+        }
+
+        List<Tag> topTags = new List<Tag>();
+        for (int tagIndex = StartingIndexValue; tagIndex < sortedTags.Count && tagIndex < NumberOfFavouriteTagsToTake; tagIndex++)
+        {
+            topTags.Add(sortedTags[tagIndex]);
+        }
+
+        return new Collection<Tag>(topTags);
     }
 
     public void ComputeTagScoreForGames(Collection<Game> games)
@@ -109,7 +153,7 @@ public class UserGameService : IUserGameService
         var favorite_tags = this.GetFavoriteUserTags();
         foreach (var game in games)
         {
-            game.TagScore = 0;
+            game.TagScore = InitialTagScore;
             foreach (var tag in favorite_tags)
             {
                 if (game.Tags.Contains(tag.Tag_name))
@@ -117,7 +161,7 @@ public class UserGameService : IUserGameService
                     game.TagScore += tag.NumberOfUserGamesWithTag;
                 }
 
-                game.TagScore = game.TagScore * (1 / 3m);
+                game.TagScore = game.TagScore * (TagScoreMultiplierNumerator / TagScoreMultiplierDenominator);
             }
         }
     }
@@ -133,13 +177,38 @@ public class UserGameService : IUserGameService
 
     public Collection<Game> GetRecommendedGames()
     {
-        var games = this.GameRepository.GetAllGames();
-        this.ComputeTrendingScores(games);
-        this.ComputeTagScoreForGames(games);
-        return new Collection<Game>(games
-                .OrderByDescending(game => (game.TagScore * 0.5m) + (game.TrendingScore * 0.5m))
-                .Take(10)
-                .ToList());
+        var allGames = this.GameRepository.GetAllGames();
+        this.ComputeTrendingScores(allGames);
+        this.ComputeTagScoreForGames(allGames);
+
+        List<Game> sortedGames = new List<Game>(allGames);
+
+        // Manual sorting based on weighted score
+        for (int currentIndex = StartingIndexValue; currentIndex < sortedGames.Count - 1; currentIndex++)
+        {
+            for (int comparisonIndex = currentIndex + 1; comparisonIndex < sortedGames.Count; comparisonIndex++)
+            {
+                decimal currentScore = (sortedGames[currentIndex].TagScore * WeightedScoreMultiplier) + (sortedGames[currentIndex].TrendingScore * WeightedScoreMultiplier);
+                decimal comparisonScore = (sortedGames[comparisonIndex].TagScore * WeightedScoreMultiplier) + (sortedGames[comparisonIndex].TrendingScore * WeightedScoreMultiplier);
+
+                if (comparisonScore > currentScore)
+                {
+                    Game temp = sortedGames[currentIndex];
+                    sortedGames[currentIndex] = sortedGames[comparisonIndex];
+                    sortedGames[comparisonIndex] = temp;
+                }
+            }
+        }
+
+        // Take top games
+        List<Game> recommendedGames = new List<Game>();
+        int limit = sortedGames.Count < NumberOfSortegGamesShown ? sortedGames.Count : NumberOfSortegGamesShown;
+        for (int gameIndex = StartingIndexValue; gameIndex < limit; gameIndex++)
+        {
+            recommendedGames.Add(sortedGames[gameIndex]);
+        }
+
+        return new Collection<Game>(recommendedGames);
     }
 
     public Collection<Game> GetWishListGames()
@@ -149,27 +218,62 @@ public class UserGameService : IUserGameService
 
     public Collection<Game> SearchWishListByName(string searchText)
     {
-        return new Collection<Game>(this.UserGameRepository.GetWishlistGames()
-            .Where(game => game.Name.ToLower().Contains(searchText.ToLower()))
-            .ToList());
+        List<Game> allWishListGames = this.UserGameRepository.GetWishlistGames().ToList();
+        List<Game> matchingGames = new List<Game>();
+
+        foreach (Game game in allWishListGames)
+        {
+            if (game.Name != null && game.Name.ToLower().Contains(searchText.ToLower()))
+            {
+                matchingGames.Add(game);
+            }
+        }
+
+        return new Collection<Game>(matchingGames);
     }
 
     public Collection<Game> FilterWishListGames(string criteria)
     {
-        var games = this.UserGameRepository.GetWishlistGames();
-        switch (criteria)
+        Collection<Game> games = this.UserGameRepository.GetWishlistGames();
+        Collection<Game> filteredGames = new Collection<Game>();
+
+        bool isKnownCriteria = criteria == FilterCriteria.OVERWHELMINGLYPOSITIVE ||
+                               criteria == FilterCriteria.VERYPOSITIVE ||
+                               criteria == FilterCriteria.MIXED ||
+                               criteria == FilterCriteria.NEGATIVE;
+
+        if (!isKnownCriteria)
         {
-            case FilterCriteria.OVERWHELMINGLYPOSITIVE:
-                return new Collection<Game>(games.Where(g => g.Rating >= 4.5m).ToList());
-            case FilterCriteria.VERYPOSITIVE:
-                return new Collection<Game>(games.Where(g => g.Rating >= 4 && g.Rating < 4.5m).ToList());
-            case FilterCriteria.MIXED:
-                return new Collection<Game>(games.Where(g => g.Rating >= 2 && g.Rating < 4m).ToList());
-            case FilterCriteria.NEGATIVE:
-                return new Collection<Game>(games.Where(g => g.Rating < 2).ToList());
-            default:
-                return games;
+            // If the criteria is not recognized, return the full list
+            return games;
         }
+
+        foreach (Game game in games)
+        {
+            if (criteria == FilterCriteria.OVERWHELMINGLYPOSITIVE && game.Rating >= MinimumValueForOverwhelminglyPositive)
+            {
+                filteredGames.Add(game);
+            }
+            else if (criteria == FilterCriteria.VERYPOSITIVE &&
+                     game.Rating >= MinimumValueForVeryPositive &&
+                     game.Rating < MinimumValueForOverwhelminglyPositive)
+            {
+                filteredGames.Add(game);
+            }
+            else if (criteria == FilterCriteria.MIXED &&
+                     game.Rating >= MinimumValueForMixed &&
+                     game.Rating < MinimumValueForVeryPositive)
+            {
+                filteredGames.Add(game);
+            }
+            else if (criteria == FilterCriteria.NEGATIVE &&
+                     game.Rating < MinimumValueForMixed)
+            {
+                filteredGames.Add(game);
+            }
+        }
+
+        return filteredGames;
     }
 
     public bool IsGamePurchased(Game game)
@@ -179,14 +283,99 @@ public class UserGameService : IUserGameService
 
     public Collection<Game> SortWishListGames(string criteria, bool ascending)
     {
-        var games = this.UserGameRepository.GetWishlistGames();
-        IOrderedEnumerable<Game> orderedGames = criteria switch
+        Collection<Game> gamesCollection = this.UserGameRepository.GetWishlistGames();
+        List<Game> games = new List<Game>();
+
+        foreach (var game in gamesCollection)
         {
-            FilterCriteria.PRICE => ascending ? games.OrderBy(g => g.Price) : games.OrderByDescending(g => g.Price),
-            FilterCriteria.RATING => ascending ? games.OrderBy(g => g.Rating) : games.OrderByDescending(g => g.Rating),
-            FilterCriteria.DISCOUNT => ascending ? games.OrderBy(g => g.Discount) : games.OrderByDescending(g => g.Discount),
-            _ => ascending ? games.OrderBy(g => g.Name) : games.OrderByDescending(g => g.Name)
-        };
-        return new Collection<Game>(orderedGames.ToList());
+            games.Add(game);
+        }
+
+        if (criteria == FilterCriteria.PRICE)
+        {
+            if (ascending)
+            {
+                games.Sort(this.CompareByPriceAscending);
+            }
+            else
+            {
+                games.Sort(this.CompareByPriceDescending);
+            }
+        }
+        else if (criteria == FilterCriteria.RATING)
+        {
+            if (ascending)
+            {
+                games.Sort(this.CompareByRatingAscending);
+            }
+            else
+            {
+                games.Sort(this.CompareByRatingDescending);
+            }
+        }
+        else if (criteria == FilterCriteria.DISCOUNT)
+        {
+            if (ascending)
+            {
+                games.Sort(this.CompareByDiscountAscending);
+            }
+            else
+            {
+                games.Sort(this.CompareByDiscountDescending);
+            }
+        }
+        else
+        {
+            if (ascending)
+            {
+                games.Sort(this.CompareByNameAscending);
+            }
+            else
+            {
+                games.Sort(this.CompareByNameDescending);
+            }
+        }
+
+        return new Collection<Game>(games);
+    }
+
+    private int CompareByPriceAscending(Game x, Game y)
+    {
+        return x.Price.CompareTo(y.Price);
+    }
+
+    private int CompareByPriceDescending(Game x, Game y)
+    {
+        return y.Price.CompareTo(x.Price);
+    }
+
+    private int CompareByRatingAscending(Game x, Game y)
+    {
+        return x.Rating.CompareTo(y.Rating);
+    }
+
+    private int CompareByRatingDescending(Game x, Game y)
+    {
+        return y.Rating.CompareTo(x.Rating);
+    }
+
+    private int CompareByDiscountAscending(Game x, Game y)
+    {
+        return x.Discount.CompareTo(y.Discount);
+    }
+
+    private int CompareByDiscountDescending(Game x, Game y)
+    {
+        return y.Discount.CompareTo(x.Discount);
+    }
+
+    private int CompareByNameAscending(Game x, Game y)
+    {
+        return string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private int CompareByNameDescending(Game x, Game y)
+    {
+        return string.Compare(y.Name, x.Name, StringComparison.OrdinalIgnoreCase);
     }
 }
