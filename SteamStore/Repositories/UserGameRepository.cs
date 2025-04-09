@@ -11,6 +11,7 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using SteamStore.Constants;
 using SteamStore.Data;
 using SteamStore.Repositories.Interfaces;
 using Windows.Gaming.Input;
@@ -30,8 +31,8 @@ public class UserGameRepository : IUserGameRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@game_id", game.Identifier),
-            new SqlParameter("@user_id", this.user.UserIdentifier),
+            new SqlParameter(SqlConstants.GameIdParameter, game.Identifier),
+            new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
         };
         try
         {
@@ -47,8 +48,8 @@ public class UserGameRepository : IUserGameRepository
     {
         SqlParameter[] parameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", this.user.UserIdentifier),
-            new SqlParameter("@game_id", game.Identifier),
+            new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
+            new SqlParameter(SqlConstants.GameIdParameter, game.Identifier),
         };
 
         try
