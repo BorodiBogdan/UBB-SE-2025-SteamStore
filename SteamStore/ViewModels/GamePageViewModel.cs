@@ -1,4 +1,4 @@
-// <copyright file="GamePageViewModel.cs" company="PlaceholderCompany">
+﻿// <copyright file="GamePageViewModel.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 
@@ -97,8 +97,7 @@ public class GamePageViewModel : INotifyPropertyChanged
             return;
         }
 
-        var allGames = this.gameService.GetAllGames();
-        this.Game = allGames.FirstOrDefault(g => g.Identifier == gameId);
+        this.Game = this.gameService.GetGameById(gameId);
         if (this.Game != null)
         {
             this.LoadSimilarGames();

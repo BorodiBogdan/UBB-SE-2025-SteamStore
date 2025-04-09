@@ -19,5 +19,8 @@ namespace SteamStore.Constants
         public const int TRANSACTIONIDENTIFIER = 1;
         public const double MINMALDIFFERENCEVALUECOMPARISON = 0.01;
         public const int DELAYTIMESEARCH = 300;
+        public const int ItemNotFoundCode = 0;
+        public const int DeactivatedItemCode = 1;
+        public const int ActivatedItemCode = 2;
     }
 }

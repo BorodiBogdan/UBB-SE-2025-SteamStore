@@ -151,9 +151,9 @@
                     <FontIcon Glyph="&#xE8C9;" FontSize="16" Foreground="#aaaaaa" VerticalAlignment="Center" Margin="0,0,5,0"/>
                     <TextBlock Text="Price:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <Slider x:Name="PriceSlider" Minimum="0" Maximum="10000" StepFrequency="100" 
-                            Value="{Binding MaxPrice, Mode=TwoWay}" 
+                            Value="{Binding MaximumPrice, Mode=TwoWay}" 
                             Width="150"/>
-                    <TextBlock Text="{Binding MaxPrice}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    <TextBlock Text="{Binding MaximumPrice}" VerticalAlignment="Center" Margin="10,0,0,0"/>
                 </StackPanel>
             </StackPanel>
             
