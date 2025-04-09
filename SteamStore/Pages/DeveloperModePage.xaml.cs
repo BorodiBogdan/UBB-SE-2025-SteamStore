@@ -29,6 +29,8 @@ namespace SteamStore.Pages
     public sealed partial class DeveloperModePage : Page
     {
         private const int NoOwnersCount = 0;
+        private const int OneOwnerCount = 1;
+        private const string StringPlural = "s";
         private DeveloperViewModel viewModel;
 
         public DeveloperModePage(IDeveloperService developerService)
@@ -230,7 +232,7 @@ namespace SteamStore.Pages
                         this.DeleteWarningDialog.XamlRoot = this.Content.XamlRoot;
 
                         // OwnerCountText.Text = $"This game is currently owned by {ownerCount} user{(ownerCount == 1 ? "" : "s")}.";
-                        this.OwnerCountText.Text = string.Format(DeveloperDialogStrings.DELETECONFIRMATIONOWNED, ownerCount, ownerCount == 1 ? string.Empty : "s");
+                        this.OwnerCountText.Text = string.Format(DeveloperDialogStrings.DELETECONFIRMATIONOWNED, ownerCount, ownerCount == OneOwnerCount ? string.Empty : StringPlural);
                         result = await this.DeleteWarningDialog.ShowAsync();
                     }
                     else
@@ -349,34 +351,5 @@ namespace SteamStore.Pages
                 System.Diagnostics.Debug.WriteLine($"Error loading game tags: {exception.Message}");
             }
         }
-
-
-        //private void LoadGameTags(Game game)
-        //{
-        //    this.EditGameTagList.SelectedItems.Clear();
-
-        //    try
-        //    {
-        //        var gameTags = this.viewModel.GetGameTags(game.Identifier);
-        //        if (gameTags.Any())
-        //        {
-        //            foreach (var tag in this.EditGameTagList.Items)
-        //            {
-        //                if (tag is Tag tagItem && gameTags.Any(t => t.TagId == tagItem.TagId))
-        //                {
-        //                    this.EditGameTagList.SelectedItems.Add(tag);
-        //                }
-        //            }
-        //        }
-        //        else
-        //        {
-        //            System.Diagnostics.Debug.WriteLine("No tags found for the game.");
-        //        }
-        //    }
-        //    catch (Exception exception)
-        //    {
-        //        System.Diagnostics.Debug.WriteLine($"Error loading game tags: {exception.Message}");
-        //    }
-        //}
     }
 }

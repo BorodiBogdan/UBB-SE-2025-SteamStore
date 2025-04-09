@@ -14,6 +14,10 @@ using static SteamStore.Constants.NotificationStrings;
 
 public class DeveloperService : IDeveloperService
 {
+    private const int ComparingValueForPositivePrice = 0;
+    private const int ComparingValueForMinimumDicount = 0;
+    private const int ComparingValueForMaximumDicount = 100;
+    private const int EmptyListLength = 0;
     private static string pENDINGSTATE = "Pending";
 
     public IGameRepository GameRepository { get; set; }
@@ -43,17 +47,17 @@ public class DeveloperService : IDeveloperService
             throw new Exception(ExceptionMessages.InvalidGameId);
         }
 
-        if (!decimal.TryParse(priceText, out var price) || price < 0)
+        if (!decimal.TryParse(priceText, out var price) || price < ComparingValueForPositivePrice)
         {
             throw new Exception(ExceptionMessages.InvalidPrice);
         }
 
-        if (!decimal.TryParse(discountText, out var discount) || discount < 0 || discount > 100)
+        if (!decimal.TryParse(discountText, out var discount) || discount < ComparingValueForMinimumDicount || discount > ComparingValueForMaximumDicount)
         {
             throw new Exception(ExceptionMessages.InvalidDiscount);
         }
 
-        if (selectedTags == null || selectedTags.Count == 0)
+        if (selectedTags == null || selectedTags.Count == EmptyListLength)
         {
             throw new Exception(ExceptionMessages.NoTagsSelected);
         }
@@ -106,7 +110,7 @@ public class DeveloperService : IDeveloperService
             throw new Exception(exception.Message);
         }
 
-        if (selectedTags != null && selectedTags.Count > 0)
+        if (selectedTags != null && selectedTags.Count > EmptyListLength)
         {
             foreach (var tag in selectedTags)
             {
@@ -135,16 +139,16 @@ public class DeveloperService : IDeveloperService
             game.PublisherIdentifier = this.User.UserIdentifier;
             this.GameRepository.UpdateGame(game.Identifier, game);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new Exception(e.Message);
+            throw new Exception(exception.Message);
         }
 
         try
         {
             // System.Diagnostics.Debug.WriteLine("deleting the tags!");
             this.DeleteGameTags(game.Identifier);
-            if (selectedTags != null && selectedTags.Count > 0)
+            if (selectedTags != null && selectedTags.Count > EmptyListLength)
             {
                 foreach (var tag in selectedTags)
                 {
@@ -346,5 +350,4 @@ public class DeveloperService : IDeveloperService
 
         return matchedTags;
     }
-
 }

@@ -9,7 +9,6 @@ namespace SteamStore.Services
     using System.Collections.ObjectModel;
     using System.Linq;
     using SteamStore.Constants;
-    using System.Linq;
     using SteamStore.Data;
     using SteamStore.Models;
     using SteamStore.Repositories;
@@ -18,6 +17,10 @@ namespace SteamStore.Services
 
     public class PointShopService : IPointShopService
     {
+        private const int InitialIndexOfTransaction = 0;
+        private const int IncrementingValue = 1;
+        private const int InitialIndexAllItems = 0;
+        private const int InitialIndexUserItems = 0;
         private const string FILTERTYPEALL = "All";
         private readonly IPointShopRepository repository;
         private readonly User currentUser;
@@ -93,33 +96,71 @@ namespace SteamStore.Services
             }
         }
 
-        public List<PointShopItem> GetFilteredItems(string filterType, string searchText, double minPrice, double maxPrice)
+        public List<PointShopItem> GetFilteredItems(string filterType, string searchText, double minimumPrice, double maximumPrice)
         {
             try
             {
                 var allItems = this.GetAllItems();
                 var userItems = this.GetUserItems();
+                var availableItems = new List<PointShopItem>();
 
-                var availableItems = allItems.Where(item =>
-                    !userItems.Any(userItem => userItem.ItemIdentifier == item.ItemIdentifier)).ToList();
-
-                if (!string.IsNullOrEmpty(filterType) && filterType != FILTERTYPEALL)
+                // Exclude items already owned by the user
+                foreach (var item in allItems)
                 {
-                    availableItems = availableItems
-                        .Where(item => item.ItemType.Equals(filterType, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                    bool isOwned = false;
+                    foreach (var userItem in userItems)
+                    {
+                        if (userItem.ItemIdentifier == item.ItemIdentifier)
+                        {
+                            isOwned = true;
+                            break;
+                        }
+                    }
+
+                    if (!isOwned)
+                    {
+                        availableItems.Add(item);
+                    }
                 }
 
-                availableItems = availableItems
-                    .Where(item => item.PointPrice >= minPrice && item.PointPrice <= maxPrice)
-                    .ToList();
+                // Apply type filter
+                if (!string.IsNullOrEmpty(filterType) && filterType != FILTERTYPEALL)
+                {
+                    var filteredByType = new List<PointShopItem>();
+                    foreach (var item in availableItems)
+                    {
+                        if (item.ItemType.Equals(filterType, StringComparison.OrdinalIgnoreCase))
+                        {
+                            filteredByType.Add(item);
+                        }
+                    }
+                    availableItems = filteredByType;
+                }
+
+                // Apply price filter
+                var filteredByPrice = new List<PointShopItem>();
+                foreach (var item in availableItems)
+                {
+                    if (item.PointPrice >= minimumPrice && item.PointPrice <= maximumPrice)
+                    {
+                        filteredByPrice.Add(item);
+                    }
+                }
+                availableItems = filteredByPrice;
+
+                // Apply search filter
                 if (!string.IsNullOrWhiteSpace(searchText))
                 {
-                    availableItems = availableItems
-                        .Where(item =>
-                            item.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                            item.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                    var filteredBySearch = new List<PointShopItem>();
+                    foreach (var item in availableItems)
+                    {
+                        if ((item.Name != null && item.Name.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                            (item.Description != null && item.Description.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0))
+                        {
+                            filteredBySearch.Add(item);
+                        }
+                    }
+                    availableItems = filteredBySearch;
                 }
 
                 return availableItems;
@@ -157,8 +198,6 @@ namespace SteamStore.Services
         {
             var allItems = this.GetAllItems();
             var userItems = this.GetUserItems();
-            const int InitialIndexAllItems = 0;
-            const int InitialIndexUserItems = 0;
 
             var availableItems = new List<PointShopItem>();
 
@@ -186,8 +225,6 @@ namespace SteamStore.Services
 
         public bool TryPurchaseItem(PointShopItem selectedItem, ObservableCollection<PointShopTransaction> transactionHistory, User user, out PointShopTransaction newTransaction)
         {
-            const int InitialIndexOfTransaction = 0;
-            const int IncrementingValue = 1;
             newTransaction = null;
 
             if (selectedItem == null || user == null)

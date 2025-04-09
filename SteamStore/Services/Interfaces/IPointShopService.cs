@@ -26,7 +26,7 @@ namespace SteamStore.Services.Interfaces
 
         void DeactivateItem(PointShopItem item);
 
-        List<PointShopItem> GetFilteredItems(string filterType, string searchText, double minPrice, double maxPrice);
+        List<PointShopItem> GetFilteredItems(string filterType, string searchText, double minimumPrice, double maximumPrice);
 
         bool CanUserPurchaseItem(User user, PointShopItem selectedItem, IEnumerable<PointShopItem> userItems);
 
