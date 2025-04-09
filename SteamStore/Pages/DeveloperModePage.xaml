@@ -186,7 +186,7 @@
                              ItemsSource="{Binding Tags}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding tag_name}"/>
+                                <TextBlock Text="{Binding Tag_name}"/>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>

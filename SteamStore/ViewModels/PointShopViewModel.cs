@@ -193,7 +193,6 @@ namespace SteamStore.ViewModels
         }
 
         public float UserPointBalance => this.user?.PointsBalance ?? NoPointsBalance;
-
         public bool CanPurchase
         {
             get
@@ -207,7 +206,6 @@ namespace SteamStore.ViewModels
             try
             {
                 var availableItems = this.pointShopService.GetAvailableItems(this.user);
-
                 this.ShopItems.Clear();
                 foreach (var item in availableItems)
                 {
@@ -344,12 +342,11 @@ namespace SteamStore.ViewModels
             this.OnPropertyChanged(nameof(this.IsDetailPanelVisible));
             return this.IsDetailPanelVisible;
         }
-
+        
         public void ClearSelection()
         {
             this.SelectedItem = null;
             this.IsDetailPanelVisible = false;
-
             this.OnPropertyChanged(nameof(this.IsDetailPanelVisible));
         }
 

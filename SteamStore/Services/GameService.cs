@@ -74,8 +74,6 @@ public class GameService : IGameService
         return this.GetSortedAndFilteredVideoGames(this.GameRepository.GetAllGames());
     }
 
-    
-
     public Collection<Game> GetDiscountedGames()
     {
         var discountedGames = this.GameRepository.GetAllGames()
