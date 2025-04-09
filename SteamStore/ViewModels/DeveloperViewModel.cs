@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using SteamStore;
+using SteamStore.Constants;
 using SteamStore.Models;
 using SteamStore.Services.Interfaces;
 using Windows.Gaming.Input;
@@ -72,9 +73,6 @@ public class DeveloperViewModel : INotifyPropertyChanged
 
     public void UpdateGame(Game game)
     {
-        // this.DeveloperGames.Remove(this.DeveloperGames.FirstOrDefault(g => g.Identifier == game.Identifier));
-        // this.developerService.UpdateGame(game);
-        // this.DeveloperGames.Add(game);
         this.developerService.UpdateGameAndRefreshList(game, this.DeveloperGames);
     }
 
@@ -84,17 +82,11 @@ public class DeveloperViewModel : INotifyPropertyChanged
 
     public void DeleteGame(int game_id)
     {
-        // var game = DeveloperGames.FirstOrDefault(g => g.Identifier == game_id);
-        // DeveloperGames.Remove(game);
-        // developerService.DeleteGame(game_id);
         this.developerService.DeleteGame(game_id, this.DeveloperGames);
     }
 
     public void RejectGame(int game_id)
     {
-        // developerService.RejectGame(game_id);
-        // var game = DeveloperGames.FirstOrDefault(x => x.Identifier == game_id);
-        // UnvalidatedGames.Remove(game);
         this.developerService.RejectGameAndRemoveFromUnvalidated(game_id, this.UnvalidatedGames);
     }
 
@@ -110,19 +102,6 @@ public class DeveloperViewModel : INotifyPropertyChanged
 
     public bool IsGameIdInUse(int gameId)
     {
-        // Check in the developer's own games first
-        // if (this.DeveloperGames.Any(g => g.Identifier == gameId))
-        // {
-        //    return true;
-        // }
-
-        //// Check in unvalidated games
-        // if (this.UnvalidatedGames.Any(g => g.Identifier == gameId))
-        // {
-        //    return true;
-        // }
-
-        // return this.developerService.IsGameIdInUse(gameId);
         return this.developerService.IsGameIdInUse(gameId, this.DeveloperGames, this.UnvalidatedGames);
     }
 
@@ -168,8 +147,6 @@ public class DeveloperViewModel : INotifyPropertyChanged
     public async Task UpdateGameAsync(string gameIdText, string name, string priceText, string description, string imageUrl, string trailerUrl, string gameplayUrl, string minimumRequirement, string recommendedRequirements, string discountText, IList<Tag> selectedTags)
     {
         Game game = this.developerService.ValidateInputForAddingAGame(gameIdText, name, priceText, description, imageUrl, trailerUrl, gameplayUrl, minimumRequirement, recommendedRequirements, discountText, selectedTags);
-
-        // System.Diagnostics.Debug.WriteLine("VALID input");
         this.developerService.UpdateGameWithTags(game, selectedTags);
     }
 
@@ -183,6 +160,11 @@ public class DeveloperViewModel : INotifyPropertyChanged
         return this.developerService.GetGameTags(gameId);
     }
 
+    public IList<Tag> GetMatchingTags(int gameId, IList<Tag> allTags)
+    {
+        return this.developerService.GetMatchingTagsForGame(gameId, allTags);
+    }
+
     private void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -191,8 +173,8 @@ public class DeveloperViewModel : INotifyPropertyChanged
     private void LoadTags()
     {
         this.Tags.Clear();
-        var tags = this.developerService.GetAllTags();
-        foreach (var tag in tags)
+        var allTags = this.developerService.GetAllTags();
+        foreach (var tag in allTags)
         {
             this.Tags.Add(tag);
         }
@@ -206,7 +188,7 @@ public class DeveloperViewModel : INotifyPropertyChanged
         {
             Title = title,
             Content = message,
-            CloseButtonText = "OK",
+            CloseButtonText = ConfirmationDialogStrings.OKBUTTONTEXT,
             XamlRoot = App.MainWindow.Content.XamlRoot,
         };
         await errorDialog.ShowAsync();

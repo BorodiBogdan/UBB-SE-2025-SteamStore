@@ -81,8 +81,8 @@ public class HomePageViewModel : INotifyPropertyChanged
     public void SearchGames(string search_query)
     {
         this.SearchedOrFilteredGames.Clear();
-        var games = this.gameService.SearchGames(search_query);
-        foreach (var game in games)
+        var filteredGames = this.gameService.SearchGames(search_query);
+        foreach (var game in filteredGames)
         {
             this.SearchedOrFilteredGames.Add(game);
         }
@@ -93,7 +93,7 @@ public class HomePageViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (games.Count == EmptyGameListLength)
+        if (filteredGames.Count == EmptyGameListLength)
         {
             this.Search_filter_text = HomePageConstants.NOGAMESFOUND + search_query;
             return;

@@ -21,8 +21,8 @@ public class TagRepository : ITagRepository
     public Collection<Tag> GetAllTags()
     {
         var tags = new Collection<Tag>();
-        var result = this.dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure);
-        foreach (DataRow row in result.Rows)
+        var allTags = this.dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure);
+        foreach (DataRow row in allTags.Rows)
         {
             var tag = new Tag
             {

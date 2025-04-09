@@ -8,15 +8,16 @@ using System.Threading.Tasks;
 
 public class PaypalProcessor
 {
-    private const int DELAYTIMEPAYMENT = 2000;
-    private const int MINIMUMPASSWORDLENGTH = 8;
+    private const int DelayTimePayment = 2000;
+    private const int MinimumPasswordLength = 8;
+    private const string ValidEmailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
 
     public async Task<bool> ProcessPaymentAsync(string email, string password, decimal amount)
     {
         if (this.IsValidEmail(email) && this.IsValidPassword(password))
         {
             // Simulate a successful payment
-            await Task.Delay(DELAYTIMEPAYMENT);
+            await Task.Delay(DelayTimePayment);
             return true;
         }
 
@@ -33,7 +34,7 @@ public class PaypalProcessor
         try
         {
             // Use a simple regex to validate the email format
-            return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            return Regex.IsMatch(email, ValidEmailPattern);
         }
         catch (RegexMatchTimeoutException)
         {
@@ -43,6 +44,6 @@ public class PaypalProcessor
 
     private bool IsValidPassword(string password)
     {
-        return !string.IsNullOrWhiteSpace(password) && password.Length > MINIMUMPASSWORDLENGTH;
+        return !string.IsNullOrWhiteSpace(password) && password.Length > MinimumPasswordLength;
     }
 }

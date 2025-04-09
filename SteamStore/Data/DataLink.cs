@@ -15,19 +15,15 @@ public class DataLink : SteamStore.Data.IDataLink
 
     public DataLink(IConfiguration configuration)
     {
-        // string? localDataSource = configuration["ConnectionString"];
-        //this.connectionString = "Data Source=LAPTOP-MHT5DVFO\\SQLEXPRESS01;Initial Catalog=SteamStore;Integrated Security=True;TrustServerCertificate=True";
-
         this.connectionString = configuration.GetConnectionString("ConnectionString");
-
 
         try
         {
             this.sqlConnection = new SqlConnection(this.connectionString);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception($"Error initializing SQL connection: {this.connectionString}", ex);
+            throw new Exception($"Error initializing SQL connection: {this.connectionString}", exception);
         }
     }
 
@@ -72,7 +68,7 @@ public class DataLink : SteamStore.Data.IDataLink
         }
         catch (Exception exception)
         {
-            throw new Exception($"Error - ExecutingScalar: {exception.Message}");
+            throw new Exception($"Error - ExecutingScalar : {exception.Message}");
         }
         finally
         {
@@ -104,7 +100,7 @@ public class DataLink : SteamStore.Data.IDataLink
         }
         catch (Exception exception)
         {
-            throw new Exception($"Error - ExecuteReader: {exception.Message}");
+            throw new Exception($"Error - ExecuteReader : {exception.Message}");
         }
         finally
         {
@@ -131,7 +127,7 @@ public class DataLink : SteamStore.Data.IDataLink
         }
         catch (Exception exception)
         {
-            throw new Exception($"Error - ExecuteNonQuery: {exception.Message}");
+            throw new Exception($"Error - ExecuteNonQuery : {exception.Message}");
         }
         finally
         {

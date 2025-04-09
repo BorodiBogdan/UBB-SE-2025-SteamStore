@@ -18,6 +18,12 @@ using Windows.Gaming.Input;
 
 public class UserGameRepository : IUserGameRepository
 {
+    private const int FirstRowIndex = 0;
+    private const int DefaultValueOfOwners = 0;
+    private const int PointsPerDollar = 121;
+    private const int ValueOfNotBeingPurchased = 0;
+    private const int ZeroRowsCount = 0;
+    private const string OwnerCountColumn = "OwnerCount";
     private User user;
     private IDataLink dataLink;
 
@@ -29,14 +35,14 @@ public class UserGameRepository : IUserGameRepository
 
     public bool IsGamePurchased(Game game)
     {
-        SqlParameter[] parameters = new SqlParameter[]
+        SqlParameter[] gamePurchasedParameters = new SqlParameter[]
         {
             new SqlParameter(SqlConstants.GameIdParameter, game.Identifier),
             new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
         };
         try
         {
-            return this.dataLink.ExecuteScalar<int>("IsGamePurchased", parameters) > 0;
+            return this.dataLink.ExecuteScalar<int>("IsGamePurchased", gamePurchasedParameters) > ValueOfNotBeingPurchased;
         }
         catch (Exception exception)
         {
@@ -46,7 +52,7 @@ public class UserGameRepository : IUserGameRepository
 
     public void RemoveGameFromWishlist(Game game)
     {
-        SqlParameter[] parameters = new SqlParameter[]
+        SqlParameter[] removeGamesParameters = new SqlParameter[]
         {
             new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
             new SqlParameter(SqlConstants.GameIdParameter, game.Identifier),
@@ -54,20 +60,20 @@ public class UserGameRepository : IUserGameRepository
 
         try
         {
-            this.dataLink.ExecuteNonQuery("RemoveGameFromWishlist", parameters);
+            this.dataLink.ExecuteNonQuery("RemoveGameFromWishlist", removeGamesParameters);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new Exception(e.Message);
+            throw new Exception(exception.Message);
         }
     }
 
     public void AddGameToPurchased(Game game)
     {
-        SqlParameter[] parameters = new SqlParameter[]
+        SqlParameter[] purchaseGameParameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", this.user.UserIdentifier),
-            new SqlParameter("@game_id", game.Identifier),
+            new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
+            new SqlParameter(SqlConstants.GameIdParameter, game.Identifier),
         };
 
         try
@@ -77,7 +83,7 @@ public class UserGameRepository : IUserGameRepository
                 throw new Exception("Insufficient funds");
             }
 
-            this.dataLink.ExecuteNonQuery("AddGameToPurchased", parameters);
+            this.dataLink.ExecuteNonQuery("AddGameToPurchased", purchaseGameParameters);
             this.user.WalletBalance -= (float)game.Price;
 
             // Calculate and add points (121 points for every $1 spent)
@@ -91,66 +97,66 @@ public class UserGameRepository : IUserGameRepository
 
     public void AddGameToWishlist(Game game)
     {
-        SqlParameter[] parameters = new SqlParameter[]
+        SqlParameter[] addGameToWishlistParameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", this.user.UserIdentifier),
-            new SqlParameter("@game_id", game.Identifier),
+            new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
+            new SqlParameter(SqlConstants.GameIdParameter, game.Identifier),
         };
 
         try
         {
-            this.dataLink.ExecuteNonQuery("AddGameToWishlist", parameters);
+            this.dataLink.ExecuteNonQuery("AddGameToWishlist", addGameToWishlistParameters);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new Exception(e.Message);
+            throw new Exception(exception.Message);
         }
     }
 
     public string[] GetGameTags(int gameId)
     {
-        SqlParameter[] parameters = new SqlParameter[]
+        SqlParameter[] gameTagsParameters = new SqlParameter[]
         {
-            new SqlParameter("@gid", gameId),
+            new SqlParameter(SqlConstants.GidParameter, gameId),
         };
 
         try
         {
-            DataTable result = this.dataLink.ExecuteReader("getGameTags", parameters);
+            DataTable gameTagsTable = this.dataLink.ExecuteReader("getGameTags", gameTagsParameters);
             List<string> tags = new List<string>();
 
-            if (result != null)
+            if (gameTagsTable != null)
             {
-                foreach (DataRow row in result.Rows)
+                foreach (DataRow row in gameTagsTable.Rows)
                 {
-                    tags.Add((string)row["tag_name"]);
+                    tags.Add((string)row[SqlConstants.TagNameColumn]);
                 }
             }
 
             return tags.ToArray();
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new Exception($"Error getting tags for game {gameId}: {e.Message}");
+            throw new Exception($"Error getting tags for game {gameId}: {exception.Message}");
         }
     }
 
     public int GetGameOwnerCount(int gameId)
     {
-        var sqlParameters = new SqlParameter[] { new ("@game_id", gameId) };
-        var result = this.dataLink.ExecuteReader("GetGameOwnerCount", sqlParameters);
+        var ownerCountParameters = new SqlParameter[] { new (SqlConstants.GameIdParameter, gameId) };
+        var result = this.dataLink.ExecuteReader("GetGameOwnerCount", ownerCountParameters);
 
-        return result is { Rows.Count: > 0 } ? Convert.ToInt32(result.Rows[0]["OwnerCount"]) : 0;
+        return result is { Rows.Count: > ZeroRowsCount } ? Convert.ToInt32(result.Rows[FirstRowIndex][OwnerCountColumn]) : DefaultValueOfOwners;
     }
 
     public Collection<Game> GetAllUserGames()
     {
-        SqlParameter[] parameters = new SqlParameter[]
+        SqlParameter[] allUsersParameters = new SqlParameter[]
         {
-            new SqlParameter("@uid", this.user.UserIdentifier),
+            new SqlParameter(SqlConstants.UserIdentifierParameter, this.user.UserIdentifier),
         };
 
-        var result = this.dataLink.ExecuteReader("getUserGames", parameters);
+        var result = this.dataLink.ExecuteReader("getUserGames", allUsersParameters);
         List<Game> games = new List<Game>();
 
         if (result != null)
@@ -159,15 +165,15 @@ public class UserGameRepository : IUserGameRepository
             {
                 Game game = new Game
                 {
-                    Identifier = (int)row["game_id"],
-                    Name = (string)row["name"],
-                    Description = (string)row["Description"],
-                    ImagePath = (string)row["image_url"],
-                    Price = Convert.ToDecimal(row["price"]),
-                    MinimumRequirements = (string)row["minimum_requirements"],
-                    RecommendedRequirements = (string)row["recommended_requirements"],
-                    Status = (string)row["status"],
-                    Tags = this.GetGameTags((int)row["game_id"]),
+                    Identifier = (int)row[SqlConstants.GameIdColumn],
+                    Name = (string)row[SqlConstants.GameNameColumn],
+                    Description = (string)row[SqlConstants.DescriptionIdColumnWithCapitalLetter],
+                    ImagePath = (string)row[SqlConstants.ImageUrlColumn],
+                    Price = Convert.ToDecimal(row[SqlConstants.GamePriceColumn]),
+                    MinimumRequirements = (string)row[SqlConstants.MinimumRequirementsColumn],
+                    RecommendedRequirements = (string)row[SqlConstants.RecommendedRequirementsColumn],
+                    Status = (string)row[SqlConstants.GameStatusColumn],
+                    Tags = this.GetGameTags((int)row[SqlConstants.GameIdColumn]),
                     TrendingScore = Game.NOTCOMPUTED,
                 };
                 games.Add(game);
@@ -182,7 +188,7 @@ public class UserGameRepository : IUserGameRepository
         try
         {
             // Calculate points (121 points for every $1 spent)
-            int earnedPoints = (int)(purchaseAmount * 121);
+            int earnedPoints = (int)(purchaseAmount * PointsPerDollar);
 
             // Update user's point balance
             this.user.PointsBalance += earnedPoints;
@@ -191,14 +197,14 @@ public class UserGameRepository : IUserGameRepository
             SqlParameter[] parameters = new SqlParameter[]
             {
                 new SqlParameter("@UserId", this.user.UserIdentifier),
-                new SqlParameter("@PointBalance", this.user.PointsBalance),
+                new SqlParameter(SqlConstants.PointBalanceParameter, this.user.PointsBalance),
             };
 
             this.dataLink.ExecuteNonQuery("UpdateUserPointBalance", parameters);
         }
-        catch (Exception example)
+        catch (Exception exception)
         {
-            throw new Exception($"Failed to add points for purchase: {example.Message}");
+            throw new Exception($"Failed to add points for purchase: {exception.Message}");
         }
     }
 
@@ -210,31 +216,31 @@ public class UserGameRepository : IUserGameRepository
 
     public Collection<Game> GetWishlistGames()
     {
-        SqlParameter[] parameters = new SqlParameter[]
+        SqlParameter[] wishlistGamesParameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", this.user.UserIdentifier),
+            new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
         };
 
-        var result = this.dataLink.ExecuteReader("GetWishlistGames", parameters);
+        var wishlistGamesData = this.dataLink.ExecuteReader("GetWishlistGames", wishlistGamesParameters);
         List<Game> games = new List<Game>();
 
-        if (result != null)
+        if (wishlistGamesData != null)
         {
-            foreach (DataRow row in result.Rows)
+            foreach (DataRow row in wishlistGamesData.Rows)
             {
                 Game game = new Game
                 {
-                    Identifier = (int)row["game_id"],
-                    Name = (string)row["name"],
+                    Identifier = (int)row[SqlConstants.GameIdColumn],
+                    Name = (string)row[SqlConstants.GameNameColumn],
                     Description = (string)row["Description"],
-                    ImagePath = (string)row["image_url"],
-                    Price = Convert.ToDecimal(row["price"]),
-                    MinimumRequirements = (string)row["minimum_requirements"],
-                    RecommendedRequirements = (string)row["recommended_requirements"],
-                    Status = (string)row["status"],
-                    Rating = Convert.ToDecimal(row["rating"]),
-                    Discount = Convert.ToDecimal(row["discount"]),
-                    Tags = this.GetGameTags((int)row["game_id"]),
+                    ImagePath = (string)row[SqlConstants.ImageUrlColumn],
+                    Price = Convert.ToDecimal(row[SqlConstants.GamePriceColumn]),
+                    MinimumRequirements = (string)row[SqlConstants.MinimumRequirementsColumn],
+                    RecommendedRequirements = (string)row[SqlConstants.RecommendedRequirementsColumn],
+                    Status = (string)row[SqlConstants.GameStatusColumn],
+                    Rating = Convert.ToDecimal(row[SqlConstants.RatingColumn]),
+                    Discount = Convert.ToDecimal(row[SqlConstants.DiscountColumn]),
+                    Tags = this.GetGameTags((int)row[SqlConstants.GameIdColumn]),
                 };
                 games.Add(game);
             }

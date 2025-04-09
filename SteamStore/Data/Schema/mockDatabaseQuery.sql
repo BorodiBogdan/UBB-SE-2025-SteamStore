@@ -1,5 +1,4 @@
-﻿
-USE SteamStore
+﻿USE Steam
 
 
 DROP TABLE IF EXISTS users_items;
@@ -195,7 +194,7 @@ CREATE PROCEDURE getGameTags
     @gid int
 AS
 BEGIN
-    SELECT t.tag_name, t.tag_id
+    SELECT t.tag_name , t.tag_id
     FROM Games g
     INNER JOIN game_tags gt ON gt.game_id = g.game_id
     INNER JOIN tags t ON t.tag_id = gt.tag_id
@@ -393,7 +392,7 @@ GO
 CREATE PROCEDURE ValidateGame
     @game_id INT
 AS
-BEGIN
+BEGIN 
     SET NOCOUNT ON;
     UPDATE games
     SET status = 'Approved',
@@ -590,7 +589,7 @@ BEGIN
 	ELSE
 		SELECT 0 AS Result;
 END;
-GO;
+go
 
 DROP PROCEDURE IF EXISTS DeleteGameTags;
 GO
@@ -713,6 +712,7 @@ VALUES
     (13, 'Arcade'),
     (14, 'RPG'),
     (15, 'Racing');
+
 
 -- Associate tags with games in the game_tags table
 INSERT INTO game_tags (tag_id, game_id)

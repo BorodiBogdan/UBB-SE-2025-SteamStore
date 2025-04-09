@@ -16,7 +16,6 @@ public class CartRepository : ICartRepository
     private static readonly string GameIdColumn = "@game_id";
     private static readonly string UserIdColumn = "@user_id";
     private static readonly string ApprovedStatus = "Approved";
-    private static string approvedStatus = "Approved";
     private readonly IDataLink dataLink;
     private readonly User user;
 
@@ -28,17 +27,17 @@ public class CartRepository : ICartRepository
 
     public List<Game> GetCartGames()
     {
-        SqlParameter[] parameters = new SqlParameter[]
+        SqlParameter[] userIdParameters = new SqlParameter[]
         {
             new SqlParameter(UserIdColumn, this.user.UserIdentifier),
         };
 
-        var result = this.dataLink.ExecuteReader(SqlConstants.GETALLCARTGAMES, parameters);
+        var allCartGames = this.dataLink.ExecuteReader(SqlConstants.GETALLCARTGAMES, userIdParameters);
         List<Game> games = new List<Game>();
 
-        if (result != null)
+        if (allCartGames != null)
         {
-            foreach (DataRow row in result.Rows)
+            foreach (DataRow row in allCartGames.Rows)
             {
                 Game game = new Game
                 {
@@ -58,7 +57,7 @@ public class CartRepository : ICartRepository
 
     public void AddGameToCart(Game game)
     {
-        SqlParameter[] parameters = new SqlParameter[]
+        SqlParameter[] cartParameters = new SqlParameter[]
         {
             new SqlParameter(UserIdColumn, this.user.UserIdentifier),
             new SqlParameter(GameIdColumn, game.Identifier),
@@ -66,17 +65,17 @@ public class CartRepository : ICartRepository
 
         try
         {
-            this.dataLink.ExecuteNonQuery(SqlConstants.ADDGAMETOCART, parameters);
+            this.dataLink.ExecuteNonQuery(SqlConstants.ADDGAMETOCART, cartParameters);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            throw new Exception(e.Message);
+            throw new Exception(exception.Message);
         }
     }
 
     public void RemoveGameFromCart(Game game)
     {
-        SqlParameter[] parameters = new SqlParameter[]
+        SqlParameter[] cartRemovalParameters = new SqlParameter[]
         {
             new SqlParameter(UserIdColumn, this.user.UserIdentifier),
             new SqlParameter(GameIdColumn, game.Identifier),
@@ -84,7 +83,7 @@ public class CartRepository : ICartRepository
 
         try
         {
-            this.dataLink.ExecuteNonQuery(SqlConstants.REMOVEGAMEFROMCART, parameters);
+            this.dataLink.ExecuteNonQuery(SqlConstants.REMOVEGAMEFROMCART, cartRemovalParameters);
         }
         catch (Exception exception)
         {

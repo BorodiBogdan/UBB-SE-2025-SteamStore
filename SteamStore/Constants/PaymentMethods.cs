@@ -12,8 +12,8 @@ namespace SteamStore.Constants
 
     public static class PaymentMethods
     {
-        public const string PAYPALPAYMENTMETHOD = "PayPal";
-        public const string CREDITCARDPAYMENTMETHOD = "Credit Card";
-        public const string STEAMWALLETPAYMENTMETHOD = "Steam Wallet";
+        public const string PayPalPaymentMethods = "PayPal";
+        public const string CreditCardPaymentMethod = "Credit Card";
+        public const string SteamWalletPaymentWallet = "Steam Wallet";
     }
 }
