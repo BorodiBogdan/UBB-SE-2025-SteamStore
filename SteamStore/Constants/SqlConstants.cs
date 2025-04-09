@@ -74,6 +74,7 @@ namespace SteamStore.Constants
         public const string ActivatePointSHopIntemProcedure = "ActivatePointShopItem";
         public const string UpdateUserPointBalance = "UpdateUserPointBalance";
         public const string GetAllPointShopItems = "GetAllPointShopItems";
+
         // Column Names
         public const string GameIdColumn = "game_id";
         public const string PublisherIdColumn = "publisher_id";

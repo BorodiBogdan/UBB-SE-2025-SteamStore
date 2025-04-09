@@ -17,6 +17,9 @@ using SteamStore.Constants;
 
 public class GameRepository : IGameRepository
 {
+    private static readonly int ZeroUsagesOfAGame = 0;
+    private static readonly int LengthOfAnEmptyTable = 0;
+    private static readonly int FirstRowIndex = 0;
     private readonly IDataLink dataLink;
 
     public GameRepository(IDataLink dataLink)
@@ -26,21 +29,21 @@ public class GameRepository : IGameRepository
 
     public void ValidateGame(int gameId)
     {
-        var sqlParameters = new[]
+        var validateGameParameters = new[]
         {
             new SqlParameter(SqlConstants.GameIdParameter, gameId),
         };
-        this.dataLink.ExecuteNonQuery(SqlConstants.ValidateGameProcedure, sqlParameters);
+        this.dataLink.ExecuteNonQuery(SqlConstants.ValidateGameProcedure, validateGameParameters);
     }
 
     public List<Game> GetUnvalidated(int userId)
     {
-        var parameters = new[] { new SqlParameter(SqlConstants.PublisherIdParameter, userId) };
+        var publichedIdParameter = new[] { new SqlParameter(SqlConstants.PublisherIdParameter, userId) };
 
-        var result = this.dataLink.ExecuteReader(SqlConstants.GetAllUnvalidatedProcedure, parameters);
-        var games = new List<Game>();
+        var unvalidatedGamesData = this.dataLink.ExecuteReader(SqlConstants.GetAllUnvalidatedProcedure, publichedIdParameter);
+        var currentListOfGamesList = new List<Game>();
 
-        foreach (DataRow row in result.Rows)
+        foreach (DataRow row in unvalidatedGamesData.Rows)
         {
             var game = new Game
             {
@@ -57,16 +60,16 @@ public class GameRepository : IGameRepository
                 Discount = Convert.ToDecimal(row[SqlConstants.DiscountColumn]),
                 PublisherIdentifier = (int)row[SqlConstants.PublisherIdColumn],
             };
-            games.Add(game);
+            currentListOfGamesList.Add(game);
         }
 
-        return games;
+        return currentListOfGamesList;
     }
 
     public void DeleteGameTags(int gameId)
     {
-        var sqlParameters = new[] { new SqlParameter(SqlConstants.GameIdParameter, gameId) };
-        this.dataLink.ExecuteNonQuery(SqlConstants.DeleteGameTagsProcedure, sqlParameters);
+        var gameIdParameter = new[] { new SqlParameter(SqlConstants.GameIdParameter, gameId) };
+        this.dataLink.ExecuteNonQuery(SqlConstants.DeleteGameTagsProcedure, gameIdParameter);
     }
 
     public void DeleteGame(int gameId)
@@ -77,28 +80,28 @@ public class GameRepository : IGameRepository
         this.DeleteGameTags(gameId);
 
         // 2. Delete game reviews
-        SqlParameter[] reviewParams = { new (SqlConstants.GameIdParameter, gameId) };
-        this.dataLink.ExecuteNonQuery(SqlConstants.DeleteGameReviewsProcedure, reviewParams);
+        SqlParameter[] reviewParameters = { new (SqlConstants.GameIdParameter, gameId) };
+        this.dataLink.ExecuteNonQuery(SqlConstants.DeleteGameReviewsProcedure, reviewParameters);
 
         // 3. Delete game from transaction history
-        SqlParameter[] transactionParams = { new (SqlConstants.GameIdParameter, gameId) };
-        this.dataLink.ExecuteNonQuery(SqlConstants.DeleteGameTransactionsProcedure, transactionParams);
+        SqlParameter[] transactionParameters = { new (SqlConstants.GameIdParameter, gameId) };
+        this.dataLink.ExecuteNonQuery(SqlConstants.DeleteGameTransactionsProcedure, transactionParameters);
 
         // 4. Delete game from user libraries
-        SqlParameter[] libraryParams = { new (SqlConstants.GameIdParameter, gameId) };
-        this.dataLink.ExecuteNonQuery(SqlConstants.DeleteGameFromUserLibrariesProcedure, libraryParams);
+        SqlParameter[] libraryParameters = { new (SqlConstants.GameIdParameter, gameId) };
+        this.dataLink.ExecuteNonQuery(SqlConstants.DeleteGameFromUserLibrariesProcedure, libraryParameters);
 
         // 5. delete the game itself
-        SqlParameter[] gameParams = { new (SqlConstants.GameIdParameter, gameId) };
-        this.dataLink.ExecuteNonQuery(SqlConstants.DeleteGameDeveloperProcedure, gameParams);
+        SqlParameter[] gameParameters = { new (SqlConstants.GameIdParameter, gameId) };
+        this.dataLink.ExecuteNonQuery(SqlConstants.DeleteGameDeveloperProcedure, gameParameters);
     }
 
     public List<Game> GetDeveloperGames(int userId)
     {
-        SqlParameter[] parameters = { new (SqlConstants.PublisherIdParameter, userId) };
-        var result = this.dataLink.ExecuteReader(SqlConstants.GetDeveloperGamesProcedure, parameters);
+        SqlParameter[] developerIdParameter = { new (SqlConstants.PublisherIdParameter, userId) };
+        var gamesForCurrentDeveloper = this.dataLink.ExecuteReader(SqlConstants.GetDeveloperGamesProcedure, developerIdParameter);
 
-        return (from DataRow row in result.Rows
+        return (from DataRow row in gamesForCurrentDeveloper.Rows
             select new Game
             {
                 Identifier = (int)row[SqlConstants.GameIdColumn],
@@ -118,7 +121,7 @@ public class GameRepository : IGameRepository
 
     public void UpdateGame(int gameId, Game game)
     {
-        SqlParameter[] sqlParameters =
+        SqlParameter[] updateGameParameters =
         {
             new (SqlConstants.GameIdParameter, gameId),
             new (SqlConstants.NameParameter, game.Name),
@@ -133,80 +136,80 @@ public class GameRepository : IGameRepository
             new (SqlConstants.DiscountParameter, game.Discount),
             new (SqlConstants.PublisherIdParameter, game.PublisherIdentifier),
         };
-        this.dataLink.ExecuteNonQuery(SqlConstants.UpdateGameProcedure, sqlParameters);
+        this.dataLink.ExecuteNonQuery(SqlConstants.UpdateGameProcedure, updateGameParameters);
     }
 
     public void RejectGame(int gameId)
     {
-        SqlParameter[] sqlParameters = { new (SqlConstants.GameIdParameter, gameId) };
-        this.dataLink.ExecuteNonQuery(SqlConstants.RejectGameProcedure, sqlParameters);
+        SqlParameter[] rejectGameParameters = { new (SqlConstants.GameIdParameter, gameId) };
+        this.dataLink.ExecuteNonQuery(SqlConstants.RejectGameProcedure, rejectGameParameters);
     }
 
     public void RejectGameWithMessage(int gameId, string message)
     {
-        SqlParameter[] sqlParameters =
+        SqlParameter[] rejectGameMessageParameters =
         {
             new (SqlConstants.GameIdParameter, gameId),
             new (SqlConstants.RejectionMessageParameter, message),
         };
-        this.dataLink.ExecuteNonQuery(SqlConstants.RejectGameWithMessageProcedure, sqlParameters);
+        this.dataLink.ExecuteNonQuery(SqlConstants.RejectGameWithMessageProcedure, rejectGameMessageParameters);
     }
 
     public string GetRejectionMessage(int gameId)
     {
-        var sqlParameters = new[] { new SqlParameter(SqlConstants.GameIdParameter, gameId) };
+        var gettingRejectionMessageParameters = new[] { new SqlParameter(SqlConstants.GameIdParameter, gameId) };
 
-        var result = this.dataLink.ExecuteReader(SqlConstants.GetRejectionMessageProcedure, sqlParameters);
+        var rejectedMessagesForGivenGame = this.dataLink.ExecuteReader(SqlConstants.GetRejectionMessageProcedure, gettingRejectionMessageParameters);
 
-        if (result == null || result.Rows.Count <= 0)
+        if (rejectedMessagesForGivenGame == null || rejectedMessagesForGivenGame.Rows.Count <= LengthOfAnEmptyTable)
         {
             return string.Empty;
         }
 
-        return result.Rows[0][SqlConstants.RejectionMessageColumn] != DBNull.Value
-            ? result.Rows[0][SqlConstants.RejectionMessageColumn].ToString()
+        return rejectedMessagesForGivenGame.Rows[FirstRowIndex][SqlConstants.RejectionMessageColumn] != DBNull.Value
+            ? rejectedMessagesForGivenGame.Rows[FirstRowIndex][SqlConstants.RejectionMessageColumn].ToString()
             : string.Empty;
     }
 
     public void InsertGameTag(int gameId, int tagId)
     {
-        var sqlParameters = new SqlParameter[]
+        var insertGameTagParameters = new SqlParameter[]
         {
             new (SqlConstants.GameIdParameter, gameId),
             new (SqlConstants.TagIdParameter, tagId),
         };
 
-        this.dataLink.ExecuteNonQuery(SqlConstants.InsertGameTagsProcedure, sqlParameters);
+        this.dataLink.ExecuteNonQuery(SqlConstants.InsertGameTagsProcedure, insertGameTagParameters);
     }
 
     public bool IsGameIdInUse(int gameId)
     {
-        var sqlParameters = new SqlParameter[] { new (SqlConstants.GameIdParameter, gameId) };
+        var checkingIfGameIsInUseParameters = new SqlParameter[] { new (SqlConstants.GameIdParameter, gameId) };
 
-        var result = this.dataLink.ExecuteReader(SqlConstants.IsGameIdInUseProcedure, sqlParameters);
+        var usageResultTable = this.dataLink.ExecuteReader(SqlConstants.IsGameIdInUseProcedure, checkingIfGameIsInUseParameters);
 
-        if (result == null || result.Rows.Count <= 0)
+        if (usageResultTable == null || usageResultTable.Rows.Count <= LengthOfAnEmptyTable)
         {
             return false;
         }
 
-        var count = Convert.ToInt32(result.Rows[0][SqlConstants.QueryResultColumn]);
-        return count > 0;
+        var gameUsageCount = Convert.ToInt32(usageResultTable.Rows[FirstRowIndex][SqlConstants.QueryResultColumn]);
+        return gameUsageCount > ZeroUsagesOfAGame;
     }
 
     public List<Tag> GetGameTags(int gameId)
     {
-        var sqlParameters = new SqlParameter[] { new (SqlConstants.GidParameter, gameId) };
+        var gameIdParameters = new SqlParameter[] { new (SqlConstants.GidParameter, gameId) };
 
-        var result = this.dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, sqlParameters);
-        return (from DataRow row in result.Rows
+        var tagRows = this.dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, gameIdParameters);
+        return (from DataRow row in tagRows.Rows
                 select new Tag { TagId = (int)row[SqlConstants.TagIdColumn], Tag_name = (string)row[SqlConstants.TagNameColumn] })
             .OrderBy(tag => tag.Tag_name).ToList();
     }
 
     public void CreateGame(Game game)
     {
-        var sqlParameters = new SqlParameter[]
+        var gameParameters = new SqlParameter[]
         {
             new (SqlConstants.GameIdParameter, game.Identifier),
             new (SqlConstants.NameParameter, game.Name),
@@ -221,28 +224,28 @@ public class GameRepository : IGameRepository
             new (SqlConstants.StatusParameter, game.Status),
             new (SqlConstants.DiscountParameter, game.Discount),
         };
-        this.dataLink.ExecuteNonQuery(SqlConstants.InsertGameProcedure, sqlParameters);
+        this.dataLink.ExecuteNonQuery(SqlConstants.InsertGameProcedure, gameParameters);
     }
 
     public decimal GetGameRating(int gameId)
     {
-        SqlParameter[] parameters = { new (SqlConstants.GidParameter, gameId) };
+        SqlParameter[] gameRatingParameterss = { new (SqlConstants.GidParameter, gameId) };
 
-        decimal? result = this.dataLink.ExecuteScalar<decimal>(SqlConstants.GetGameRatingProcedure, parameters);
-        return (decimal)result;
+        decimal? gameRating = this.dataLink.ExecuteScalar<decimal>(SqlConstants.GetGameRatingProcedure, gameRatingParameterss);
+        return (decimal)gameRating;
     }
 
-    public int GetNoOfRecentSalesForGame(int gameId)
+    public int GetNumberOfRecentSalesForGame(int gameId)
     {
-        SqlParameter[] parameters = { new (SqlConstants.GidParameter, gameId) };
-        int? result = this.dataLink.ExecuteScalar<int>(SqlConstants.GetNumberOfRecentSalesProcedure, parameters);
-        return (int)result;
+        SqlParameter[] salesCountParameters = { new (SqlConstants.GidParameter, gameId) };
+        int? recentSalesCount = this.dataLink.ExecuteScalar<int>(SqlConstants.GetNumberOfRecentSalesProcedure, salesCountParameters);
+        return (int)recentSalesCount;
     }
 
     public Collection<Game> GetAllGames()
     {
-        var result = this.dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure);
-        var games = (from DataRow row in result.Rows
+        var gamesData = this.dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure);
+        var gameList = (from DataRow row in gamesData.Rows
             select new Game
             {
                 Identifier = (int)row[SqlConstants.GameIdColumn],
@@ -259,11 +262,11 @@ public class GameRepository : IGameRepository
                 Discount = (int)row[SqlConstants.DiscountColumn],
                 Tags = this.GetGameTags((int)row[SqlConstants.GameIdColumn]).Select(tag => tag.Tag_name).ToArray(),
                 Rating = this.GetGameRating((int)row[SqlConstants.GameIdColumn]),
-                NumberOfRecentPurchases = this.GetNoOfRecentSalesForGame((int)row[SqlConstants.GameIdColumn]),
+                NumberOfRecentPurchases = this.GetNumberOfRecentSalesForGame((int)row[SqlConstants.GameIdColumn]),
                 TrendingScore = Game.NOTCOMPUTED,
                 TagScore = Game.NOTCOMPUTED,
             }).ToList();
 
-        return new Collection<Game>(games);
+        return new Collection<Game>(gameList);
     }
 }

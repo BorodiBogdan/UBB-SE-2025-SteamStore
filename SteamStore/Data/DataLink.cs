@@ -68,7 +68,7 @@ public class DataLink : SteamStore.Data.IDataLink
         }
         catch (Exception exception)
         {
-            throw new Exception($"Error - ExecutingScalar: {exception.Message}");
+            throw new Exception($"Error - ExecutingScalar : {exception.Message}");
         }
         finally
         {
@@ -100,7 +100,7 @@ public class DataLink : SteamStore.Data.IDataLink
         }
         catch (Exception exception)
         {
-            throw new Exception($"Error - ExecuteReader: {exception.Message}");
+            throw new Exception($"Error - ExecuteReader : {exception.Message}");
         }
         finally
         {
@@ -127,7 +127,7 @@ public class DataLink : SteamStore.Data.IDataLink
         }
         catch (Exception exception)
         {
-            throw new Exception($"Error - ExecuteNonQuery: {exception.Message}");
+            throw new Exception($"Error - ExecuteNonQuery : {exception.Message}");
         }
         finally
         {
