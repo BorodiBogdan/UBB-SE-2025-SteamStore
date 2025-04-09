@@ -11,6 +11,7 @@ namespace SteamStore.Repositories
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using SteamStore.Constants;
     using SteamStore.Data;
     using SteamStore.Models;
     using SteamStore.Repositories.Interfaces;
@@ -38,20 +39,20 @@ namespace SteamStore.Repositories
                 {
                     var item = new PointShopItem
                     {
-                        ItemIdentifier = Convert.ToInt32(row["ItemId"]),
-                        Name = row["Name"].ToString(),
-                        Description = row["Description"].ToString(),
-                        ImagePath = row["ImagePath"].ToString(),
-                        PointPrice = Convert.ToDouble(row["PointPrice"]),
-                        ItemType = row["ItemType"].ToString(),
+                        ItemIdentifier = Convert.ToInt32(row[SqlConstants.ItemIdColumnWithCapitalLetter]),
+                        Name = row[SqlConstants.NameIdColumnWithCapitalLetter].ToString(),
+                        Description = row[SqlConstants.DescriptionIdColumnWithCapitalLetter].ToString(),
+                        ImagePath = row[SqlConstants.ImagePathColumnWithCapitalLetter].ToString(),
+                        PointPrice = Convert.ToDouble(row[SqlConstants.PointPriceColumnWithCapitalLeter]),
+                        ItemType = row[SqlConstants.ItemTypeColumnWithCapitalLetter].ToString(),
                     };
 
                     items.Add(item);
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Failed to retrieve point shop items: {ex.Message}");
+                throw new Exception($"Failed to retrieve point shop items: {exception.Message}");
             }
 
             return items;
@@ -65,22 +66,22 @@ namespace SteamStore.Repositories
             {
                 SqlParameter[] parameters = new SqlParameter[]
                 {
-                    new SqlParameter("@UserId", this.user.UserIdentifier),
+                    new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, this.user.UserIdentifier),
                 };
 
-                DataTable result = this.data.ExecuteReader("GetUserPointShopItems", parameters);
+                DataTable result = this.data.ExecuteReader(SqlConstants.GetUserPointShopItemsProcedure, parameters);
 
                 foreach (DataRow row in result.Rows)
                 {
                     var item = new PointShopItem
                     {
-                        ItemIdentifier = Convert.ToInt32(row["ItemId"]),
-                        Name = row["Name"].ToString(),
-                        Description = row["Description"].ToString(),
-                        ImagePath = row["ImagePath"].ToString(),
-                        PointPrice = Convert.ToDouble(row["PointPrice"]),
-                        ItemType = row["ItemType"].ToString(),
-                        IsActive = Convert.ToBoolean(row["IsActive"]),
+                        ItemIdentifier = Convert.ToInt32(row[SqlConstants.ItemIdColumnWithCapitalLetter]),
+                        Name = row[SqlConstants.NameIdColumnWithCapitalLetter].ToString(),
+                        Description = row[SqlConstants.DescriptionIdColumnWithCapitalLetter].ToString(),
+                        ImagePath = row[SqlConstants.ImagePathColumnWithCapitalLetter].ToString(),
+                        PointPrice = Convert.ToDouble(row[SqlConstants.PointPriceColumnWithCapitalLeter]),
+                        ItemType = row[SqlConstants.ItemTypeColumnWithCapitalLetter].ToString(),
+                        IsActive = Convert.ToBoolean(row[SqlConstants.IsActiveColumn]),
                     };
                     items.Add(item);
                 }
@@ -114,11 +115,11 @@ namespace SteamStore.Repositories
             {
                 SqlParameter[] parameters = new SqlParameter[]
                 {
-                    new SqlParameter("@UserId", this.user.UserIdentifier),
-                    new SqlParameter("@ItemId", item.ItemIdentifier),
+                    new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, this.user.UserIdentifier),
+                    new SqlParameter(SqlConstants.ItemIdParameter, item.ItemIdentifier),
                 };
-
-                this.data.ExecuteNonQuery("PurchasePointShopItem", parameters);
+                
+                this.data.ExecuteNonQuery(SqlConstants.PurchasePointShopItemProcedure, parameters);
 
                 // Update user's point balance in memory
                 this.user.PointsBalance -= (float)item.PointPrice;
@@ -148,11 +149,11 @@ namespace SteamStore.Repositories
             {
                 SqlParameter[] parameters = new SqlParameter[]
                 {
-                    new SqlParameter("@UserId", this.user.UserIdentifier),
-                    new SqlParameter("@ItemId", item.ItemIdentifier),
+                    new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, this.user.UserIdentifier),
+                    new SqlParameter(SqlConstants.ItemIdParameter, item.ItemIdentifier),
                 };
 
-                this.data.ExecuteNonQuery("ActivatePointShopItem", parameters);
+                this.data.ExecuteNonQuery(SqlConstants.ActivatePointSHopIntemProcedure, parameters);
             }
             catch (Exception exception)
             {
@@ -176,15 +177,15 @@ namespace SteamStore.Repositories
             {
                 SqlParameter[] parameters = new SqlParameter[]
                 {
-                    new SqlParameter("@UserId", this.user.UserIdentifier),
-                    new SqlParameter("@ItemId", item.ItemIdentifier),
+                    new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, this.user.UserIdentifier),
+                    new SqlParameter(SqlConstants.ItemIdParameter, item.ItemIdentifier),
                 };
 
-                this.data.ExecuteNonQuery("DeactivatePointShopItem", parameters);
+                this.data.ExecuteNonQuery(SqlConstants.DeactivatePointShopItemProcedure, parameters);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                throw new Exception($"Failed to deactivate item: {ex.Message}");
+                throw new Exception($"Failed to deactivate item: {exception.Message}");
             }
         }
 

@@ -13,7 +13,7 @@ public class GameRepositoryTest
     public void CreateGame()
     {
         var testGame = CreateRandomGame();
-        var foundGame = _subject.GetDeveloperGames(testGame.PublisherId)
+        var foundGame = _subject.GetDeveloperGames(testGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == testGame.Name);
         AssertUtils.AssertAllPropertiesEqual(testGame, foundGame);
     }
@@ -24,9 +24,9 @@ public class GameRepositoryTest
         var insertedGame = CreateRandomGame();
         var updatedGame = GameTestUtils.CreateRandomGame();
         updatedGame.Rating = 0m;
-        updatedGame.Id = insertedGame.Id;
-        _subject.UpdateGame(updatedGame.Id, updatedGame);
-        var foundGame = _subject.GetDeveloperGames(updatedGame.PublisherId)
+        updatedGame.Identifier = insertedGame.Identifier;
+        _subject.UpdateGame(updatedGame.Identifier, updatedGame);
+        var foundGame = _subject.GetDeveloperGames(updatedGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == updatedGame.Name);
         AssertUtils.AssertAllPropertiesEqual(updatedGame, foundGame);
     }
@@ -35,8 +35,8 @@ public class GameRepositoryTest
     public void ValidateGame()
     {
         var testGame = CreateRandomGame("Pending");
-        _subject.ValidateGame(testGame.Id);
-        var foundGame = _subject.GetDeveloperGames(testGame.PublisherId)
+        _subject.ValidateGame(testGame.Identifier);
+        var foundGame = _subject.GetDeveloperGames(testGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == testGame.Name);
 
         Assert.Equal("Approved", foundGame!.Status);
@@ -46,24 +46,24 @@ public class GameRepositoryTest
     public void RejectGame()
     {
         var testGame = CreateRandomGame("Pending");
-        _subject.RejectGame(testGame.Id);
-        var foundGame = _subject.GetDeveloperGames(testGame.PublisherId)
+        _subject.RejectGame(testGame.Identifier);
+        var foundGame = _subject.GetDeveloperGames(testGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == testGame.Name);
 
         Assert.Equal("Rejected", foundGame!.Status);
-        Assert.Equal(string.Empty, _subject.GetRejectionMessage(testGame.Id));
+        Assert.Equal(string.Empty, _subject.GetRejectionMessage(testGame.Identifier));
     }
 
     [Fact]
     public void RejectGameWithMessage()
     {
         var testGame = CreateRandomGame("Pending");
-        _subject.RejectGameWithMessage(testGame.Id, "TEST");
-        var foundGame = _subject.GetDeveloperGames(testGame.PublisherId)
+        _subject.RejectGameWithMessage(testGame.Identifier, "TEST");
+        var foundGame = _subject.GetDeveloperGames(testGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == testGame.Name);
 
         Assert.Equal("Rejected", foundGame!.Status);
-        Assert.Equal("TEST", _subject.GetRejectionMessage(testGame.Id));
+        Assert.Equal("TEST", _subject.GetRejectionMessage(testGame.Identifier));
         
     }
 
@@ -74,9 +74,9 @@ public class GameRepositoryTest
         var tags = CreateRandomTagsForGame(testGame);
 
         var foundGame = _subject.GetAllGames().FirstOrDefault(game => game.Name == testGame.Name);
-        testGame.Tags = tags.Select(tag => tag.tag_name).ToArray();
-        testGame.trendingScore = Game.NOT_COMPUTED;
-        testGame.tagScore = Game.NOT_COMPUTED;
+        testGame.Tags = tags.Select(tag => tag.Tag_name).ToArray();
+        testGame.TrendingScore = Game.NOTCOMPUTED;
+        testGame.TagScore = Game.NOTCOMPUTED;
         AssertUtils.AssertAllPropertiesEqual(testGame, foundGame);
     }
     
@@ -97,8 +97,8 @@ public class GameRepositoryTest
         CreateRandomTagsForGame(testGame);
         //TODO: also attach reviews, transactions, libraries
 
-        _subject.DeleteGame(testGame.Id);
-        var notFound = _subject.GetDeveloperGames(testGame.PublisherId)
+        _subject.DeleteGame(testGame.Identifier);
+        var notFound = _subject.GetDeveloperGames(testGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == testGame.Name);
 
         Assert.Null(notFound);
@@ -108,7 +108,7 @@ public class GameRepositoryTest
     public void IsGameIdUsed()
     {
         var testGame = CreateRandomGame();
-        Assert.True(_subject.IsGameIdInUse(testGame.Id));
+        Assert.True(_subject.IsGameIdInUse(testGame.Identifier));
         
     }
 
@@ -117,7 +117,7 @@ public class GameRepositoryTest
         var tags = GameTestUtils.RandomTags();
         foreach (var tag in tags)
         {
-            _subject.InsertGameTag(testGame.Id, tag.tag_id);
+            _subject.InsertGameTag(testGame.Identifier, tag.TagId);
         }
 
         return tags;
