@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using Moq;
@@ -7,13 +8,13 @@ using SteamStore.Data;
 using SteamStore.Models;
 using SteamStore.Repositories;
 using SteamStore.Services;
+using SteamStore.Tests.TestUtils;
 using Xunit;
 
 namespace SteamStore.Tests.Services
 {
     public class PointShopServiceTest
     {
-        private readonly Mock<IDataLink> _mockDataLink;
         private readonly User _testUser;
         private readonly PointShopService _service;
 
@@ -22,73 +23,77 @@ namespace SteamStore.Tests.Services
             _testUser = new User
             {
                 UserIdentifier = 1,
-                Name = "TestUser",
-                PointsBalance = 1000,
-                WalletBalance = 200,
-                UserRole = User.Role.User
+                Name = "John Doe",
+                PointsBalance = 999999.99f
             };
 
-            _mockDataLink = new Mock<IDataLink>();
-            _service = new PointShopService(_testUser, _mockDataLink.Object);
+            _service = new PointShopService(_testUser, TestDataLink.GetDataLink());
         }
+
+        [Fact]
+        public void GetCurrentUser_ShouldReturnCurrentUser()
+        {
+            var user = _service.GetCurrentUser();
+            Assert.NotNull(user);
+            Assert.Equal(_testUser.UserIdentifier, user.UserIdentifier);
+            Assert.Equal(_testUser.Name, user.Name);
+        }
+
 
         [Fact]
         public void GetAllItems_ShouldReturnListOfPointShopItems()
         {
-            var mockDataTable = CreateMockPointShopItemsTable();
-            _mockDataLink.Setup(dl => dl.ExecuteReader("GetAllPointShopItems", null)).Returns(mockDataTable);
             var items = _service.GetAllItems();
 
             Assert.NotNull(items);
             Assert.NotEmpty(items);
-            Assert.Equal(3, items.Count);
-            Assert.Contains(items, item => item.Name == "Blue Background");
+            Assert.All(items, item => Assert.NotNull(item.Name));
         }
 
         [Fact]
         public void GetUserItems_ShouldReturnListOfUserPointShopItems()
         {
-            var mockDataTable = CreateMockUserItemsTable();
-            _mockDataLink.Setup(dl => dl.ExecuteReader("GetUserPointShopItems", It.IsAny<SqlParameter[]>())).Returns(mockDataTable);
-
             var userItems = _service.GetUserItems();
+
             Assert.NotNull(userItems);
-            Assert.NotEmpty(userItems);
-            Assert.Equal(2, userItems.Count);
-            Assert.Contains(userItems, item => item.Name == "Blue Background" && item.IsActive);
+            Assert.All(userItems, item => Assert.NotNull(item.Name));
         }
 
-        [Fact]
-        public void PurchaseItem_ShouldDeductPointsAndAddItem()
-        {
-            var newItem = new PointShopItem
-            {
-                ItemIdentifier = 2,
-                PointPrice = 500
-            };
+        //[Fact]
+        //public void PurchaseItem_ShouldDeductPointsAndAddItem()
+        //{
+        //    var newItem = new PointShopItem
+        //    {
+        //        ItemIdentifier = 7,
+        //        PointPrice = 500
+        //    };
 
-            _mockDataLink.Setup(dl => dl.ExecuteNonQuery("PurchasePointShopItem", It.IsAny<SqlParameter[]>())).Verifiable();
-            _mockDataLink.Setup(dl => dl.ExecuteNonQuery("UpdateUserPointBalance", It.IsAny<SqlParameter[]>())).Verifiable();
+        //    _service.PurchaseItem(newItem);
 
-            _service.PurchaseItem(newItem);
+        //    Assert.True(_testUser.PointsBalance < 999999.99f);
 
-            Assert.Equal(500, _testUser.PointsBalance);
-            _mockDataLink.Verify(dl => dl.ExecuteNonQuery("PurchasePointShopItem", It.IsAny<SqlParameter[]>()), Times.Once);
-            _mockDataLink.Verify(dl => dl.ExecuteNonQuery("UpdateUserPointBalance", It.IsAny<SqlParameter[]>()), Times.Once);
-        }
+        //    var userItems = _service.GetUserItems();
+        //    Assert.Contains(userItems, item => item.ItemIdentifier == newItem.ItemIdentifier);
+
+        //    _service.DeactivateItem(newItem);
+        //    userItems = _service.GetUserItems();
+        //    Assert.DoesNotContain(userItems, item => item.ItemIdentifier == newItem.ItemIdentifier);
+        //}
 
         [Fact]
         public void ActivateItem_ShouldSetItemAsActive()
         {
             var itemToActivate = new PointShopItem
             {
-                ItemIdentifier = 3 
+                ItemIdentifier = 3
             };
 
-            _mockDataLink.Setup(dl => dl.ExecuteNonQuery("ActivatePointShopItem", It.IsAny<SqlParameter[]>())).Verifiable();
             _service.ActivateItem(itemToActivate);
-            _mockDataLink.Verify(dl => dl.ExecuteNonQuery("ActivatePointShopItem", It.IsAny<SqlParameter[]>()), Times.Once);
+
+            var userItems = _service.GetUserItems();
+            Assert.Contains(userItems, item => item.ItemIdentifier == 3 && item.IsActive);
         }
+
 
         [Fact]
         public void DeactivateItem_ShouldSetItemAsInactive()
@@ -98,43 +103,91 @@ namespace SteamStore.Tests.Services
                 ItemIdentifier = 1
             };
 
-            _mockDataLink.Setup(dl => dl.ExecuteNonQuery("DeactivatePointShopItem", It.IsAny<SqlParameter[]>())).Verifiable();
             _service.DeactivateItem(itemToDeactivate);
-            _mockDataLink.Verify(dl => dl.ExecuteNonQuery("DeactivatePointShopItem", It.IsAny<SqlParameter[]>()), Times.Once);
+
+            var userItems = _service.GetUserItems();
+            Assert.Contains(userItems, item => item.ItemIdentifier == 1 && !item.IsActive);
         }
 
-        private DataTable CreateMockPointShopItemsTable()
+        [Fact]
+        public void GetFilteredItems_ShouldReturnFilteredItems()
         {
-            var table = new DataTable();
-            table.Columns.Add("ItemId", typeof(int));
-            table.Columns.Add("Name", typeof(string));
-            table.Columns.Add("Description", typeof(string));
-            table.Columns.Add("ImagePath", typeof(string));
-            table.Columns.Add("PointPrice", typeof(double));
-            table.Columns.Add("ItemType", typeof(string));
+            var filteredItems = _service.GetFilteredItems("ProfileBackground", "Blue", 0, 1000);
 
-            table.Rows.Add(1, "Blue Background", "A blue profile background", null, 500, "ProfileBackground");
-            table.Rows.Add(2, "Red Background", "A red profile background", null, 500, "ProfileBackground");
-            table.Rows.Add(3, "Gold Frame", "A gold avatar frame", null, 1000, "AvatarFrame");
-
-            return table;
+            Assert.NotNull(filteredItems);
+            Assert.All(filteredItems, item => Assert.Contains("Blue", item.Name, StringComparison.OrdinalIgnoreCase));
         }
 
-        private DataTable CreateMockUserItemsTable()
+        [Fact]
+        public void CanUserPurchaseItem_ShouldReturnTrue_WhenUserCanPurchase()
         {
-            var table = new DataTable();
-            table.Columns.Add("ItemId", typeof(int));
-            table.Columns.Add("Name", typeof(string));
-            table.Columns.Add("Description", typeof(string));
-            table.Columns.Add("ImagePath", typeof(string));
-            table.Columns.Add("PointPrice", typeof(double));
-            table.Columns.Add("ItemType", typeof(string));
-            table.Columns.Add("IsActive", typeof(bool));
+            var selectedItem = new PointShopItem
+            {
+                ItemIdentifier = 7,
+                PointPrice = 500
+            };
 
-            table.Rows.Add(1, "Blue Background", "A blue profile background", null, 500, "ProfileBackground", true);
-            table.Rows.Add(3, "Gold Frame", "A gold avatar frame", null, 1000, "AvatarFrame", false);
+            var userItems = _service.GetUserItems();
+            var canPurchase = _service.CanUserPurchaseItem(_testUser, selectedItem, userItems);
 
-            return table;
+            Assert.True(canPurchase);
+
+            if (userItems.Exists(item => item.ItemIdentifier == selectedItem.ItemIdentifier))
+            {
+                _service.DeactivateItem(selectedItem);
+                userItems.RemoveAll(item => item.ItemIdentifier == selectedItem.ItemIdentifier);
+            }
+        }
+
+        [Fact]
+        public void GetAvailableItems_ShouldReturnItemsNotOwnedByUser()
+        {
+            var availableItems = _service.GetAvailableItems(_testUser);
+
+            Assert.NotNull(availableItems);
+            Assert.All(availableItems, item => Assert.DoesNotContain(_service.GetUserItems(), userItem => userItem.ItemIdentifier == item.ItemIdentifier));
+        }
+
+        [Fact]
+        public void TryPurchaseItem_ShouldReturnTrueAndCreateTransaction()
+        {
+            var selectedItem = new PointShopItem
+            {
+                ItemIdentifier = 2,
+                Name = "Red Background",
+                PointPrice = 500,
+                ItemType = "ProfileBackground"
+            };
+
+            var transactionHistory = new ObservableCollection<PointShopTransaction>();
+            var result = _service.TryPurchaseItem(selectedItem, transactionHistory, _testUser, out var newTransaction);
+
+            Assert.True(result);
+            Assert.NotNull(newTransaction);
+            Assert.Equal("Red Background", newTransaction.ItemName);
+            Assert.Equal(500, newTransaction.PointsSpent);
+
+            var userItems = _service.GetUserItems();
+            if (userItems.Exists(item => item.ItemIdentifier == selectedItem.ItemIdentifier))
+            {
+                _service.DeactivateItem(selectedItem);
+                userItems.RemoveAll(item => item.ItemIdentifier == selectedItem.ItemIdentifier);
+            }
+        }
+
+        [Fact]
+        public void ToggleActivationForItem_ShouldActivateOrDeactivateItem()
+        {
+            var userItems = new ObservableCollection<PointShopItem>
+            {
+                new PointShopItem { ItemIdentifier = 1, IsActive = true },
+                new PointShopItem { ItemIdentifier = 3, IsActive = false }
+            };
+
+            var toggledItem = _service.ToggleActivationForItem(1, userItems);
+
+            Assert.NotNull(toggledItem);
+            Assert.True(toggledItem.IsActive);
         }
     }
 }

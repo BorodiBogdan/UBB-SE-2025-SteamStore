@@ -216,5 +216,4 @@ public class DeveloperViewModel : INotifyPropertyChanged
     {
         return this.developerService.GetMatchingTagsForGame(gameId, allTags);
     }
-
 }

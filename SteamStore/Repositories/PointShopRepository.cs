@@ -121,15 +121,13 @@ namespace SteamStore.Repositories
 
                 this.data.ExecuteNonQuery(SqlConstants.PurchasePointShopItemProcedure, pointShopPurchaseParameters);
 
-                // Update user's point balance in memory
                 this.user.PointsBalance -= (float)item.PointPrice;
 
-                // Update user's point balance in the database
                 this.UpdateUserPointBalance();
             }
             catch (Exception exception)
             {
-                throw new Exception($"Failed to purchase item: {exception.Message}");
+                 throw new Exception($"Failed to purchase item: {exception.Message}");
             }
         }
 
@@ -195,7 +193,7 @@ namespace SteamStore.Repositories
             {
                 SqlParameter[] userPointBalanceParametrs = new SqlParameter[]
                 {
-                    new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
+                    new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, this.user.UserIdentifier),
                     new SqlParameter(SqlConstants.PointBalanceParameter, this.user.PointsBalance),
                 };
 

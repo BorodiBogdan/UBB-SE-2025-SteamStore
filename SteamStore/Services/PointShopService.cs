@@ -9,7 +9,6 @@ namespace SteamStore.Services
     using System.Collections.ObjectModel;
     using System.Linq;
     using SteamStore.Constants;
-    using System.Linq;
     using SteamStore.Data;
     using SteamStore.Models;
     using SteamStore.Repositories;
