@@ -17,7 +17,6 @@ using SteamStore.Constants;
 
 public class GameRepository : IGameRepository
 {
-
     private readonly IDataLink dataLink;
 
     public GameRepository(IDataLink dataLink)

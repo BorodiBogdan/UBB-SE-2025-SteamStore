@@ -9,6 +9,7 @@ namespace SteamStore.Constants
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Windows.ApplicationModel.Background;
 
     public static class SqlConstants
     {
@@ -40,7 +41,8 @@ namespace SteamStore.Constants
         public const string RecommendedRequirementsParameter = "@recommended_requirements";
         public const string StatusParameter = "@status";
         public const string DiscountParameter = "@discount";
-       
+        public const string UserIdParameter = "@user_id";
+
 
 
         // Stored Procedure Names
@@ -63,6 +65,7 @@ namespace SteamStore.Constants
         public const string GetGameRatingProcedure = "getGameRating";
         public const string GetNumberOfRecentSalesProcedure = "getNoOfRecentSalesForGame";
         public const string GetAllGamesProcedure = "GetAllGames";
+        public const string GetAllTagsProcedure = "GetAllTags";
 
         // Column Names
         public const string GameIdColumn = "game_id";
