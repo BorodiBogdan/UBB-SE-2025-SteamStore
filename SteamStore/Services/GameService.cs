@@ -94,6 +94,21 @@ public class GameService : IGameService
             .ToList();
     }
 
+    public Game GetGameById(int gameId)
+    {
+        const int initialIndex = 0;
+        var allGames = this.GetAllGames();
+        for (int currentIndexOfGAmeInList = initialIndex; currentIndexOfGAmeInList < allGames.Count; currentIndexOfGAmeInList++)
+        {
+            if (allGames[currentIndexOfGAmeInList].Identifier == gameId)
+            {
+                return allGames[currentIndexOfGAmeInList];
+            }
+        }
+
+        return null;
+    }
+
     private Collection<Game> GetSortedAndFilteredVideoGames(Collection<Game> games)
     {
         this.ComputeTrendingScores(games);

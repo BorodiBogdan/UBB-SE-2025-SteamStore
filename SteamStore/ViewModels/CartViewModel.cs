@@ -20,6 +20,7 @@ using SteamStore.ViewModels;
 public class CartViewModel : INotifyPropertyChanged
 {
     private const int ThresholdForNotEarningPoints = 0;
+    private const int InitialValueForLastEarnedPoints = 0;
     private ICartService cartService;
 
     private IUserGameService userGameService;
@@ -34,7 +35,7 @@ public class CartViewModel : INotifyPropertyChanged
         this.cartService = cartService;
         this.userGameService = userGameService;
         this.CartGames = new ObservableCollection<Game>();
-        this.LastEarnedPoints = 0;
+        this.LastEarnedPoints = InitialValueForLastEarnedPoints;
         this.LoadGames();
 
          // Initialize commands

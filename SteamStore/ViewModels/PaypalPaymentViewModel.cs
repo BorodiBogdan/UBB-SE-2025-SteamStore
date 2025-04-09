@@ -19,6 +19,7 @@ namespace SteamStore.ViewModels
 
     public class PaypalPaymentViewModel : INotifyPropertyChanged
     {
+        private const int NoPointsEarnedAmount = 0;
         private ICartService cartService;
         private IUserGameService userGameService;
         private List<Game> purchasedGames;
@@ -80,7 +81,7 @@ namespace SteamStore.ViewModels
                 }
 
                 // Show points earned notification if points were earned
-                if (pointsEarned > 0)
+                if (pointsEarned > NoPointsEarnedAmount)
                 {
                     await this.ShowNotification(PaymentDialogStrings.PAYMENTSUCCESSMESSAGE, string.Format(PaymentDialogStrings.PAYMENTSUCCESSWITHPOINTSMESSAGE, pointsEarned));
                 }

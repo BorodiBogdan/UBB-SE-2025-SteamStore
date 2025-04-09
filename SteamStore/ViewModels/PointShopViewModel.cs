@@ -20,6 +20,7 @@ namespace SteamStore.ViewModels
 
     public class PointShopViewModel : INotifyPropertyChanged
     {
+        private const int NoPointsBalance = 0;
         private readonly IPointShopService pointShopService;
         private User user;
 
@@ -153,7 +154,7 @@ namespace SteamStore.ViewModels
             }
         }
 
-        public double MinPrice
+        public double MinimumPrice
         {
             get => this.minimumPrice;
             set
@@ -167,7 +168,7 @@ namespace SteamStore.ViewModels
             }
         }
 
-        public double MaxPrice
+        public double MaximumPrice
         {
             get => this.maximumPrice; set
             {
@@ -191,24 +192,13 @@ namespace SteamStore.ViewModels
             }
         }
 
-        public float UserPointBalance => this.user?.PointsBalance ?? 0;
+        public float UserPointBalance => this.user?.PointsBalance ?? NoPointsBalance;
 
         public bool CanPurchase
         {
             get
             {
-                if (this.SelectedItem == null || this.user == null)
-                {
-                    return false;
-                }
-
-                // Check if user already owns this item
-                bool alreadyOwns = this.UserItems.Any(item => item.ItemIdentifier == this.SelectedItem.ItemIdentifier);
-
-                // Check if user has enough points
-                bool hasEnoughPoints = this.user.PointsBalance >= this.SelectedItem.PointPrice;
-
-                return !alreadyOwns && hasEnoughPoints;
+                return this.pointShopService.CanUserPurchaseItem(this.user, this.selectedItem, this.UserItems);
             }
         }
 
@@ -216,17 +206,8 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                // Get all available items
-                var allItems = this.pointShopService.GetAllItems();
+                var availableItems = this.pointShopService.GetAvailableItems(this.user);
 
-                // Get user's items to filter them out
-                var userItems = this.pointShopService.GetUserItems();
-
-                // Filter out items the user already owns
-                var availableItems = allItems.Where(item =>
-                    !userItems.Any(userItem => userItem.ItemIdentifier == item.ItemIdentifier)).ToList();
-
-                // Update the shop items
                 this.ShopItems.Clear();
                 foreach (var item in availableItems)
                 {
@@ -237,7 +218,6 @@ namespace SteamStore.ViewModels
             }
             catch (Exception exception)
             {
-                // Log the error
                 System.Diagnostics.Debug.WriteLine($"Error loading items: {exception.Message}");
             }
         }
@@ -253,10 +233,10 @@ namespace SteamStore.ViewModels
                     this.UserItems.Add(item);
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 // Log the error
-                System.Diagnostics.Debug.WriteLine($"Error loading user items: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error loading user items: {exception.Message}");
             }
         }
 
@@ -389,9 +369,9 @@ namespace SteamStore.ViewModels
                     Price: $"{this.SelectedItem.PointPrice} Points",
                     ImageUri: this.SelectedItem.ImagePath);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Error preparing item details: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error preparing item details: {exception.Message}");
                 return (string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
             }
         }
@@ -414,20 +394,10 @@ namespace SteamStore.ViewModels
 
                 if (success)
                 {
-                    this.TransactionHistory ??= new ObservableCollection<PointShopTransaction>();
-
-                    bool transactionExists = this.TransactionHistory.Any(t =>
-                        t.ItemName == itemName &&
-                        Math.Abs(t.PointsSpent - pointPrice) < PointShopConstants.MINMALDIFFERENCEVALUECOMPARISON);
-
-                    if (!transactionExists)
+                    bool transactionSuccess = this.pointShopService.TryPurchaseItem(this.SelectedItem, this.transactionHistory, this.user, out PointShopTransaction newTransaction);
+                    if (transactionSuccess)
                     {
-                        var transaction = new PointShopTransaction(
-                            this.TransactionHistory.Count + 1,
-                            itemName,
-                            pointPrice,
-                            itemType);
-                        this.TransactionHistory.Add(transaction);
+                        this.TransactionHistory.Add(newTransaction);
                     }
 
                     this.LoadUserItems();
@@ -440,9 +410,9 @@ namespace SteamStore.ViewModels
                 await this.ShowDialog("Error", "Purchase failed. Please try again.");
                 return false;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                await this.ShowDialog("Error", $"Purchase Failed: {ex.Message}");
+                await this.ShowDialog("Error", $"Purchase Failed: {exception.Message}");
                 return false;
             }
         }
@@ -451,7 +421,7 @@ namespace SteamStore.ViewModels
         {
             try
             {
-                var item = this.UserItems.FirstOrDefault(i => i.ItemIdentifier == itemId);
+                var item = this.pointShopService.ToggleActivationForItem(itemId, this.UserItems);
                 if (item == null)
                 {
                     await this.ShowDialog("Item Not Found", "The selected item could not be found.");
@@ -468,9 +438,9 @@ namespace SteamStore.ViewModels
                     await this.ShowDialog("Item Activated", $"{item.Name} has been activated.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                await this.ShowDialog("Error", $"An error occurred while updating the item: {ex.Message}");
+                await this.ShowDialog("Error", $"An error occurred while updating the item: {exception.Message}");
             }
         }
 
@@ -482,7 +452,7 @@ namespace SteamStore.ViewModels
 
         public string GetPointsEarnedMessage()
         {
-            if (Microsoft.UI.Xaml.Application.Current.Resources["RecentEarnedPoints"] is int earnedPoints && earnedPoints > 0)
+            if (Microsoft.UI.Xaml.Application.Current.Resources["RecentEarnedPoints"] is int earnedPoints && earnedPoints > NoPointsBalance)
             {
                 return $"You earned {earnedPoints} points from your recent purchase!";
             }
@@ -492,7 +462,7 @@ namespace SteamStore.ViewModels
 
         public void ResetEarnedPoints()
         {
-            Microsoft.UI.Xaml.Application.Current.Resources["RecentEarnedPoints"] = 0;
+            Microsoft.UI.Xaml.Application.Current.Resources["RecentEarnedPoints"] = NoPointsBalance;
         }
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
