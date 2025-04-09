@@ -13,6 +13,7 @@ namespace SteamStore.Pages
 
     public sealed partial class CartPage : Page
     {
+        private const int EmptyGamesCounter = 0;
         private CartViewModel viewModel;
 
         public CartPage(ICartService cartService, IUserGameService userGameService)
@@ -24,7 +25,7 @@ namespace SteamStore.Pages
 
         private async void CheckoutButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.viewModel.CartGames.Count > 0)
+            if (this.viewModel.CartGames.Count > EmptyGamesCounter)
             {
                 if (this.Parent is Frame frame)
                 {

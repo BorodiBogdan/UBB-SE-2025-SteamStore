@@ -28,6 +28,7 @@ namespace SteamStore.Pages
     /// </summary>
     public sealed partial class DeveloperModePage : Page
     {
+        private const int NoOwnersCount = 0;
         private DeveloperViewModel viewModel;
 
         public DeveloperModePage(IDeveloperService developerService)
@@ -122,8 +123,8 @@ namespace SteamStore.Pages
                         this.AddGameImageUrl.Text,
                         this.AddGameplayUrl.Text,
                         this.AddTrailerUrl.Text,
-                        this.AddGameMinReq.Text,
-                        this.AddGameRecReq.Text,
+                        this.AddGameMinimumRequirement.Text,
+                        this.AddGameRecommendedRequirement.Text,
                         this.AddGameDiscount.Text,
                         this.AddGameTagList.SelectedItems.Cast<Tag>().ToList());
 
@@ -145,8 +146,8 @@ namespace SteamStore.Pages
             this.AddGameImageUrl.Text = string.Empty;
             this.AddGameplayUrl.Text = string.Empty;
             this.AddTrailerUrl.Text = string.Empty;
-            this.AddGameMinReq.Text = string.Empty;
-            this.AddGameRecReq.Text = string.Empty;
+            this.AddGameMinimumRequirement.Text = string.Empty;
+            this.AddGameRecommendedRequirement.Text = string.Empty;
             this.AddGameDiscount.Text = string.Empty;
             this.AddGameTagList.SelectedItems.Clear();
         }
@@ -223,7 +224,7 @@ namespace SteamStore.Pages
                     // Check if the game is owned by any users
                     int ownerCount = this.viewModel.GetGameOwnerCount(gameId);
                     ContentDialogResult result;
-                    if (ownerCount > 0)
+                    if (ownerCount > NoOwnersCount)
                     {
                         // Game is owned by users, show warning dialog
                         this.DeleteWarningDialog.XamlRoot = this.Content.XamlRoot;
@@ -335,20 +336,12 @@ namespace SteamStore.Pages
 
             try
             {
-                var gameTags = this.viewModel.GetGameTags(game.Identifier);
-                if (gameTags.Any())
+                var availableTags = this.EditGameTagList.Items.Cast<object>().OfType<Tag>().ToList(); // Safe cast
+                var matchingTags = this.viewModel.GetMatchingTags(game.Identifier, availableTags);
+
+                foreach (Tag tag in matchingTags)
                 {
-                    foreach (var tag in this.EditGameTagList.Items)
-                    {
-                        if (tag is Tag tagItem && gameTags.Any(t => t.TagId == tagItem.TagId))
-                        {
-                            this.EditGameTagList.SelectedItems.Add(tag);
-                        }
-                    }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("No tags found for the game.");
+                    this.EditGameTagList.SelectedItems.Add(tag);
                 }
             }
             catch (Exception exception)
@@ -356,5 +349,34 @@ namespace SteamStore.Pages
                 System.Diagnostics.Debug.WriteLine($"Error loading game tags: {exception.Message}");
             }
         }
+
+
+        //private void LoadGameTags(Game game)
+        //{
+        //    this.EditGameTagList.SelectedItems.Clear();
+
+        //    try
+        //    {
+        //        var gameTags = this.viewModel.GetGameTags(game.Identifier);
+        //        if (gameTags.Any())
+        //        {
+        //            foreach (var tag in this.EditGameTagList.Items)
+        //            {
+        //                if (tag is Tag tagItem && gameTags.Any(t => t.TagId == tagItem.TagId))
+        //                {
+        //                    this.EditGameTagList.SelectedItems.Add(tag);
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            System.Diagnostics.Debug.WriteLine("No tags found for the game.");
+        //        }
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        System.Diagnostics.Debug.WriteLine($"Error loading game tags: {exception.Message}");
+        //    }
+        //}
     }
 }

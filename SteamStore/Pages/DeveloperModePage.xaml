@@ -159,13 +159,13 @@
                     <TextBox x:Name="AddTrailerUrl"
                              Header="Trailer URL" 
                              PlaceholderText="Enter trailer video URL"/>
-                    <TextBox x:Name="AddGameMinReq"
+                    <TextBox x:Name="AddGameMinimumRequirement"
                              Header="Minimum Requirements" 
                              PlaceholderText="Enter minimum requirements" 
                              AcceptsReturn="True" 
                              TextWrapping="Wrap" 
                              Height="100"/>
-                    <TextBox x:Name="AddGameRecReq"
+                    <TextBox x:Name="AddGameRecommendedRequirement"
                              Header="Recommended Requirements" 
                              PlaceholderText="Enter recommended requirements" 
                              AcceptsReturn="True" 

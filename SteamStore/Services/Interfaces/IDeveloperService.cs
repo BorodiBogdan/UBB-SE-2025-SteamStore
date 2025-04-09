@@ -63,5 +63,7 @@ namespace SteamStore.Services.Interfaces
         void RejectGameAndRemoveFromUnvalidated(int gameId, ObservableCollection<Game> unvalidatedGames);
 
         bool IsGameIdInUse(int gameId, ObservableCollection<Game> developerGames, ObservableCollection<Game> unvalidatedGames);
+
+        IList<Tag> GetMatchingTagsForGame(int gameId, IList<Tag> allAvailableTags);
     }
 }

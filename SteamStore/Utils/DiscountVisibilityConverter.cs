@@ -10,12 +10,15 @@ namespace SteamStore.Utils
 
     public class DiscountVisibilityConverter : IValueConverter
     {
+        public const int MinimumPositiveDiscountValue = 0;
+
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is float discount)
+            if (value is decimal discount)
             {
-                return discount > 0 ? Visibility.Visible : Visibility.Collapsed;
+                return discount > MinimumPositiveDiscountValue ? Visibility.Visible : Visibility.Collapsed;
             }
+
             return Visibility.Collapsed;
         }
 
@@ -24,4 +27,4 @@ namespace SteamStore.Utils
             throw new NotImplementedException();
         }
     }
-} 
+}

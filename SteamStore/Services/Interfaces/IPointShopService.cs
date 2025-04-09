@@ -6,6 +6,7 @@ namespace SteamStore.Services.Interfaces
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -26,5 +27,13 @@ namespace SteamStore.Services.Interfaces
         void DeactivateItem(PointShopItem item);
 
         List<PointShopItem> GetFilteredItems(string filterType, string searchText, double minPrice, double maxPrice);
+
+        bool CanUserPurchaseItem(User user, PointShopItem selectedItem, IEnumerable<PointShopItem> userItems);
+
+        List<PointShopItem> GetAvailableItems(User user);
+
+        bool TryPurchaseItem(PointShopItem selectedItem, ObservableCollection<PointShopTransaction> transactionHistory, User user, out PointShopTransaction newTransaction);
+
+        PointShopItem ToggleActivationForItem(int itemId, ObservableCollection<PointShopItem> userItems);
     }
 }

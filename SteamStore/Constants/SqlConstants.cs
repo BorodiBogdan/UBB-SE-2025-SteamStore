@@ -6,6 +6,7 @@ namespace SteamStore.Constants
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -42,8 +43,9 @@ namespace SteamStore.Constants
         public const string StatusParameter = "@status";
         public const string DiscountParameter = "@discount";
         public const string UserIdParameter = "@user_id";
-
-
+        public const string UserIdParameterWithCapitalLetter = "@UserId";
+        public const string ItemIdParameter = "@ItemId";
+        public const string PointBalanceParameter = "@PointBalance";
 
         // Stored Procedure Names
         public const string ValidateGameProcedure = "validateGame";
@@ -66,6 +68,12 @@ namespace SteamStore.Constants
         public const string GetNumberOfRecentSalesProcedure = "getNoOfRecentSalesForGame";
         public const string GetAllGamesProcedure = "GetAllGames";
         public const string GetAllTagsProcedure = "GetAllTags";
+        public const string DeactivatePointShopItemProcedure = "DeactivatePointShopItem";
+        public const string GetUserPointShopItemsProcedure = "GetUserPointShopItems";
+        public const string PurchasePointShopItemProcedure = "PurchasePointShopItem";
+        public const string ActivatePointSHopIntemProcedure = "ActivatePointShopItem";
+        public const string UpdateUserPointBalance = "UpdateUserPointBalance";
+        public const string GetAllPointShopItems = "GetAllPointShopItems";
 
         // Column Names
         public const string GameIdColumn = "game_id";
@@ -84,5 +92,14 @@ namespace SteamStore.Constants
         public const string TagNameColumn = "tag_name";
         public const string RejectionMessageColumn = "reject_message";
         public const string QueryResultColumn = "Result";
+
+        public const string ItemIdColumnWithCapitalLetter = "ItemId";
+        public const string NameIdColumnWithCapitalLetter = "Name";
+        public const string DescriptionIdColumnWithCapitalLetter = "Description";
+        public const string ImagePathColumnWithCapitalLetter = "ImagePath";
+        public const string PointPriceColumnWithCapitalLeter = "PointPrice";
+        public const string ItemTypeColumnWithCapitalLetter = "ItemType";
+        public const string IsActiveColumn = "IsActive";
+
     }
 }

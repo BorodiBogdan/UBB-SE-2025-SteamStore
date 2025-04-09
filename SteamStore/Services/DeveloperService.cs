@@ -180,19 +180,19 @@ public class DeveloperService : IDeveloperService
         return this.GameRepository.GetUnvalidated(this.User.UserIdentifier);
     }
 
-    public void RejectGame(int game_id)
+    public void RejectGame(int gameId)
     {
-        this.GameRepository.RejectGame(game_id);
+        this.GameRepository.RejectGame(gameId);
     }
 
-    public void RejectGameWithMessage(int game_id, string message)
+    public void RejectGameWithMessage(int gameId, string message)
     {
-        this.GameRepository.RejectGameWithMessage(game_id, message);
+        this.GameRepository.RejectGameWithMessage(gameId, message);
     }
 
-    public string GetRejectionMessage(int game_id)
+    public string GetRejectionMessage(int gameId)
     {
-        return this.GameRepository.GetRejectionMessage(game_id);
+        return this.GameRepository.GetRejectionMessage(gameId);
     }
 
     public void InsertGameTag(int gameId, int tagId)
@@ -326,4 +326,25 @@ public class DeveloperService : IDeveloperService
 
         return this.IsGameIdInUse(gameId); // Call the existing database check or logic
     }
+
+    public IList<Tag> GetMatchingTagsForGame(int gameId, IList<Tag> allAvailableTags)
+    {
+        List<Tag> matchedTags = new List<Tag>();
+        IList<Tag> gameTags = this.GetGameTags(gameId); // Assuming this is already implemented
+
+        foreach (Tag tag in allAvailableTags)
+        {
+            foreach (Tag gameTag in gameTags)
+            {
+                if (tag.TagId == gameTag.TagId)
+                {
+                    matchedTags.Add(tag);
+                    break;
+                }
+            }
+        }
+
+        return matchedTags;
+    }
+
 }
