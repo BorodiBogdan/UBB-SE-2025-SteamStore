@@ -74,8 +74,6 @@ public class GameService : IGameService
         return this.GetSortedAndFilteredVideoGames(this.GameRepository.GetAllGames());
     }
 
-    
-
     public Collection<Game> GetDiscountedGames()
     {
         var discountedGames = this.GameRepository.GetAllGames()
@@ -92,6 +90,21 @@ public class GameService : IGameService
             .OrderBy(_ => randy.Next())
             .Take(3)
             .ToList();
+    }
+
+    public Game GetGameById(int gameId)
+    {
+        const int initialIndex = 0;
+        var allGames = this.GetAllGames();
+        for (int currentIndexOfGAmeInList = initialIndex; currentIndexOfGAmeInList < allGames.Count; currentIndexOfGAmeInList++)
+        {
+            if (allGames[currentIndexOfGAmeInList].Identifier == gameId)
+            {
+                return allGames[currentIndexOfGAmeInList];
+            }
+        }
+
+        return null;
     }
 
     private Collection<Game> GetSortedAndFilteredVideoGames(Collection<Game> games)

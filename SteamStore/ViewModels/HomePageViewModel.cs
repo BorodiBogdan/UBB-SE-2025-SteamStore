@@ -15,6 +15,7 @@ using SteamStore.Services.Interfaces;
 
 public class HomePageViewModel : INotifyPropertyChanged
 {
+    private const int EmptyGameListLength = 0;
     private readonly IGameService gameService;
     private readonly IUserGameService userGameService;
     private readonly ICartService cartService;
@@ -92,7 +93,7 @@ public class HomePageViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (games.Count == 0)
+        if (games.Count == EmptyGameListLength)
         {
             this.Search_filter_text = HomePageConstants.NOGAMESFOUND + search_query;
             return;
@@ -101,16 +102,16 @@ public class HomePageViewModel : INotifyPropertyChanged
         this.Search_filter_text = HomePageConstants.SEARCHRESULTSFOR + search_query;
     }
 
-    public void FilterGames(int minRating, int minPrice, int maxPrice, string[] tags)
+    public void FilterGames(int minimumRating, int minimumPrice, int maximumPrice, string[] tags)
     {
         this.SearchedOrFilteredGames.Clear();
-        var games = this.gameService.FilterGames(minRating, minPrice, maxPrice, tags);
+        var games = this.gameService.FilterGames(minimumRating, minimumPrice, maximumPrice, tags);
         foreach (var game in games)
         {
             this.SearchedOrFilteredGames.Add(game);
         }
 
-        if (games.Count == 0)
+        if (games.Count == EmptyGameListLength)
         {
             this.Search_filter_text = HomePageConstants.NOGAMESFOUND;
             return;

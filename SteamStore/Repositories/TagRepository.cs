@@ -5,6 +5,7 @@
 namespace SteamStore.Repositories;
 using System.Collections.ObjectModel;
 using System.Data;
+using SteamStore.Constants;
 using SteamStore.Data;
 using SteamStore.Models;
 
@@ -20,13 +21,13 @@ public class TagRepository : ITagRepository
     public Collection<Tag> GetAllTags()
     {
         var tags = new Collection<Tag>();
-        var result = this.dataLink.ExecuteReader("GetAllTags");
+        var result = this.dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure);
         foreach (DataRow row in result.Rows)
         {
             var tag = new Tag
             {
-                TagId = (int)row["tag_id"],
-                Tag_name = (string)row["tag_name"],
+                TagId = (int)row[SqlConstants.TagIdColumn],
+                Tag_name = (string)row[SqlConstants.TagNameColumn],
                 NumberOfUserGamesWithTag = Tag.NOTCOMPUTED,
             };
             tags.Add(tag);

@@ -36,7 +36,7 @@ namespace SteamStore.ViewModels
             this.cartService = cartService;
             this.userGameService = userGameService;
             this.creditCardProcessor = new CreditCardProcessor();
-            this.TotalAmount = cartService.GetCartGames().Sum(game => (decimal)game.Price);
+            this.TotalAmount = cartService.GetTotalSumToBePaid();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

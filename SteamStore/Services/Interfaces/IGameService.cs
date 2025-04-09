@@ -31,5 +31,7 @@ namespace SteamStore.Services.Interfaces
         Collection<Game> GetDiscountedGames();
 
         List<Game> GetSimilarGames(int gameId);
+
+        Game GetGameById(int gameId);
     }
 }
