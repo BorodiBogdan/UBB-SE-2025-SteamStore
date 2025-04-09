@@ -5,7 +5,7 @@ namespace SteamStore.Tests.Repositories;
 
 public class TagRepositoryTest
 {
-    private readonly TagRepository _subject = new(TestDataLink.GetDataLink());
+    private readonly TagRepository _subject = new(DataLinkTestUtils.GetDataLink());
 
     [Fact]
     public void GetAllTags()

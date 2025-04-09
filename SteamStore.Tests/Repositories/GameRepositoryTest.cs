@@ -6,7 +6,7 @@ namespace SteamStore.Tests.Repositories;
 
 public class GameRepositoryTest
 {
-    private readonly GameRepository _subject = new(TestDataLink.GetDataLink());
+    private readonly GameRepository _subject = new(DataLinkTestUtils.GetDataLink());
 
 
     [Fact]

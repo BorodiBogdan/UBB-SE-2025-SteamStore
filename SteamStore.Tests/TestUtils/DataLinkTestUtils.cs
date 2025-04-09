@@ -3,7 +3,7 @@ using SteamStore.Data;
 
 namespace SteamStore.Tests.TestUtils;
 
-public static class TestDataLink
+public static class DataLinkTestUtils
 {
     public static IDataLink GetDataLink()
     {
@@ -13,4 +13,5 @@ public static class TestDataLink
 
         return new DataLink(configuration);
     }
+
 }

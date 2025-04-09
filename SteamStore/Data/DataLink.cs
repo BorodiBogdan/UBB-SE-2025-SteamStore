@@ -12,10 +12,14 @@ public class DataLink : SteamStore.Data.IDataLink
     private readonly string connectionString;
     private SqlConnection sqlConnection;
 
+
     public DataLink(IConfiguration configuration)
     {
         // string? localDataSource = configuration["ConnectionString"];
-        this.connectionString = "Data Source=LAPTOP-MHT5DVFO\\SQLEXPRESS01;Initial Catalog=SteamStore;Integrated Security=True;TrustServerCertificate=True";
+        //this.connectionString = "Data Source=LAPTOP-MHT5DVFO\\SQLEXPRESS01;Initial Catalog=SteamStore;Integrated Security=True;TrustServerCertificate=True";
+
+        this.connectionString = configuration.GetConnectionString("ConnectionString");
+
 
         try
         {
