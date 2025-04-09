@@ -56,6 +56,13 @@ public class CartService : ICartService
 
     public decimal GetTotalSumToBePaid()
     {
-        return this.cartRepository.GetCartGames().Sum(game => (decimal)game.Price);
+        decimal total = 0;
+
+        foreach (var game in this.cartRepository.GetCartGames())
+        {
+            total += (decimal)game.Price;
+        }
+
+        return total;
     }
 }

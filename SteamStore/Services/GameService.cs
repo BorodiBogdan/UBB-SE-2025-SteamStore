@@ -13,6 +13,13 @@ using SteamStore.Repositories.Interfaces;
 using SteamStore.Services.Interfaces;
 public class GameService : IGameService
 {
+    private static int lengthOfEmptyList = 0;
+    private static int initializingValueForAMaxim = 0;
+    private static int treasholdForDiscount = 0;
+    private static int startingValueOfIndex = 0;
+    private static int incrementingValue = 1;
+    private static int numberOfGamesToTake = 10;
+
     public IGameRepository GameRepository { get; set; }
 
     public ITagRepository TagRepository { get; set; }
@@ -29,43 +36,90 @@ public class GameService : IGameService
 
     public Collection<Tag> GetAllGameTags(Game game)
     {
-        return new Collection<Tag>(this.TagRepository
-            .GetAllTags()
-            .Where(tag => game.Tags.Contains(tag.Tag_name))
-            .ToList());
+        var allTags = this.TagRepository.GetAllTags();
+        var tagsForGame = new List<Tag>();
+
+        foreach (var tag in allTags)
+        {
+            if (game.Tags.Contains(tag.Tag_name))
+            {
+                tagsForGame.Add(tag);
+            }
+        }
+
+        return new Collection<Tag>(tagsForGame);
     }
 
     public Collection<Game> SearchGames(string searchQuery)
     {
-        return new Collection<Game>(this.GameRepository
-            .GetAllGames()
-            .Where(game => game.Name.ToLower().Contains(searchQuery.ToLower()))
-            .ToList());
+        var allGames = this.GameRepository.GetAllGames();
+        var foundGames = new List<Game>();
+
+        foreach (var game in allGames)
+        {
+            if (game.Name.ToLower().Contains(searchQuery.ToLower()))
+            {
+                foundGames.Add(game);
+            }
+        }
+
+        return new Collection<Game>(foundGames);
     }
 
-    public Collection<Game> FilterGames(int minRating, int minPrice, int maxPrice, string[] tags)
+    public Collection<Game> FilterGames(int minimumRating, int minimumPrice, int maximumPrice, string[] tags)
     {
         if (tags == null)
         {
             throw new ArgumentNullException(nameof(tags));
         }
 
-        return new Collection<Game>(
-            this.GameRepository.GetAllGames()
-                .Where(game => game.Rating >= minRating &&
-                               game.Price >= minPrice &&
-                               game.Price <= maxPrice &&
-                               (tags.Length == 0 || tags.ToList().All(tag => game.Tags.Contains(tag)))
-                )
-                .ToList());
+        var filteredGames = new List<Game>();
+
+        foreach (var game in this.GameRepository.GetAllGames())
+        {
+            if (game.Rating >= minimumRating && game.Price >= minimumPrice && game.Price <= maximumPrice)
+            {
+                bool hasAllTags = true;
+
+                // If there are tags, check if the game has all the tags
+                if (tags.Length > lengthOfEmptyList)
+                {
+                    foreach (var tag in tags)
+                    {
+                        if (!game.Tags.Contains(tag))
+                        {
+                            hasAllTags = false;
+                            break; // No need to check further if one tag is missing
+                        }
+                    }
+                }
+
+                // If game has all tags or no tags were provided, add to the filtered list
+                if (hasAllTags)
+                {
+                    filteredGames.Add(game);
+                }
+            }
+        }
+
+        return new Collection<Game>(filteredGames);
     }
 
     public void ComputeTrendingScores(Collection<Game> games)
     {
-        var maxRecentSales = games.Max(game => game.NumberOfRecentPurchases);
+        int maximumRecentSales = initializingValueForAMaxim;
+
         foreach (var game in games)
         {
-            game.TrendingScore = maxRecentSales < 1 ? 0m : Convert.ToDecimal(game.NumberOfRecentPurchases) / maxRecentSales;
+            if (game.NumberOfRecentPurchases > maximumRecentSales)
+            {
+                maximumRecentSales = game.NumberOfRecentPurchases;
+            }
+        }
+
+        foreach (var game in games)
+        {
+            game.TrendingScore = maximumRecentSales < 1 ? 0m : Convert.ToDecimal(game.NumberOfRecentPurchases) / maximumRecentSales;
         }
     }
 
@@ -76,8 +130,17 @@ public class GameService : IGameService
 
     public Collection<Game> GetDiscountedGames()
     {
-        var discountedGames = this.GameRepository.GetAllGames()
-            .Where(game => game.Discount > 0).ToList();
+        var allGames = this.GameRepository.GetAllGames();
+        var discountedGames = new List<Game>();
+
+        foreach (var game in allGames)
+        {
+            if (game.Discount > treasholdForDiscount)
+            {
+                discountedGames.Add(game);
+            }
+        }
+
         return this.GetSortedAndFilteredVideoGames(new Collection<Game>(discountedGames));
     }
 
@@ -85,18 +148,34 @@ public class GameService : IGameService
     {
         var randy = new Random(DateTime.Now.Millisecond);
         var allGames = this.GameRepository.GetAllGames();
-        return allGames
-            .Where(g => g.Identifier != gameId)
-            .OrderBy(_ => randy.Next())
-            .Take(3)
-            .ToList();
+        var similarGames = new List<Game>();
+
+        // Filter games with different identifiers
+        foreach (var game in allGames)
+        {
+            if (game.Identifier != gameId)
+            {
+                similarGames.Add(game);
+            }
+        }
+
+        // Shuffle the list
+        for (int currentIndex = 0; currentIndex < similarGames.Count; currentIndex++)
+        {
+            var randomIndex = randy.Next(currentIndex, similarGames.Count);  // Get a random index from currentIndex to the end of the list
+            var tempGame = similarGames[currentIndex];
+            similarGames[currentIndex] = similarGames[randomIndex];
+            similarGames[randomIndex] = tempGame;
+        }
+
+        // Return the first 3 games
+        return similarGames.Take(3).ToList();
     }
 
     public Game GetGameById(int gameId)
     {
-        const int initialIndex = 0;
         var allGames = this.GetAllGames();
-        for (int currentIndexOfGAmeInList = initialIndex; currentIndexOfGAmeInList < allGames.Count; currentIndexOfGAmeInList++)
+        for (int currentIndexOfGAmeInList = startingValueOfIndex; currentIndexOfGAmeInList < allGames.Count; currentIndexOfGAmeInList++)
         {
             if (allGames[currentIndexOfGAmeInList].Identifier == gameId)
             {
@@ -109,10 +188,33 @@ public class GameService : IGameService
 
     private Collection<Game> GetSortedAndFilteredVideoGames(Collection<Game> games)
     {
+        // Compute the trending scores for all the games
         this.ComputeTrendingScores(games);
-        return new Collection<Game>(games
-            .OrderByDescending(game => game.TrendingScore)
-            .Take(10)
-            .ToList());
+
+        // Create a list to hold the sorted games
+        List<Game> sortedGames = new List<Game>();
+
+        // Manually sort the games by descending trending score
+        for (int currentIndex = startingValueOfIndex; currentIndex < games.Count; currentIndex++)
+        {
+            for (int comparisonIndex = currentIndex + incrementingValue; comparisonIndex < games.Count; comparisonIndex++)
+            {
+                if (games[currentIndex].TrendingScore < games[comparisonIndex].TrendingScore)
+                {
+                    // Swap the games
+                    var tempGame = games[currentIndex];
+                    games[currentIndex] = games[comparisonIndex];
+                    games[comparisonIndex] = tempGame;
+                }
+            }
+        }
+
+        // Take the top 10 games after sorting
+        for (int topGamesIndex = startingValueOfIndex; topGamesIndex < numberOfGamesToTake && topGamesIndex < games.Count; topGamesIndex++)
+        {
+            sortedGames.Add(games[topGamesIndex]);
+        }
+
+        return new Collection<Game>(sortedGames);
     }
 }

@@ -44,13 +44,13 @@ public class GameServiceTest
     {
         var game = new Game { Tags = new[] { "tag1", "tag2" } };
 
-        var expectedTag = new Tag { tag_name = "tag1" };
+        var expectedTag = new Tag { Tag_name = "tag1" };
         _tagRepoMock.Setup(r => r.GetAllTags())
             .Returns(new Collection<Tag> { expectedTag });
 
         var actualTag = _subject.GetAllGameTags(game);
         Assert.Same(actualTag[0], expectedTag);
-        Assert.Equal(actualTag[0].tag_name, expectedTag.tag_name);
+        Assert.Equal(actualTag[0].Tag_name, expectedTag.Tag_name);
         Assert.Single(actualTag);
     }
 
@@ -132,12 +132,12 @@ public class GameServiceTest
     {
         var game1 = new Game()
         {
-            noOfRecentPurchases = 10,
+            NumberOfRecentPurchases = 10,
         };
 
         var game2 = new Game()
         {
-            noOfRecentPurchases = 5,
+            NumberOfRecentPurchases = 5,
         };
 
         _repoMock.Setup(r => r.GetAllGames())
@@ -148,8 +148,8 @@ public class GameServiceTest
 
         Assert.Same(actualGames[0], game1);
         Assert.Same(actualGames[1], game2);
-        Assert.Equal(1, game1.trendingScore);
-        Assert.Equal(0.5m, game2.trendingScore);
+        Assert.Equal(1, game1.TrendingScore);
+        Assert.Equal(0.5m, game2.TrendingScore);
     }
 
     [Theory]
@@ -184,19 +184,19 @@ public class GameServiceTest
     {
         var game1 = new Game()
         {
-            noOfRecentPurchases = 10,
+            NumberOfRecentPurchases = 10,
             Discount = 1
         };
 
         var game2 = new Game()
         {
-            noOfRecentPurchases = 5,
+            NumberOfRecentPurchases = 5,
             Discount = 2
         };
 
         var game3 = new Game()
         {
-            noOfRecentPurchases = 5
+            NumberOfRecentPurchases = 5
         };
 
         _repoMock.Setup(r => r.GetAllGames())
@@ -208,8 +208,8 @@ public class GameServiceTest
         Assert.Same(actualGames[0], game1);
         Assert.Same(actualGames[1], game2);
         Assert.Equal(2, actualGames.Count);
-        Assert.Equal(1, game1.trendingScore);
-        Assert.Equal(0.5m, game2.trendingScore);
+        Assert.Equal(1, game1.TrendingScore);
+        Assert.Equal(0.5m, game2.TrendingScore);
     }
 
     [Fact]
@@ -217,11 +217,11 @@ public class GameServiceTest
     {
         var allGames = new Collection<Game>
         {
-            new() { Id = 1, Name = "Game1" },
-            new() { Id = 2, Name = "Game2" },
-            new() { Id = 3, Name = "Game3" },
-            new() { Id = 4, Name = "Game4" },
-            new() { Id = 5, Name = "Game5" }
+            new() { Identifier = 1, Name = "Game1" },
+            new() { Identifier = 2, Name = "Game2" },
+            new() { Identifier = 3, Name = "Game3" },
+            new() { Identifier = 4, Name = "Game4" },
+            new() { Identifier = 5, Name = "Game5" }
         };
 
         _repoMock.Setup(r => r.GetAllGames())
@@ -230,10 +230,10 @@ public class GameServiceTest
         var similarGames = _subject.GetSimilarGames(1);
 
         Assert.Equal(3, similarGames.Count);
-        Assert.DoesNotContain(similarGames, g => g.Id == 1);
-        Assert.All(similarGames, game => Assert.NotEqual(1, game.Id));
+        Assert.DoesNotContain(similarGames, g => g.Identifier == 1);
+        Assert.All(similarGames, game => Assert.NotEqual(1, game.Identifier));
 
-        var gameIds = similarGames.Select(g => g.Id).ToList();
+        var gameIds = similarGames.Select(g => g.Identifier).ToList();
         Assert.True(gameIds.Count == gameIds.Distinct().Count());
     }
 
@@ -242,11 +242,11 @@ public class GameServiceTest
     {
         var allGames = new Collection<Game>
         {
-            new() { Id = 1, Name = "Game1" },
-            new() { Id = 2, Name = "Game2" },
-            new() { Id = 3, Name = "Game3" },
-            new() { Id = 4, Name = "Game4" },
-            new() { Id = 5, Name = "Game5" }
+            new() { Identifier = 1, Name = "Game1" },
+            new() { Identifier = 2, Name = "Game2" },
+            new() { Identifier = 3, Name = "Game3" },
+            new() { Identifier = 4, Name = "Game4" },
+            new() { Identifier = 5, Name = "Game5" }
         };
 
         _repoMock.Setup(r => r.GetAllGames())
