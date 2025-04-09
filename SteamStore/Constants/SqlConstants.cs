@@ -25,6 +25,7 @@ namespace SteamStore.Constants
         public const string DESCRIPTIONCOLUMN = "Description";
         public const string IMAGEURLCOLUMN = "image_url";
         public const string PRICECOLUMN = "price";
+        public const string RatingColumn = "rating";
 
         // SQL Parameters
         public const string GameIdParameter = "@game_id";
@@ -46,6 +47,7 @@ namespace SteamStore.Constants
         public const string UserIdParameterWithCapitalLetter = "@UserId";
         public const string ItemIdParameter = "@ItemId";
         public const string PointBalanceParameter = "@PointBalance";
+        public const string UserIdentifierParameter = "@uid";
 
         // Stored Procedure Names
         public const string ValidateGameProcedure = "validateGame";

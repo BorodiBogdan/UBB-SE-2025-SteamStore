@@ -42,22 +42,21 @@ namespace SteamStore.ViewModels
         private int nextTransactionId = PointShopConstants.TRANSACTIONIDENTIFIER;
         private bool isDetailPanelVisible;
 
-        public PointShopViewModel(User currentUser, IDataLink dataLink)
-        {
-            // Store the current user reference
-            this.user = currentUser;
+         // public PointShopViewModel(User currentUser, IDataLink dataLink)
+         // {
+        //    // Store the current user reference
+        //    this.user = currentUser;
 
-            // Initialize service and collections
-            this.pointShopService = new PointShopService(currentUser, dataLink);
-            this.ShopItems = new ObservableCollection<PointShopItem>();
-            this.UserItems = new ObservableCollection<PointShopItem>();
-            this.TransactionHistory = new ObservableCollection<PointShopTransaction>();
+        // // Initialize service and collections
+        //    this.pointShopService = new PointShopService(currentUser, dataLink);
+        //    this.ShopItems = new ObservableCollection<PointShopItem>();
+        //    this.UserItems = new ObservableCollection<PointShopItem>();
+        //    this.TransactionHistory = new ObservableCollection<PointShopTransaction>();
 
-            // Load initial data
-            this.LoadItems();
-            this.LoadUserItems();
-        }
-
+        // // Load initial data
+        //    this.LoadItems();
+        //    this.LoadUserItems();
+        // }
         public PointShopViewModel(IPointShopService pointShopService)
         {
             // Initialize with existing service
@@ -193,6 +192,7 @@ namespace SteamStore.ViewModels
         }
 
         public float UserPointBalance => this.user?.PointsBalance ?? NoPointsBalance;
+
         public bool CanPurchase
         {
             get
@@ -342,7 +342,7 @@ namespace SteamStore.ViewModels
             this.OnPropertyChanged(nameof(this.IsDetailPanelVisible));
             return this.IsDetailPanelVisible;
         }
-        
+
         public void ClearSelection()
         {
             this.SelectedItem = null;
@@ -473,7 +473,7 @@ namespace SteamStore.ViewModels
             {
                 Title = title,
                 Content = message,
-                CloseButtonText = "OK",
+                CloseButtonText = ConfirmationDialogStrings.OKBUTTONTEXT,
                 XamlRoot = App.MainWindow.Content.XamlRoot,
             };
 

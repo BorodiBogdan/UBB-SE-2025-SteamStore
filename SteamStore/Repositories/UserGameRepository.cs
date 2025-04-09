@@ -18,12 +18,12 @@ using Windows.Gaming.Input;
 
 public class UserGameRepository : IUserGameRepository
 {
-
     private const int FirstRowIndex = 0;
     private const int DefaultValueOfOwners = 0;
     private const int PointsPerDollar = 121;
     private const int ValueOfNotBeingPurchased = 0;
     private const int ZeroRowsCount = 0;
+    private const string OwnerCountColumn = "OwnerCount";
     private User user;
     private IDataLink dataLink;
 
@@ -72,8 +72,8 @@ public class UserGameRepository : IUserGameRepository
     {
         SqlParameter[] purchaseGameParameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", this.user.UserIdentifier),
-            new SqlParameter("@game_id", game.Identifier),
+            new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
+            new SqlParameter(SqlConstants.GameIdParameter, game.Identifier),
         };
 
         try
@@ -99,8 +99,8 @@ public class UserGameRepository : IUserGameRepository
     {
         SqlParameter[] addGameToWishlistParameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", this.user.UserIdentifier),
-            new SqlParameter("@game_id", game.Identifier),
+            new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
+            new SqlParameter(SqlConstants.GameIdParameter, game.Identifier),
         };
 
         try
@@ -117,7 +117,7 @@ public class UserGameRepository : IUserGameRepository
     {
         SqlParameter[] gameTagsParameters = new SqlParameter[]
         {
-            new SqlParameter("@gid", gameId),
+            new SqlParameter(SqlConstants.GidParameter, gameId),
         };
 
         try
@@ -129,7 +129,7 @@ public class UserGameRepository : IUserGameRepository
             {
                 foreach (DataRow row in gameTagsTable.Rows)
                 {
-                    tags.Add((string)row["tag_name"]);
+                    tags.Add((string)row[SqlConstants.TagNameColumn]);
                 }
             }
 
@@ -143,17 +143,17 @@ public class UserGameRepository : IUserGameRepository
 
     public int GetGameOwnerCount(int gameId)
     {
-        var ownerCountParameters = new SqlParameter[] { new ("@game_id", gameId) };
+        var ownerCountParameters = new SqlParameter[] { new (SqlConstants.GameIdParameter, gameId) };
         var result = this.dataLink.ExecuteReader("GetGameOwnerCount", ownerCountParameters);
 
-        return result is { Rows.Count: > ZeroRowsCount } ? Convert.ToInt32(result.Rows[FirstRowIndex]["OwnerCount"]) : DefaultValueOfOwners;
+        return result is { Rows.Count: > ZeroRowsCount } ? Convert.ToInt32(result.Rows[FirstRowIndex][OwnerCountColumn]) : DefaultValueOfOwners;
     }
 
     public Collection<Game> GetAllUserGames()
     {
         SqlParameter[] allUsersParameters = new SqlParameter[]
         {
-            new SqlParameter("@uid", this.user.UserIdentifier),
+            new SqlParameter(SqlConstants.UserIdentifierParameter, this.user.UserIdentifier),
         };
 
         var result = this.dataLink.ExecuteReader("getUserGames", allUsersParameters);
@@ -165,15 +165,15 @@ public class UserGameRepository : IUserGameRepository
             {
                 Game game = new Game
                 {
-                    Identifier = (int)row["game_id"],
-                    Name = (string)row["name"],
-                    Description = (string)row["Description"],
-                    ImagePath = (string)row["image_url"],
-                    Price = Convert.ToDecimal(row["price"]),
-                    MinimumRequirements = (string)row["minimum_requirements"],
-                    RecommendedRequirements = (string)row["recommended_requirements"],
-                    Status = (string)row["status"],
-                    Tags = this.GetGameTags((int)row["game_id"]),
+                    Identifier = (int)row[SqlConstants.GameIdColumn],
+                    Name = (string)row[SqlConstants.GameNameColumn],
+                    Description = (string)row[SqlConstants.DescriptionIdColumnWithCapitalLetter],
+                    ImagePath = (string)row[SqlConstants.ImageUrlColumn],
+                    Price = Convert.ToDecimal(row[SqlConstants.GamePriceColumn]),
+                    MinimumRequirements = (string)row[SqlConstants.MinimumRequirementsColumn],
+                    RecommendedRequirements = (string)row[SqlConstants.RecommendedRequirementsColumn],
+                    Status = (string)row[SqlConstants.GameStatusColumn],
+                    Tags = this.GetGameTags((int)row[SqlConstants.GameIdColumn]),
                     TrendingScore = Game.NOTCOMPUTED,
                 };
                 games.Add(game);
@@ -197,7 +197,7 @@ public class UserGameRepository : IUserGameRepository
             SqlParameter[] parameters = new SqlParameter[]
             {
                 new SqlParameter("@UserId", this.user.UserIdentifier),
-                new SqlParameter("@PointBalance", this.user.PointsBalance),
+                new SqlParameter(SqlConstants.PointBalanceParameter, this.user.PointsBalance),
             };
 
             this.dataLink.ExecuteNonQuery("UpdateUserPointBalance", parameters);
@@ -218,7 +218,7 @@ public class UserGameRepository : IUserGameRepository
     {
         SqlParameter[] wishlistGamesParameters = new SqlParameter[]
         {
-            new SqlParameter("@user_id", this.user.UserIdentifier),
+            new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
         };
 
         var wishlistGamesData = this.dataLink.ExecuteReader("GetWishlistGames", wishlistGamesParameters);
@@ -230,17 +230,17 @@ public class UserGameRepository : IUserGameRepository
             {
                 Game game = new Game
                 {
-                    Identifier = (int)row["game_id"],
-                    Name = (string)row["name"],
+                    Identifier = (int)row[SqlConstants.GameIdColumn],
+                    Name = (string)row[SqlConstants.GameNameColumn],
                     Description = (string)row["Description"],
-                    ImagePath = (string)row["image_url"],
-                    Price = Convert.ToDecimal(row["price"]),
-                    MinimumRequirements = (string)row["minimum_requirements"],
-                    RecommendedRequirements = (string)row["recommended_requirements"],
-                    Status = (string)row["status"],
-                    Rating = Convert.ToDecimal(row["rating"]),
-                    Discount = Convert.ToDecimal(row["discount"]),
-                    Tags = this.GetGameTags((int)row["game_id"]),
+                    ImagePath = (string)row[SqlConstants.ImageUrlColumn],
+                    Price = Convert.ToDecimal(row[SqlConstants.GamePriceColumn]),
+                    MinimumRequirements = (string)row[SqlConstants.MinimumRequirementsColumn],
+                    RecommendedRequirements = (string)row[SqlConstants.RecommendedRequirementsColumn],
+                    Status = (string)row[SqlConstants.GameStatusColumn],
+                    Rating = Convert.ToDecimal(row[SqlConstants.RatingColumn]),
+                    Discount = Convert.ToDecimal(row[SqlConstants.DiscountColumn]),
+                    Tags = this.GetGameTags((int)row[SqlConstants.GameIdColumn]),
                 };
                 games.Add(game);
             }

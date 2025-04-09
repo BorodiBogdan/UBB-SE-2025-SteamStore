@@ -230,13 +230,13 @@ namespace SteamStore.ViewModels
             switch (this.SelectedSort)
             {
                 case WishListSearchStrings.SORTPRICEASCENDING:
-                    this.SortWishListGames("price", true); break;
+                    this.SortWishListGames(FilterCriteria.PRICE, true); break;
                 case WishListSearchStrings.SORTPRICEDESCENDING:
-                    this.SortWishListGames("price", false); break;
+                    this.SortWishListGames(FilterCriteria.PRICE, false); break;
                 case WishListSearchStrings.SORTRATINGDESCENDING:
-                    this.SortWishListGames("rating", false); break;
+                    this.SortWishListGames(FilterCriteria.RATING, false); break;
                 case WishListSearchStrings.SORTDISCOUNTDESCENDING:
-                    this.SortWishListGames("discount", false); break;
+                    this.SortWishListGames(FilterCriteria.DISCOUNT, false); break;
             }
         }
 

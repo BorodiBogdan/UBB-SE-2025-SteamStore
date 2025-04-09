@@ -351,5 +351,34 @@ namespace SteamStore.Pages
                 System.Diagnostics.Debug.WriteLine($"Error loading game tags: {exception.Message}");
             }
         }
+
+
+        //private void LoadGameTags(Game game)
+        //{
+        //    this.EditGameTagList.SelectedItems.Clear();
+
+        //    try
+        //    {
+        //        var gameTags = this.viewModel.GetGameTags(game.Identifier);
+        //        if (gameTags.Any())
+        //        {
+        //            foreach (var tag in this.EditGameTagList.Items)
+        //            {
+        //                if (tag is Tag tagItem && gameTags.Any(t => t.TagId == tagItem.TagId))
+        //                {
+        //                    this.EditGameTagList.SelectedItems.Add(tag);
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            System.Diagnostics.Debug.WriteLine("No tags found for the game.");
+        //        }
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        System.Diagnostics.Debug.WriteLine($"Error loading game tags: {exception.Message}");
+        //    }
+        //}
     }
 }

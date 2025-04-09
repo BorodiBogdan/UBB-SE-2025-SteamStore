@@ -120,9 +120,9 @@ namespace SteamStore.ViewModels
                 {
                     Application.Current.Resources[ResourceKeys.RecentEarnedPoints] = this.LastEarnedPoints;
                 }
-                catch (Exception ex)
+                catch (Exception exception)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error storing points: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Error storing points: {exception.Message}");
                 }
 
                 if (this.LastEarnedPoints > ThresholdForNotEarningPoints)
