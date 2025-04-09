@@ -133,10 +133,13 @@ namespace SteamStore.Tests.Services
         [Fact]
         public void ComputeTagScoreForGames_CalculatesProperly()
         {
+            var game = new Game { Tags = new string[] { "RPG", "FPS" } };
+
             var games = new Collection<Game>
             {
-                new Game { Tags = new[] { "RPG", "FPS" } },
-                new Game { Tags = new[] { "MMO" } }
+                game,
+                new Game { Tags = new string[] { "RPG" } },
+                new Game { Tags = new string[] { "MMO" } }
             };
 
             var tags = new Collection<Tag>
@@ -147,14 +150,12 @@ namespace SteamStore.Tests.Services
             };
 
 
-            var game = new Game { Tags = new string[]{ "RPG" } };
-
             tagRepoMock.Setup(x => x.GetAllTags()).Returns(tags);
             userRepoMock.Setup(x => x.GetAllUserGames()).Returns(games);
 
             service.ComputeTagScoreForGames(games);
 
-            Assert.Equal(1, game.TagScore); // 3 * (1/3) = 1
+            Assert.True(Math.Abs(game.TagScore - 1m) < 0.0001m); 
         }
 
         [Fact]
