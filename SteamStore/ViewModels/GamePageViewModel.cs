@@ -17,6 +17,8 @@ using SteamStore.Services.Interfaces;
 public class GamePageViewModel : INotifyPropertyChanged
 {
     private const int MaxSimilarGamesToDisplay = 3;
+    private const string CurrencySymbol = "$";
+    private const string PriceFormat = "F2";
     private readonly ICartService cartService;
     private readonly IUserGameService userGameService;
     private readonly IGameService gameService;
@@ -49,7 +51,8 @@ public class GamePageViewModel : INotifyPropertyChanged
         }
     }
 
-    public string FormattedPrice => this.Game != null ? $"${this.Game.Price:F2}" : string.Empty;
+    // public string FormattedPrice => this.Game != null ? $"${this.Game.Price:F2}" : string.Empty;
+    public string FormattedPrice => this.Game != null ? $"{CurrencySymbol}{this.Game.Price.ToString(PriceFormat)}" : string.Empty;
 
     public ObservableCollection<string> GameTags
     {

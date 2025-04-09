@@ -39,9 +39,6 @@ public class CartViewModel : INotifyPropertyChanged
         this.LoadGames();
 
          // Initialize commands
-        this.RemoveGameCommand = new RelayCommand<Game>(this.RemoveGameFromCart);
-
-         // CheckoutCommand = new RelayCommand<XamlRoot>(async (xamlRoot) => await CheckoutAsync(xamlRoot));
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -114,19 +111,20 @@ public class CartViewModel : INotifyPropertyChanged
 
     public async void ChangeToPaymentPage(Frame frame)
     {
-        if (this.SelectedPaymentMethod == PaymentMethods.PAYPALPAYMENTMETHOD)
+        if (this.SelectedPaymentMethod == PaymentMethods.PayPalPaymentMethods)
         {
             PaypalPaymentPage paypalPaymentPage = new PaypalPaymentPage(this.cartService, this.userGameService);
             frame.Content = paypalPaymentPage;
         }
-        else if (this.SelectedPaymentMethod == PaymentMethods.CREDITCARDPAYMENTMETHOD)
+        else if (this.SelectedPaymentMethod == PaymentMethods.CreditCardPaymentMethod)
         {
             CreditCardPaymentPage creditCardPaymentPage = new CreditCardPaymentPage(this.cartService, this.userGameService);
             frame.Content = creditCardPaymentPage;
         }
-        else if (this.SelectedPaymentMethod == PaymentMethods.STEAMWALLETPAYMENTMETHOD)
+        else if (this.SelectedPaymentMethod == PaymentMethods.SteamWalletPaymentWallet)
         {
             float totalPrice = this.CartGames.Sum(game => (float)game.Price);
+            //float totalPrice = this.userGameService.ComputeSumOfGamesInCart(this.CartGames.ToList());
             float userFunds = this.ShowUserFunds();
             if (userFunds < totalPrice)
             {

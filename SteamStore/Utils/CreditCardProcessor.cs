@@ -8,9 +8,17 @@ using System.Threading.Tasks;
 
 public class CreditCardProcessor
 {
-    private const int DELAYFORPAYMENT = 200;
-    private const int MINIMUMLENGTHCARDNUMBER = 13;
-    private const int MAXIMUMLENGTHCARDNUMBER = 19;
+    private const int DelayForPayment = 200;
+    private const int MinimumLenthCardNumber = 13;
+    private const int MaximumLengthCardNumber = 19;
+    private const string ValidExpirationDatePattern = @"^\d{2}/\d{2}$";
+    private const char Separator = '/';
+    private const string ReplaceCardNumberRegex = @"[^\d]";
+    private const int FirstPartOfExpirationDateIndex = 0;
+    private const int SecondPartOfExpirationDateIndex = 1;
+    private const string ValidCVVPattern = @"^\d{3,4}$";
+    private const int GetLastTwoDigits = 100;
+    private const string ValidOwnerNamePattern = @"^[a-zA-Z\s]+$";
 
     public async Task<bool> ProcessPaymentAsync(string cardNumber, string expirationDate, string cvv, string ownerName)
     {
@@ -19,7 +27,7 @@ public class CreditCardProcessor
             this.IsValidCvv(cvv) &&
             this.IsValidOwnerName(ownerName))
         {
-            await Task.Delay(DELAYFORPAYMENT);
+            await Task.Delay(DelayForPayment);
             return true;
         }
 
@@ -33,9 +41,9 @@ public class CreditCardProcessor
             return false;
         }
 
-        cardNumber = Regex.Replace(cardNumber, @"[^\d]", string.Empty);
+        cardNumber = Regex.Replace(cardNumber, ReplaceCardNumberRegex, string.Empty);
 
-        if (cardNumber.Length < MINIMUMLENGTHCARDNUMBER || cardNumber.Length > MAXIMUMLENGTHCARDNUMBER)
+        if (cardNumber.Length < MinimumLenthCardNumber || cardNumber.Length > MaximumLengthCardNumber)
         {
             return false;
         }
@@ -50,16 +58,16 @@ public class CreditCardProcessor
             return false;
         }
 
-        if (!Regex.IsMatch(expirationDate, @"^\d{2}/\d{2}$"))
+        if (!Regex.IsMatch(expirationDate, ValidExpirationDatePattern))
         {
             return false;
         }
 
-        string[] parts = expirationDate.Split('/');
-        int month = int.Parse(parts[0]);
-        int year = int.Parse(parts[1]);
+        string[] parts = expirationDate.Split(Separator);
+        int month = int.Parse(parts[FirstPartOfExpirationDateIndex]);
+        int year = int.Parse(parts[SecondPartOfExpirationDateIndex]);
 
-        int currentYear = DateTime.Now.Year % 100;
+        int currentYear = DateTime.Now.Year % GetLastTwoDigits;
         int currentMonth = DateTime.Now.Month;
 
         if (year < currentYear || (year == currentYear && month < currentMonth))
@@ -77,7 +85,7 @@ public class CreditCardProcessor
             return false;
         }
 
-        return Regex.IsMatch(cvv, @"^\d{3,4}$");
+        return Regex.IsMatch(cvv, ValidCVVPattern);
     }
 
     private bool IsValidOwnerName(string ownerName)
@@ -87,6 +95,6 @@ public class CreditCardProcessor
             return false;
         }
 
-        return Regex.IsMatch(ownerName, @"^[a-zA-Z\s]+$");
+        return Regex.IsMatch(ownerName, ValidOwnerNamePattern);
     }
 }

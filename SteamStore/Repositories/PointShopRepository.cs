@@ -195,7 +195,7 @@ namespace SteamStore.Repositories
             {
                 SqlParameter[] userPointBalanceParametrs = new SqlParameter[]
                 {
-                    new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
+                    new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, this.user.UserIdentifier),
                     new SqlParameter(SqlConstants.PointBalanceParameter, this.user.PointsBalance),
                 };
 
