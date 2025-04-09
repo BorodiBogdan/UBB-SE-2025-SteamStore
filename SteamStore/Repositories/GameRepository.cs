@@ -259,7 +259,7 @@ public class GameRepository : IGameRepository
                 Discount = (int)row[SqlConstants.DiscountColumn],
                 Tags = this.GetGameTags((int)row[SqlConstants.GameIdColumn]).Select(tag => tag.Tag_name).ToArray(),
                 Rating = this.GetGameRating((int)row[SqlConstants.GameIdColumn]),
-                NumberOfRecentPurchases = this.GetNoOfRecentSalesForGame((int)row["game_id"]),
+                NumberOfRecentPurchases = this.GetNoOfRecentSalesForGame((int)row[SqlConstants.GameIdColumn]),
                 TrendingScore = Game.NOTCOMPUTED,
                 TagScore = Game.NOTCOMPUTED,
             }).ToList();

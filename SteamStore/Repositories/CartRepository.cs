@@ -16,6 +16,7 @@ public class CartRepository : ICartRepository
     private static readonly string GameIdColumn = "@game_id";
     private static readonly string UserIdColumn = "@user_id";
     private static readonly string ApprovedStatus = "Approved";
+    private static string approvedStatus = "Approved";
     private readonly IDataLink dataLink;
     private readonly User user;
 

@@ -1,4 +1,9 @@
-﻿using System;
+﻿// <copyright file="GameService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace SteamStore.Services;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -6,28 +11,25 @@ using SteamStore.Models;
 using SteamStore.Repositories;
 using SteamStore.Repositories.Interfaces;
 using SteamStore.Services.Interfaces;
-
-namespace SteamStore.Services;
-
 public class GameService : IGameService
 {
     public IGameRepository GameRepository { get; set; }
-    public ITagRepository TagRepository { get; set; }
 
+    public ITagRepository TagRepository { get; set; }
 
     public Collection<Game> GetAllGames()
     {
-        return GameRepository.GetAllGames();
+        return this.GameRepository.GetAllGames();
     }
 
     public Collection<Tag> GetAllTags()
     {
-        return TagRepository.GetAllTags();
+        return this.TagRepository.GetAllTags();
     }
 
     public Collection<Tag> GetAllGameTags(Game game)
     {
-        return new Collection<Tag>(TagRepository
+        return new Collection<Tag>(this.TagRepository
             .GetAllTags()
             .Where(tag => game.Tags.Contains(tag.Tag_name))
             .ToList());
@@ -35,7 +37,7 @@ public class GameService : IGameService
 
     public Collection<Game> SearchGames(string searchQuery)
     {
-        return new Collection<Game>(GameRepository
+        return new Collection<Game>(this.GameRepository
             .GetAllGames()
             .Where(game => game.Name.ToLower().Contains(searchQuery.ToLower()))
             .ToList());
@@ -43,9 +45,13 @@ public class GameService : IGameService
 
     public Collection<Game> FilterGames(int minRating, int minPrice, int maxPrice, string[] tags)
     {
-        if (tags == null) throw new ArgumentNullException(nameof(tags));
+        if (tags == null)
+        {
+            throw new ArgumentNullException(nameof(tags));
+        }
+
         return new Collection<Game>(
-            GameRepository.GetAllGames()
+            this.GameRepository.GetAllGames()
                 .Where(game => game.Rating >= minRating &&
                                game.Price >= minPrice &&
                                game.Price <= maxPrice &&
@@ -65,33 +71,33 @@ public class GameService : IGameService
 
     public Collection<Game> GetTrendingGames()
     {
-        return GetSortedAndFilteredVideoGames(GameRepository.GetAllGames());
-    }
-
-    private Collection<Game> GetSortedAndFilteredVideoGames(Collection<Game> games)
-    {
-        ComputeTrendingScores(games);
-        return new Collection<Game>(games
-            .OrderByDescending(game => game.TrendingScore)
-            .Take(10)
-            .ToList());
+        return this.GetSortedAndFilteredVideoGames(this.GameRepository.GetAllGames());
     }
 
     public Collection<Game> GetDiscountedGames()
     {
-        var discountedGames = GameRepository.GetAllGames()
+        var discountedGames = this.GameRepository.GetAllGames()
             .Where(game => game.Discount > 0).ToList();
-        return GetSortedAndFilteredVideoGames(new Collection<Game>(discountedGames));
+        return this.GetSortedAndFilteredVideoGames(new Collection<Game>(discountedGames));
     }
 
     public List<Game> GetSimilarGames(int gameId)
     {
         var randy = new Random(DateTime.Now.Millisecond);
-        var allGames = GameRepository.GetAllGames();
+        var allGames = this.GameRepository.GetAllGames();
         return allGames
             .Where(g => g.Identifier != gameId)
             .OrderBy(_ => randy.Next())
             .Take(3)
             .ToList();
+    }
+
+    private Collection<Game> GetSortedAndFilteredVideoGames(Collection<Game> games)
+    {
+        this.ComputeTrendingScores(games);
+        return new Collection<Game>(games
+            .OrderByDescending(game => game.TrendingScore)
+            .Take(10)
+            .ToList());
     }
 }

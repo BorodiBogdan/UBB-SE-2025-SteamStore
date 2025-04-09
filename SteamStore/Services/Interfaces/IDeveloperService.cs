@@ -55,5 +55,13 @@ namespace SteamStore.Services.Interfaces
         int GetGameOwnerCount(int game_id);
 
         User GetCurrentUser();
+
+        void DeleteGame(int gameId, ObservableCollection<Game> developerGames);
+
+        void UpdateGameAndRefreshList(Game game, ObservableCollection<Game> developerGames);
+
+        void RejectGameAndRemoveFromUnvalidated(int gameId, ObservableCollection<Game> unvalidatedGames);
+
+        bool IsGameIdInUse(int gameId, ObservableCollection<Game> developerGames, ObservableCollection<Game> unvalidatedGames);
     }
 }

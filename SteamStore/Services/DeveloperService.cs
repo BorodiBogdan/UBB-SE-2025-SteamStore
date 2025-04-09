@@ -119,8 +119,8 @@ public class DeveloperService : IDeveloperService
     {
         try
         {
-            game.PublisherIdentifier = User.UserIdentifier;
-            this.GameRepository.UpdateGame(game.Identifier,game);
+            game.PublisherIdentifier = this.User.UserIdentifier;
+            this.GameRepository.UpdateGame(game.Identifier, game);
         }
         catch (Exception exception)
         {
@@ -132,7 +132,7 @@ public class DeveloperService : IDeveloperService
     {
         try
         {
-            game.PublisherIdentifier = User.UserIdentifier;
+            game.PublisherIdentifier = this.User.UserIdentifier;
             this.GameRepository.UpdateGame(game.Identifier, game);
         }
         catch (Exception e)
@@ -142,8 +142,8 @@ public class DeveloperService : IDeveloperService
 
         try
         {
-            //System.Diagnostics.Debug.WriteLine("deleting the tags!");
-            DeleteGameTags(game.Identifier);
+            // System.Diagnostics.Debug.WriteLine("deleting the tags!");
+            this.DeleteGameTags(game.Identifier);
             if (selectedTags != null && selectedTags.Count > 0)
             {
                 foreach (var tag in selectedTags)
@@ -241,5 +241,89 @@ public class DeveloperService : IDeveloperService
 
         this.CreateGameWithTags(game, selectedTags);
         return game;
+    }
+
+    public void DeleteGame(int gameId, ObservableCollection<Game> developerGames)
+    {
+        // Find and remove the game manually (no lambda)
+        Game gameToRemove = null;
+        foreach (var game in developerGames)
+        {
+            if (game.Identifier == gameId)
+            {
+                gameToRemove = game;
+                break;
+            }
+        }
+
+        if (gameToRemove != null)
+        {
+            developerGames.Remove(gameToRemove);
+        }
+
+        // Perform the actual deletion logic (e.g. from DB)
+        this.DeleteGame(gameId);
+    }
+
+    public void UpdateGameAndRefreshList(Game game, ObservableCollection<Game> developerGames)
+    {
+        Game existing = null;
+        foreach (var gameInDeveloperGames in developerGames)
+        {
+            if (gameInDeveloperGames.Identifier == game.Identifier)
+            {
+                existing = gameInDeveloperGames;
+                break;
+            }
+        }
+
+        if (existing != null)
+        {
+            developerGames.Remove(existing);
+        }
+
+        this.UpdateGame(game); // this should be your existing logic that updates in DB/repo
+        developerGames.Add(game);
+    }
+
+    public void RejectGameAndRemoveFromUnvalidated(int gameId, ObservableCollection<Game> unvalidatedGames)
+    {
+        this.RejectGame(gameId); // your existing rejection logic (e.g., DB update)
+
+        Game gameToRemove = null;
+        foreach (var game in unvalidatedGames)
+        {
+            if (game.Identifier == gameId)
+            {
+                gameToRemove = game;
+                break;
+            }
+        }
+
+        if (gameToRemove != null)
+        {
+            unvalidatedGames.Remove(gameToRemove);
+        }
+    }
+
+    public bool IsGameIdInUse(int gameId, ObservableCollection<Game> developerGames, ObservableCollection<Game> unvalidatedGames)
+    {
+        foreach (var game in developerGames)
+        {
+            if (game.Identifier == gameId)
+            {
+                return true;
+            }
+        }
+
+        foreach (var game in unvalidatedGames)
+        {
+            if (game.Identifier == gameId)
+            {
+                return true;
+            }
+        }
+
+        return this.IsGameIdInUse(gameId); // Call the existing database check or logic
     }
 }

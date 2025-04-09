@@ -1,4 +1,8 @@
-﻿using System;
+// <copyright file="GamePageViewModel.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -12,194 +16,196 @@ using SteamStore.Services.Interfaces;
 
 public class GamePageViewModel : INotifyPropertyChanged
 {
-    internal readonly ICartService _cartService;
-    internal readonly IUserGameService _userGameService;
-    internal readonly IGameService _gameService;
-
-    private Game _game;
-    private ObservableCollection<Game> _similarGames;
-    private bool _isOwned;
-    private ObservableCollection<string> _gameTags;
-
     private const int MaxSimilarGamesToDisplay = 3;
+    private readonly ICartService cartService;
+    private readonly IUserGameService userGameService;
+    private readonly IGameService gameService;
+
+    private Game game;
+    private ObservableCollection<Game> similarGames;
+    private bool isOwned;
+    private ObservableCollection<string> gameTags;
+
+    public GamePageViewModel(IGameService gameService, ICartService cartService, IUserGameService userGameService)
+    {
+        this.cartService = cartService;
+        this.userGameService = userGameService;
+        this.gameService = gameService;
+        this.SimilarGames = new ObservableCollection<Game>();
+        this.GameTags = new ObservableCollection<string>();
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
 
     public Game Game
     {
-        get => _game;
+        get => this.game;
         set
         {
-            _game = value;
-            OnPropertyChanged();
-            UpdateIsOwnedStatus();
-            UpdateGameTags();
+            this.game = value;
+            this.OnPropertyChanged();
+            this.UpdateIsOwnedStatus();
+            this.UpdateGameTags();
         }
     }
 
-    public string FormattedPrice => Game != null ? $"${Game.Price:F2}" : string.Empty;
-
+    public string FormattedPrice => this.Game != null ? $"${this.Game.Price:F2}" : string.Empty;
 
     public ObservableCollection<string> GameTags
     {
-        get => _gameTags;
+        get => this.gameTags;
         private set
         {
-            _gameTags = value;
-            OnPropertyChanged();
+            this.gameTags = value;
+            this.OnPropertyChanged();
         }
     }
-    
+
     public bool IsOwned
     {
-        get => _isOwned;
+        get => this.isOwned;
         private set
         {
-            if (_isOwned != value)
+            if (this.isOwned != value)
             {
-                _isOwned = value;
-                OnPropertyChanged();
+                this.isOwned = value;
+                this.OnPropertyChanged();
             }
         }
     }
 
     public ObservableCollection<Game> SimilarGames
     {
-        get => _similarGames;
+        get => this.similarGames;
         set
         {
-            _similarGames = value;
-            OnPropertyChanged();
+            this.similarGames = value;
+            this.OnPropertyChanged();
         }
     }
-    
-    public GamePageViewModel(IGameService gameService, ICartService cartService, IUserGameService userGameService)
-    {
-        _cartService = cartService;
-        _userGameService = userGameService;
-        _gameService = gameService; 
-        SimilarGames = new ObservableCollection<Game>();
-        GameTags = new ObservableCollection<string>();
-    }
-    
+
     public void LoadGame(Game game)
     {
-        Game = game;
-        LoadSimilarGames();
+        this.Game = game;
+        this.LoadSimilarGames();
     }
-    
+
     public void LoadGameById(int gameId)
     {
-        if (_gameService == null) return;
-        
-        var allGames = _gameService.GetAllGames();
-        Game = allGames.FirstOrDefault(g => g.Identifier == gameId);
-        
-        if (Game != null)
+        if (this.gameService == null)
         {
-            LoadSimilarGames();
-        }
-    }
-    
-    private void UpdateIsOwnedStatus()
-    {
-        if (Game == null || _userGameService == null)
-        {
-            IsOwned = false;
             return;
         }
 
-        try
+        var allGames = this.gameService.GetAllGames();
+        this.Game = allGames.FirstOrDefault(g => g.Identifier == gameId);
+        if (this.Game != null)
         {
-            IsOwned = _userGameService.IsGamePurchased(Game);
-        }
-        catch (Exception)
-        {
-            IsOwned = false;
+            this.LoadSimilarGames();
         }
     }
-    
-    private void UpdateGameTags()
-    {
-        if (Game == null || _gameService == null)
-        {
-            GameTags.Clear();
-            return;
-        }
 
-        try
-        {
-            var tags = _gameService.GetAllGameTags(Game);
-            
-            GameTags.Clear();
-            foreach (var tag in tags)
-            {
-                GameTags.Add(tag.Tag_name);
-            }
-        }
-        catch (Exception ex)
-        {
-            GameTags.Clear();
-        }
-    }
-    
-    // Load similar games based on current game
-    private void LoadSimilarGames()
-    {
-        if (Game == null || _gameService == null) return;
-        var similarGames = _gameService.GetSimilarGames(Game.Identifier);
-        SimilarGames = new ObservableCollection<Game>(similarGames.Take(MaxSimilarGamesToDisplay));
-    }
-    
     // Add game to cart - safely handle null CartService
     public void AddToCart()
     {
-        if (Game != null && _cartService != null)
+        if (this.Game != null && this.cartService != null)
         {
             try
             {
-                _cartService.AddGameToCart(Game);
+                this.cartService.AddGameToCart(this.Game);
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                throw new Exception(e.Message);
+                throw new Exception(exception.Message);
             }
-
         }
     }
-    
+
     // Add game to wishlist - this will be implemented later
     public void AddToWishlist()
     {
-        if(Game != null && _userGameService != null)
+        if (this.Game != null && this.userGameService != null)
         {
             try
             {
-                _userGameService.AddGameToWishlist(Game);
+                this.userGameService.AddGameToWishlist(this.Game);
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                throw new Exception(e.Message);
+                throw new Exception(exception.Message);
             }
         }
     }
-    
-    public event PropertyChangedEventHandler PropertyChanged;
-    public void GetSimilarGames(Game game,Frame frame)
+
+    public void GetSimilarGames(Game game, Frame frame)
     {
         if (frame != null)
         {
-            var gamePage = new GamePage(_gameService, _cartService,_userGameService, game);
+            var gamePage = new GamePage(this.gameService, this.cartService, this.userGameService, game);
 
             frame.Content = gamePage;
-
         }
         else
         {
             frame.Navigate(typeof(GamePage), game);
         }
-
     }
+
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private void UpdateIsOwnedStatus()
+    {
+        if (this.Game == null || this.userGameService == null)
+        {
+            this.IsOwned = false;
+            return;
+        }
+
+        try
+        {
+            this.IsOwned = this.userGameService.IsGamePurchased(this.Game);
+        }
+        catch (Exception)
+        {
+            this.IsOwned = false;
+        }
+    }
+
+    private void UpdateGameTags()
+    {
+        if (this.Game == null || this.gameService == null)
+        {
+            this.GameTags.Clear();
+            return;
+        }
+
+        try
+        {
+            var tags = this.gameService.GetAllGameTags(this.Game);
+            this.GameTags.Clear();
+            foreach (var tag in tags)
+            {
+                this.GameTags.Add(tag.Tag_name);
+            }
+        }
+        catch (Exception)
+        {
+            this.GameTags.Clear();
+        }
+    }
+
+    // Load similar games based on current game
+    private void LoadSimilarGames()
+    {
+        if (this.Game == null || this.gameService == null)
+        {
+            return;
+        }
+
+        var similarGames = this.gameService.GetSimilarGames(this.Game.Identifier);
+        this.SimilarGames = new ObservableCollection<Game>(similarGames.Take(MaxSimilarGamesToDisplay));
     }
 }
