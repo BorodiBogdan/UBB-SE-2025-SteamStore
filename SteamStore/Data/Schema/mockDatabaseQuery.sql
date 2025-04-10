@@ -1,4 +1,5 @@
 ﻿USE Steam
+GO
 
 
 DROP TABLE IF EXISTS users_items;
@@ -109,6 +110,18 @@ CREATE TABLE users_items (
 GO
 
 -- Stored Procedures
+go
+DROP PROCEDURE IF EXISTS GetUserById;
+go
+CREATE PROCEDURE GetUserById
+    @UserId INT
+AS
+BEGIN
+    SELECT * FROM users WHERE user_id = @UserId;
+END;
+go
+
+
 go
 DROP PROCEDURE IF EXISTS getUserGames;
 go
