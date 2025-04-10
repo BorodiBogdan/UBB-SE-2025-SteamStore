@@ -5,13 +5,15 @@ namespace SteamStore.Tests.Services;
 
 public class CartServiceTests
 {
-	private readonly CartService _cartService;
-	private readonly Mock<ICartRepository> _repositoryMock;
+	private const decimal TEST_PRICE = 10.0m;
+	private const float TEST_PRICE_RESULT = 30.0f;
+	private readonly CartService cartService;
+	private readonly Mock<ICartRepository> repositoryMock;
 
 	public CartServiceTests()
 	{
-		_repositoryMock = new Mock<ICartRepository>();
-		_cartService = new CartService(_repositoryMock.Object);
+		repositoryMock = new Mock<ICartRepository>();
+		cartService = new CartService(repositoryMock.Object);
 	}
 
 	[Fact]
@@ -19,13 +21,13 @@ public class CartServiceTests
 	{
 		var mockedRepositoryData = new List<Game>();
 
-		_repositoryMock.Setup(repository => repository.GetCartGames())
+		repositoryMock.Setup(repository => repository.GetCartGames())
 			.Returns(mockedRepositoryData)
 			.Verifiable();
 
-		_cartService.GetCartGames();
+		cartService.GetCartGames();
 
-		_repositoryMock.Verify(repository => repository.GetCartGames());
+		repositoryMock.Verify(repository => repository.GetCartGames());
 	}
 
 	[Fact]
@@ -33,11 +35,11 @@ public class CartServiceTests
 	{
 		var games = new List<Game>();
 
-		_repositoryMock.Setup(repository => repository.GetCartGames())
+		repositoryMock.Setup(repository => repository.GetCartGames())
 			.Returns(games)
 			.Verifiable();
 
-		var actualGames = _cartService.GetCartGames();
+		var actualGames = cartService.GetCartGames();
 
 		Assert.Same(games, actualGames);
 	}
@@ -50,12 +52,12 @@ public class CartServiceTests
 			Identifier = 1
 		};
 
-		_repositoryMock.Setup(repository => repository.RemoveGameFromCart(It.IsAny<Game>()))
+		repositoryMock.Setup(repository => repository.RemoveGameFromCart(It.IsAny<Game>()))
 			.Verifiable();
 
-		_cartService.RemoveGameFromCart(game);
+		cartService.RemoveGameFromCart(game);
 
-		_repositoryMock.Verify(f => f.RemoveGameFromCart(game));
+		repositoryMock.Verify(f => f.RemoveGameFromCart(game));
 	}
 
 	[Fact]
@@ -66,12 +68,12 @@ public class CartServiceTests
 			Identifier = 1
 		};
 
-		_repositoryMock.Setup(repository => repository.AddGameToCart(It.IsAny<Game>()))
+		repositoryMock.Setup(repository => repository.AddGameToCart(It.IsAny<Game>()))
 			.Verifiable();
 
-		_cartService.AddGameToCart(game);
+		cartService.AddGameToCart(game);
 
-		_repositoryMock.Verify(f => f.AddGameToCart(game));
+		repositoryMock.Verify(f => f.AddGameToCart(game));
 	}
 
 	[Fact]
@@ -89,24 +91,24 @@ public class CartServiceTests
 			}
 		};
 
-		_repositoryMock.Setup(repository => repository.RemoveGameFromCart(It.IsAny<Game>()))
+		repositoryMock.Setup(repository => repository.RemoveGameFromCart(It.IsAny<Game>()))
 			.Verifiable();
 
-		_cartService.RemoveGamesFromCart(games);
+		cartService.RemoveGamesFromCart(games);
 
-		_repositoryMock.Verify(f => f.RemoveGameFromCart(games[0]));
-		_repositoryMock.Verify(f => f.RemoveGameFromCart(games[1]));
+		repositoryMock.Verify(f => f.RemoveGameFromCart(games[0]));
+		repositoryMock.Verify(f => f.RemoveGameFromCart(games[1]));
 	}
 
 	[Fact]
 	public void GetUserFunds_ShouldCallRepository()
 	{
-		_repositoryMock.Setup(repository => repository.GetUserFunds())
+		repositoryMock.Setup(repository => repository.GetUserFunds())
 			.Verifiable();
 
-		_cartService.GetUserFunds();
+		cartService.GetUserFunds();
 
-		_repositoryMock.Verify(f => f.GetUserFunds());
+		repositoryMock.Verify(f => f.GetUserFunds());
 	}
 
 	[Fact]
@@ -125,13 +127,13 @@ public class CartServiceTests
 				Price = 20
 			}
 		};
-		_repositoryMock.Setup(repository => repository.GetCartGames())
+		repositoryMock.Setup(repository => repository.GetCartGames())
 			.Returns(games)
 			.Verifiable();
 
-		_cartService.GetTotalSumToBePaid();
+		cartService.GetTotalSumToBePaid();
 
-		_repositoryMock.Verify(f => f.GetCartGames());
+		repositoryMock.Verify(f => f.GetCartGames());
 	}
 
 	[Fact]
@@ -152,11 +154,25 @@ public class CartServiceTests
 		};
 		var expectedTotal = 30;
 
-		_repositoryMock.Setup(repository => repository.GetCartGames())
+		repositoryMock.Setup(repository => repository.GetCartGames())
 			.Returns(games);
 
-		var result = _cartService.GetTotalSumToBePaid();
+		var result = cartService.GetTotalSumToBePaid();
 
 		Assert.Equal(expectedTotal, result);
+	}
+	[Fact]
+	public void GetTheTotalSumOfItemsInCart_WithMultipleGames_ReturnsCorrectTotal()
+	{
+		// Arrange
+		var cartGames = new List<Game>
+		{
+			new Game { Price = TEST_PRICE },
+			new Game { Price = TEST_PRICE },
+			new Game { Price = TEST_PRICE }
+		};
+		var result = cartService.GetTheTotalSumOfItemsInCart(cartGames);
+
+		Assert.Equal(TEST_PRICE_RESULT, result);
 	}
 }

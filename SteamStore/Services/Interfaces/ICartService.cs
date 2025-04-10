@@ -25,6 +25,6 @@ namespace SteamStore.Services.Interfaces
 
         decimal GetTotalSumToBePaid();
 
-        public float GetTheTotalSumOfItemsInCart(ObservableCollection<Game> cartGames);
+        public float GetTheTotalSumOfItemsInCart(List<Game> cartGames);
     }
 }

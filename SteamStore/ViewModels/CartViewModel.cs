@@ -125,7 +125,7 @@ public class CartViewModel : INotifyPropertyChanged
         {
             float totalPrice1 = this.CartGames.Sum(game => (float)game.Price);
             System.Diagnostics.Debug.WriteLine(totalPrice1);
-            float totalPrice = this.cartService.GetTheTotalSumOfItemsInCart(this.CartGames);
+            float totalPrice = this.cartService.GetTheTotalSumOfItemsInCart(this.CartGames.ToList());
 
             System.Diagnostics.Debug.WriteLine(totalPrice);
             // float totalPrice = this.userGameService.ComputeSumOfGamesInCart(this.CartGames.ToList());

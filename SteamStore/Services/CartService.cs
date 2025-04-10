@@ -33,14 +33,7 @@ public class CartService : ICartService
 
     public void AddGameToCart(Game game)
     {
-        try
-        {
-            this.cartRepository.AddGameToCart(game);
-        }
-        catch (Exception exception)
-        {
-            throw new Exception(exception.Message);
-        }
+        this.cartRepository.AddGameToCart(game);
     }
 
     public void RemoveGamesFromCart(List<Game> games)
@@ -68,7 +61,7 @@ public class CartService : ICartService
         return totalSumToBePaid;
     }
 
-    public float GetTheTotalSumOfItemsInCart(ObservableCollection<Game> cartGames)
+    public float GetTheTotalSumOfItemsInCart(List<Game> cartGames)
     {
         float totalSum = InitialZeroSum;
         foreach (var game in cartGames)
