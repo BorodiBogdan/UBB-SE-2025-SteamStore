@@ -14,8 +14,7 @@ public class DataLink : SteamStore.Data.IDataLink
 
     public DataLink(IConfiguration configuration)
     {
-        // string? localDataSource = configuration["ConnectionString"];
-        this.connectionString = "Data Source=DESKTOP-618UFK0\\SQLEXPRESS;Initial Catalog=Steam;Integrated Security=True;TrustServerCertificate=True";
+        this.connectionString = configuration["ConnectionString"];
 
         try
         {

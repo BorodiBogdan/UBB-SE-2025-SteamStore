@@ -10,231 +10,492 @@ namespace SteamStore.Tests.Services;
 
 public class GameServiceTest
 {
-    private readonly GameService _subject;
-    private readonly Mock<IGameRepository> _repoMock;
-    private readonly Mock<ITagRepository> _tagRepoMock;
+    private const string TEST_TAG_1 = "tag1";
+    private const string TEST_TAG_2 = "tag2";
+    private const string TEST_NAME = "Test";
+    private const string NOT_MATCH_NAME = "NoMatch";
+    private const string TEST_GAME_1 = "test Game 1";
+    private const string TEST_GAME_2 = "Game 2";
+    private const string TEST_GAME_3 = "TEST Game 3";
+    private const string TEST_GAME_4 = "Game4";
+    private const string TEST_GAME_5 = "Game5";
+    private const string GET_TRADING_GAMES_METHOD_NAME = "getTrendingGames";
+    private const string GET_DISCOUNTED_GAMES_METHOD_NAME = "getDiscountedGames";
+    private const string? INVALID_METHOD_NAME = "Invalid method name";
+    private const int ZERO = 0;
+    private const int OVER_CAP_ITEMS_COUNT = 11;
+    private const string TEST_TAG_3 = "tag3";
+    private const int TWO_EXPECTED_GAMES = 2;
+    private const int SECOND_ARRAY_ELEMENT = 1;
+    private const int TWO_FOUND_ELEMENTS = 2;
+    private const int SINGULAR_FOUND_ELEMENT = 1;
+    private const int LOWER_MIN_RATING = 1;
+    private const int UPPER_MIN_RATING = 10;
+    private const int LOWER_MIN_PRICE = 10;
+    private const int UPPER_MIN_PRICE = 400;
+    private const int AVERAGE_MIN_PRICE = 100;
+    private const int LOWER_MAX_PRICE = 100;
+    private const int UPPER_MAX_PRICE = 400;
+    private const int AVERAGE_MAX_PRICE = 101;
+    private const decimal RATING_GAME_1 = 5;
+    private const decimal PRICE_GAME_1 = 20;
+    private const decimal RATING_GAME_2 = 7;
+    private const decimal PRICE_GAME_2 = 200;
+    private const decimal GAME_DISCOUNT = 1;
+    private const int EXPECTED_CAP_NUMBER = 10;
+    private const int NUMBER_OF_RECENT_PURCHASES_GAME_1 = 10;
+    private const decimal DISCOUNT_GAME_1 = 1;
+    private const int NUMBER_OF_RECENT_PURCHASES_GAME_2 = 5;
+    private const decimal DISCOUNT_GAME_2 = 2;
+    private const int NUMBER_OF_RECENT_PURCHASES_GAME_3 = 5;
+    private const decimal EXPECTED_TRENDING_SCORE_GAME_1 = 1;
+    private const decimal EXPECTED_TRENDING_SCORE_GAME_2 = 0.5m;
+    private const int EXPECTED_SIMILAR_GAMES = 3;
+    private const int IDENTIFIER_1 = 1;
+    private const int IDENTIFIER_2 = 2;
+    private const int IDENTIFIER_3 = 3;
+    private const int IDENTIFIER_4 = 4;
+    private const int IDENTIFIER_5 = 5;
+    private readonly GameService subject;
+    private readonly Mock<IGameRepository> repoMock;
+    private readonly Mock<ITagRepository> tagRepoMock;
 
     public GameServiceTest()
     {
-        _repoMock = new Mock<IGameRepository>();
-        _tagRepoMock = new Mock<ITagRepository>();
-        _subject = new GameService { GameRepository = _repoMock.Object, TagRepository = _tagRepoMock.Object };
+        repoMock = new Mock<IGameRepository>();
+        tagRepoMock = new Mock<ITagRepository>();
+        subject = new GameService { GameRepository = repoMock.Object, TagRepository = tagRepoMock.Object };
     }
 
     [Fact]
     public void GetAllGames_ShouldDelegateToRepo()
     {
         var repoReturnedColl = new Collection<Game>();
-        _repoMock.Setup(r => r.GetAllGames())
+        repoMock.Setup(r => r.GetAllGames())
             .Returns(repoReturnedColl);
-        Assert.Same(repoReturnedColl, _subject.GetAllGames());
+        Assert.Same(repoReturnedColl, subject.GetAllGames());
     }
 
     [Fact]
     public void GetAllTags_ShouldDelegateToRepo()
     {
         var repoReturnedColl = new Collection<Tag>();
-        _tagRepoMock.Setup(r => r.GetAllTags())
+        tagRepoMock.Setup(r => r.GetAllTags())
             .Returns(repoReturnedColl);
-        Assert.Same(repoReturnedColl, _subject.GetAllTags());
+        Assert.Same(repoReturnedColl, subject.GetAllTags());
     }
 
     [Fact]
-    public void GetAllGameTags_ShouldFilterAllTags()
+    public void GetAllGameTags_ReturnsSameTagInstance()
     {
-        var game = new Game { Tags = new[] { "tag1", "tag2" } };
+        var game = new Game { Tags = new[] { TEST_TAG_1, TEST_TAG_2 } };
 
-        var expectedTag = new Tag { Tag_name = "tag1" };
-        _tagRepoMock.Setup(r => r.GetAllTags())
+        var expectedTag = new Tag { Tag_name = TEST_TAG_1 };
+        tagRepoMock.Setup(r => r.GetAllTags())
             .Returns(new Collection<Tag> { expectedTag });
 
-        var actualTag = _subject.GetAllGameTags(game);
-        Assert.Same(actualTag[0], expectedTag);
-        Assert.Equal(actualTag[0].Tag_name, expectedTag.Tag_name);
+        var actualTag = subject.GetAllGameTags(game);
+        Assert.Same(actualTag.First(), expectedTag);
+    }
+    [Fact]
+    public void GetAllGameTags_ReturnsExpectedTagName()
+    {
+        var game = new Game { Tags = new[] { TEST_TAG_1, TEST_TAG_2 } };
+
+        var expectedTag = new Tag { Tag_name = TEST_TAG_1 };
+        tagRepoMock.Setup(r => r.GetAllTags())
+            .Returns(new Collection<Tag> { expectedTag });
+
+        var actualTag = subject.GetAllGameTags(game);
+        Assert.Equal(actualTag.First().Tag_name, expectedTag.Tag_name);
+    }
+    [Fact]
+    public void GetAllGameTags_ReturnsSingularExpectedTag()
+    {
+        var game = new Game { Tags = new[] { TEST_TAG_1, TEST_TAG_2 } };
+
+        var expectedTag = new Tag { Tag_name = TEST_TAG_1 };
+        tagRepoMock.Setup(r => r.GetAllTags())
+            .Returns(new Collection<Tag> { expectedTag });
+
+        var actualTag = subject.GetAllGameTags(game);
         Assert.Single(actualTag);
     }
 
-    [Theory]
-    [InlineData("Test", 2)]
-    [InlineData("NoMatch", 0)]
-    public void SearchItems_ShouldMatchItems(string searchQuery, int expectedCount)
+    [Fact]
+    public void SearchItems_ShouldMatchTwoItems()
     {
-        var game1 = new Game { Name = "test Game 1" };
-        var game2 = new Game { Name = "Game 2" };
-        var game3 = new Game { Name = "TEST Game 3" };
+        var game1 = new Game { Name = TEST_GAME_1 };
+        var game2 = new Game { Name = TEST_GAME_2 };
+        var game3 = new Game { Name = TEST_GAME_3 };
 
-        _repoMock.Setup(r => r.GetAllGames())
+        repoMock.Setup(r => r.GetAllGames())
             .Returns(new Collection<Game> { game1, game2, game3 });
 
-        var actualGames = _subject.SearchGames(searchQuery);
+        var actualGames = subject.SearchGames(TEST_NAME);
 
-        Assert.Equal(expectedCount, actualGames.Count);
+        Assert.Equal(TWO_EXPECTED_GAMES, actualGames.Count);
+    }
+    [Fact]
+    public void SearchItems_ShouldHaveFirstItemInstance()
+    {
+        var game1 = new Game { Name = TEST_GAME_1 };
+        var game2 = new Game { Name = TEST_GAME_2 };
+        var game3 = new Game { Name = TEST_GAME_3 };
 
-        if (searchQuery.Equals("Test"))
-        {
-            Assert.Same(actualGames[0], game1);
-            Assert.Same(actualGames[1], game3);
-        }
-        else
-        {
-            Assert.Empty(actualGames);
-        }
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(new Collection<Game> { game1, game2, game3 });
+
+        var actualGames = subject.SearchGames(TEST_NAME);
+
+        Assert.Same(actualGames.First(), game1);
+    }
+    [Fact]
+    public void SearchItems_ShouldHaveSecondItemInstance()
+    {
+        var game1 = new Game { Name = TEST_GAME_1 };
+        var game2 = new Game { Name = TEST_GAME_2 };
+        var game3 = new Game { Name = TEST_GAME_3 };
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(new Collection<Game> { game1, game2, game3 });
+
+        var actualGames = subject.SearchGames(TEST_NAME);
+
+        Assert.Same(actualGames[SECOND_ARRAY_ELEMENT], game3);
+    }
+    [Fact]
+    public void SearchItems_ShouldNoMatchItems()
+    {
+        var game1 = new Game { Name = TEST_GAME_1 };
+        var game2 = new Game { Name = TEST_GAME_2 };
+        var game3 = new Game { Name = TEST_GAME_3 };
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(new Collection<Game> { game1, game2, game3 });
+
+        var actualGames = subject.SearchGames(NOT_MATCH_NAME);
+        Assert.Empty(actualGames);
+    }
+
+    [Fact]
+    public void FilterItems_ShouldThrowExceptionIfTagIsNull()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            subject.FilterGames(LOWER_MIN_RATING, LOWER_MIN_PRICE, LOWER_MAX_PRICE, null));
     }
 
     [Theory]
-    [InlineData(4, 10, 100, 1, new[] { "tag1" })]
-    [InlineData(10, 10, 100, 0, new[] { "tag1", "tag2" })]
-    [InlineData(4, 10, 300, 2, new string[] { })]
-    [InlineData(1, 400, 600, 0, new[] { "tag1", "tag2" })]
-    [InlineData(1, 100, 101, 0, new[] { "tag1", "tag2" })]
-    [InlineData(1, 100, 400, 0, new[] { "tag1", "tag2", "tag3" })]
-    public void FilterItems_ShouldRespectBoundaries(int minRating, int minPrice, int maxPrice, int foundElems,
+    [InlineData(LOWER_MIN_RATING, LOWER_MIN_PRICE, UPPER_MAX_PRICE, TWO_FOUND_ELEMENTS, new string[] { })]
+    public void FilterItems_ShouldReturnTwoGames(int minRating, int minPrice, int maxPrice, int foundElems,
         string[] tags)
     {
         var game1 = new Game()
         {
-            Rating = 5,
-            Price = 20,
-            Tags = new[] { "tag1", "tag2" }
+            Rating = RATING_GAME_1,
+            Price = PRICE_GAME_1,
+            Tags = new[] { TEST_TAG_1, TEST_TAG_2 }
         };
 
         var game2 = new Game()
         {
-            Rating = 7,
-            Price = 200,
-            Tags = new[] { "tag2" }
+            Rating = RATING_GAME_2,
+            Price = PRICE_GAME_2,
+            Tags = new[] { TEST_TAG_2 }
         };
 
-        _repoMock.Setup(r => r.GetAllGames())
+        repoMock.Setup(r => r.GetAllGames())
             .Returns(new Collection<Game> { game1, game2 });
 
-        var actualGames = _subject.FilterGames(minRating, minPrice, maxPrice, tags);
+        var actualGames = subject.FilterGames(minRating, minPrice, maxPrice, tags);
 
         Assert.Equal(foundElems, actualGames.Count);
-
-        switch (foundElems)
-        {
-            case 1:
-                Assert.Same(actualGames[0], game1);
-                break;
-            case 0:
-                Assert.Empty(actualGames);
-                break;
-            case 2:
-                Assert.Same(actualGames[0], game1);
-                Assert.Same(actualGames[1], game2);
-                break;
-        }
     }
-
-    [Fact]
-    public void GetTrendingGames_computesTrendingGames()
+    [Theory]
+    [InlineData(LOWER_MIN_RATING, LOWER_MIN_PRICE, UPPER_MAX_PRICE, new string[] { })]
+    public void FilterItems_ShouldReturnFirstGameInstance(int minRating, int minPrice, int maxPrice,
+        string[] tags)
     {
         var game1 = new Game()
         {
-            NumberOfRecentPurchases = 10,
+            Rating = RATING_GAME_1,
+            Price = PRICE_GAME_1,
+            Tags = new[] { TEST_TAG_1, TEST_TAG_2 }
         };
 
         var game2 = new Game()
         {
-            NumberOfRecentPurchases = 5,
+            Rating = RATING_GAME_2,
+            Price = PRICE_GAME_2,
+            Tags = new[] { TEST_TAG_2 }
         };
 
-        _repoMock.Setup(r => r.GetAllGames())
+        repoMock.Setup(r => r.GetAllGames())
             .Returns(new Collection<Game> { game1, game2 });
 
-        var actualGames = _subject.GetTrendingGames();
+        var actualGames = subject.FilterGames(minRating, minPrice, maxPrice, tags);
 
+        Assert.Same(actualGames.First(), game1);
+    }
+    [Theory]
+    [InlineData(LOWER_MIN_RATING, LOWER_MIN_PRICE, UPPER_MAX_PRICE, new string[] { })]
+    public void FilterItems_ShouldReturnSecondGameInstance(int minRating, int minPrice, int maxPrice,
+        string[] tags)
+    {
+        var game1 = new Game()
+        {
+            Rating = RATING_GAME_1,
+            Price = PRICE_GAME_1,
+            Tags = new[] { TEST_TAG_1, TEST_TAG_2 }
+        };
 
-        Assert.Same(actualGames[0], game1);
-        Assert.Same(actualGames[1], game2);
-        Assert.Equal(1, game1.TrendingScore);
-        Assert.Equal(0.5m, game2.TrendingScore);
+        var game2 = new Game()
+        {
+            Rating = RATING_GAME_2,
+            Price = PRICE_GAME_2,
+            Tags = new[] { TEST_TAG_2 }
+        };
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(new Collection<Game> { game1, game2 });
+
+        var actualGames = subject.FilterGames(minRating, minPrice, maxPrice, tags);
+
+        Assert.Same(actualGames[SECOND_ARRAY_ELEMENT], game2);
+    }
+    [Theory]
+    [InlineData(LOWER_MIN_RATING, LOWER_MIN_PRICE, AVERAGE_MAX_PRICE, SINGULAR_FOUND_ELEMENT, new[] { TEST_TAG_1 })]
+    public void FilterItems_ShouldReturnOneGame(int minRating, int minPrice, int maxPrice, int foundElems, string[] tags)
+    {
+        var game1 = new Game()
+        {
+            Rating = RATING_GAME_1,
+            Price = PRICE_GAME_1,
+            Tags = new[] { TEST_TAG_1, TEST_TAG_2 }
+        };
+
+        var game2 = new Game()
+        {
+            Rating = RATING_GAME_2,
+            Price = PRICE_GAME_2,
+            Tags = new[] { TEST_TAG_2 }
+        };
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(new Collection<Game> { game1, game2 });
+
+        var actualGames = subject.FilterGames(minRating, minPrice, maxPrice, tags);
+
+        Assert.Equal(foundElems, actualGames.Count);
+    }
+    [Theory]
+    [InlineData(UPPER_MIN_RATING, LOWER_MIN_PRICE, LOWER_MAX_PRICE, ZERO, new[] { TEST_TAG_1, TEST_TAG_2 })]
+    [InlineData(LOWER_MIN_RATING, UPPER_MIN_PRICE, UPPER_MAX_PRICE, ZERO, new[] { TEST_TAG_1, TEST_TAG_2 })]
+    [InlineData(LOWER_MIN_RATING, AVERAGE_MIN_PRICE, AVERAGE_MAX_PRICE, ZERO, new[] { TEST_TAG_1, TEST_TAG_2 })]
+    [InlineData(LOWER_MIN_RATING, AVERAGE_MIN_PRICE, UPPER_MAX_PRICE, ZERO, new[] { TEST_TAG_1, TEST_TAG_2, TEST_TAG_3 })]
+    public void FilterItems_ShouldNotReturnGames(int minRating, int minPrice, int maxPrice, int foundElems,
+        string[] tags)
+    {
+        var game1 = new Game()
+        {
+            Rating = RATING_GAME_1,
+            Price = PRICE_GAME_1,
+            Tags = new[] { TEST_TAG_1, TEST_TAG_2 }
+        };
+
+        var game2 = new Game()
+        {
+            Rating = RATING_GAME_2,
+            Price = PRICE_GAME_2,
+            Tags = new[] { TEST_TAG_2 }
+        };
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(new Collection<Game> { game1, game2 });
+
+        var actualGames = subject.FilterGames(minRating, minPrice, maxPrice, tags);
+
+        Assert.Equal(foundElems, actualGames.Count);
     }
 
     [Theory]
-    [InlineData("getTrendingGames")]
-    [InlineData("getDiscountedGames")]
-    public void GetGamesMethod_shouldCapAt10Elems(string methodName)
+    [InlineData(GET_TRADING_GAMES_METHOD_NAME)]
+    [InlineData(GET_DISCOUNTED_GAMES_METHOD_NAME)]
+    public void GetGamesMethod_shouldCapAtTenElems(string methodName)
     {
         var games = new Collection<Game>();
-        for (var i = 0; i < 11; i++)
+        for (var i = ZERO; i < OVER_CAP_ITEMS_COUNT; i++)
         {
             games.Add(new Game()
             {
-                Discount = 1
+                Discount = GAME_DISCOUNT
             });
         }
 
-        _repoMock.Setup(r => r.GetAllGames())
+        repoMock.Setup(r => r.GetAllGames())
             .Returns(games);
 
         var actualGames = methodName switch
         {
-            "getTrendingGames" => _subject.GetTrendingGames(),
-            "getDiscountedGames" => _subject.GetDiscountedGames(),
-            _ => throw new ArgumentException("Invalid method name", nameof(methodName))
+            GET_TRADING_GAMES_METHOD_NAME => subject.GetTrendingGames(),
+            GET_DISCOUNTED_GAMES_METHOD_NAME => subject.GetDiscountedGames(),
+            _ => throw new ArgumentException(INVALID_METHOD_NAME, nameof(methodName))
         };
 
-        Assert.Equal(10, actualGames.Count);
+        Assert.Equal(EXPECTED_CAP_NUMBER, actualGames.Count);
     }
 
     [Fact]
-    public void GetDiscountedGames_computesTrendingGames()
+    public void GetDiscountedGames_HasFirstGameInstance()
     {
         var game1 = new Game()
         {
-            NumberOfRecentPurchases = 10,
-            Discount = 1
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_1,
+            Discount = DISCOUNT_GAME_1
         };
 
         var game2 = new Game()
         {
-            NumberOfRecentPurchases = 5,
-            Discount = 2
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_2,
+            Discount = DISCOUNT_GAME_2
         };
 
         var game3 = new Game()
         {
-            NumberOfRecentPurchases = 5
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_3
         };
 
-        _repoMock.Setup(r => r.GetAllGames())
+        repoMock.Setup(r => r.GetAllGames())
             .Returns(new Collection<Game> { game1, game2, game3 });
 
-        var actualGames = _subject.GetDiscountedGames();
+        var actualGames = subject.GetDiscountedGames();
 
+        Assert.Same(actualGames.First(), game1);
+    }
+   [Fact]
+    public void GetDiscountedGames_HasSecondGameInstance()
+    {
+        var game1 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_1,
+            Discount = DISCOUNT_GAME_1
+        };
 
-        Assert.Same(actualGames[0], game1);
-        Assert.Same(actualGames[1], game2);
-        Assert.Equal(2, actualGames.Count);
-        Assert.Equal(1, game1.TrendingScore);
-        Assert.Equal(0.5m, game2.TrendingScore);
+        var game2 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_2,
+            Discount = DISCOUNT_GAME_2
+        };
+
+        var game3 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_3
+        };
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(new Collection<Game> { game1, game2, game3 });
+
+        var actualGames = subject.GetDiscountedGames();
+
+        Assert.Same(actualGames[SECOND_ARRAY_ELEMENT], game2);
+    }
+    [Fact]
+    public void GetDiscountedGames_HasTwoExpectedElements()
+    {
+        var game1 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_1,
+            Discount = DISCOUNT_GAME_1
+        };
+
+        var game2 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_2,
+            Discount = DISCOUNT_GAME_2
+        };
+
+        var game3 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_3
+        };
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(new Collection<Game> { game1, game2, game3 });
+
+        var actualGames = subject.GetDiscountedGames();
+        Assert.Equal(TWO_EXPECTED_GAMES, actualGames.Count);
+    }
+    [Fact]
+    public void GetDiscountedGames_CheckFirstGameComputedTrendingScore()
+    {
+        var game1 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_1,
+            Discount = DISCOUNT_GAME_1
+        };
+
+        var game2 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_2,
+            Discount = DISCOUNT_GAME_2
+        };
+
+        var game3 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_3
+        };
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(new Collection<Game> { game1, game2, game3 });
+        subject.GetDiscountedGames();
+        Assert.Equal(EXPECTED_TRENDING_SCORE_GAME_1, game1.TrendingScore);
+    }
+    [Fact]
+    public void GetDiscountedGames_CheckSecondGameComputedTrendingScore()
+    {
+        var game1 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_1,
+            Discount = DISCOUNT_GAME_1
+        };
+
+        var game2 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_2,
+            Discount = DISCOUNT_GAME_2
+        };
+
+        var game3 = new Game()
+        {
+            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_3
+        };
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(new Collection<Game> { game1, game2, game3 });
+        subject.GetDiscountedGames();
+
+        Assert.Equal(EXPECTED_TRENDING_SCORE_GAME_2, game2.TrendingScore);
     }
 
     [Fact]
-    public void GetSimilarGames_returns3FilteredElements()
+    public void GetSimilarGames_returnsThreeFilteredElements()
     {
-        var allGames = new Collection<Game>
-        {
-            new() { Identifier = 1, Name = "Game1" },
-            new() { Identifier = 2, Name = "Game2" },
-            new() { Identifier = 3, Name = "Game3" },
-            new() { Identifier = 4, Name = "Game4" },
-            new() { Identifier = 5, Name = "Game5" }
-        };
+        var similarGames = GetSimilarGamesSetUp();
+        Assert.Equal(EXPECTED_SIMILAR_GAMES, similarGames.Count);
+    }
+    [Fact]
+    public void GetSimilarGames_SelfExcludedElement()
+    {
+        var similarGames = GetSimilarGamesSetUp();
+        Assert.DoesNotContain(similarGames, g => g.Identifier == IDENTIFIER_1);
+    }
 
-        _repoMock.Setup(r => r.GetAllGames())
-            .Returns(allGames);
-
-        var similarGames = _subject.GetSimilarGames(1);
-
-        Assert.Equal(3, similarGames.Count);
-        Assert.DoesNotContain(similarGames, g => g.Identifier == 1);
-        Assert.All(similarGames, game => Assert.NotEqual(1, game.Identifier));
-
-        var gameIds = similarGames.Select(g => g.Identifier).ToList();
-        Assert.True(gameIds.Count == gameIds.Distinct().Count());
+    [Fact]
+    public void GetSimilarGames_returnsDistinctFilteredElements()
+    {
+        var similarGames = GetSimilarGamesSetUp();
+        var identifiers = similarGames.Select(g => g.Identifier).ToList();
+        Assert.True(identifiers.Count == identifiers.Distinct().Count());
     }
 
     [Fact]
@@ -242,28 +503,42 @@ public class GameServiceTest
     {
         var allGames = new Collection<Game>
         {
-            new() { Identifier = 1, Name = "Game1" },
-            new() { Identifier = 2, Name = "Game2" },
-            new() { Identifier = 3, Name = "Game3" },
-            new() { Identifier = 4, Name = "Game4" },
-            new() { Identifier = 5, Name = "Game5" }
+            new Game() { Identifier = IDENTIFIER_1, Name = TEST_GAME_1 },
+            new Game() { Identifier = IDENTIFIER_2, Name = TEST_GAME_2 },
+            new Game() { Identifier = IDENTIFIER_3, Name = TEST_GAME_3 },
+            new Game() { Identifier = IDENTIFIER_4, Name = TEST_GAME_4 },
+            new Game() { Identifier = IDENTIFIER_5, Name = TEST_GAME_5 }
         };
 
-        _repoMock.Setup(r => r.GetAllGames())
+        repoMock.Setup(r => r.GetAllGames())
             .Returns(allGames);
 
-        for (var tried = 0;tried < 5;tried++) {
-            try
-            {
-                var similarGames1 = _subject.GetSimilarGames(1);
-                var similarGames2 = _subject.GetSimilarGames(1);
-                Assert.NotEqual(similarGames1, similarGames2);
-            }
-            catch (XunitException)
-            {
-              continue;   
-            }
-            tried = 5;
+        List<Game> similarGames1;
+        List<Game> similarGames2;
+        do
+        {
+            similarGames1 = subject.GetSimilarGames(IDENTIFIER_1);
+            similarGames2 = subject.GetSimilarGames(IDENTIFIER_1);
         }
+        while (similarGames1.SequenceEqual(similarGames2));
+
+        Assert.NotEqual(similarGames1, similarGames2);
+    }
+    private List<Game> GetSimilarGamesSetUp()
+    {
+        var allGames = new Collection<Game>
+        {
+            new Game() { Identifier = IDENTIFIER_1, Name = TEST_GAME_1 },
+            new Game() { Identifier = IDENTIFIER_2, Name = TEST_GAME_2 },
+            new Game() { Identifier = IDENTIFIER_3, Name = TEST_GAME_3 },
+            new Game() { Identifier = IDENTIFIER_4, Name = TEST_GAME_4 },
+            new Game() { Identifier = IDENTIFIER_5, Name = TEST_GAME_5 }
+        };
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(allGames);
+
+        var similarGames = subject.GetSimilarGames(IDENTIFIER_1);
+        return similarGames;
     }
 }

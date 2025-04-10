@@ -101,14 +101,7 @@ public class DeveloperService : IDeveloperService
 
     public void CreateGameWithTags(Game game, IList<Tag> selectedTags)
     {
-        try
-        {
-            this.CreateGame(game);
-        }
-        catch (Exception exception)
-        {
-            throw new Exception(exception.Message);
-        }
+        this.CreateGame(game);
 
         if (selectedTags != null && selectedTags.Count > EmptyListLength)
         {
@@ -121,32 +114,16 @@ public class DeveloperService : IDeveloperService
 
     public void UpdateGame(Game game)
     {
-        try
-        {
-            game.PublisherIdentifier = this.User.UserIdentifier;
-            this.GameRepository.UpdateGame(game.Identifier, game);
-        }
-        catch (Exception exception)
-        {
-            throw new Exception(exception.Message);
-        }
+        game.PublisherIdentifier = this.User.UserIdentifier;
+        this.GameRepository.UpdateGame(game.Identifier, game);
     }
 
     public void UpdateGameWithTags(Game game, IList<Tag> selectedTags)
     {
+        game.PublisherIdentifier = this.User.UserIdentifier;
+        this.GameRepository.UpdateGame(game.Identifier, game);
         try
         {
-            game.PublisherIdentifier = this.User.UserIdentifier;
-            this.GameRepository.UpdateGame(game.Identifier, game);
-        }
-        catch (Exception exception)
-        {
-            throw new Exception(exception.Message);
-        }
-
-        try
-        {
-            // System.Diagnostics.Debug.WriteLine("deleting the tags!");
             this.DeleteGameTags(game.Identifier);
             if (selectedTags != null && selectedTags.Count > EmptyListLength)
             {
