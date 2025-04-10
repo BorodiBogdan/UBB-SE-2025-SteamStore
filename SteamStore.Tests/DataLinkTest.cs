@@ -33,6 +33,20 @@ namespace SteamStore.Tests
         }
 
         [Fact]
+        public void DataLink_OpenConnection_DoesNotThrow()
+        {
+            dataLink.OpenConnection();
+            Assert.True(true);
+        }
+
+        [Fact]
+        public void DataLink_CloseConnection_DoesNotThrow()
+        {
+            dataLink.CloseConnection();
+            Assert.True(true);
+        }
+
+        [Fact]
         public void DataLink_ExecuteReader_NullParameters_ThrowsException()
         {
             var exception = Assert.Throws<Exception>(() =>
