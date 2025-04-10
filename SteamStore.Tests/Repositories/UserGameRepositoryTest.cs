@@ -2,266 +2,287 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Moq;
 using SteamStore.Constants;
 using SteamStore.Data;
 using SteamStore.Repositories.Interfaces;
-using Windows.System;
+using Xunit;
 
 namespace SteamStore.Tests.Repositories
 {
     public class UserGameRepositoryTest
     {
         private readonly Mock<IDataLink> mockDataLink;
-        private readonly User testUser;
+        private readonly User mockUser;
         private readonly UserGameRepository userGameRepository;
 
-        private const int TEST_USER_ID = 100;
-        private const float TEST_USER_WALLET = 100;
-        private const float TEST_USER_POINTS = 100;
-        private const int TEST_GAME_ID = 1;
-        private const string TEST_GAME_NAME = "Test Game";
-        private const decimal TEST_GAME_PRICE = 29.99m;
+        private const int TestUserId = 100;
+        private const float InitialWalletBalance = 100.0f;
+        private const float InitialPointsBalance = 100.0f;
+        private const float PointBalanceMinimum = 0.0f;
+        private const int TestGameId = 1;
+        private const decimal TestGamePriceExpensive = 200.0m;
+        private const decimal TestGamePriceCheap = 10.0m;
+        private const float TestGameCheckPrice = 90.0f;
+        private const int GetNumberGameTagsExpected = 2;
+        private const string ExceptionMessageDatabaseError = "Database error";
+        private const string ExceptionMessageInsufficientFunds = "Insufficient funds";
+        private const string ExceptionMessageFailAddPoints = "Failed to add points for purchase: Database error";
+        private const string TestTag1 = "Action";
+        private const string TestTag2 = "Adventure";
+        private const string OwnerCountParameter = "OwnerCount";
+        private const int OwnerCountValue = 5;
+        private const int OwnerCountMinimum = 0;
+        private const float TestPurchaseAmount = 10.0f;
+        private const int TestRewardPoints = 1210;
+        private const int Game1Id = 1;
+        private const string Game1Name = "Game1";
+        private const decimal Game1Price = 19.99m;
+        private const string Game1Description = "Desc1";
+        private const string Game1Image = "Image1";
+        private const string Game1MinReq = "Min1";
+        private const string Game1RecReq = "Rec1";
+        private const string Game1Status = "Available";
+        private const decimal Game1Discount = 10.0m;
+        private const decimal Game1Rating = 4.5m;
+        private const int Game2Id = 2;
+        private const string Game2Name = "Game2";
+        private const decimal Game2Price = 29.99m;
+        private const string Game2Description = "Desc2";
+        private const string Game2Image = "Image2";
+        private const string Game2MinReq = "Min2";
+        private const string Game2RecReq = "Rec2";
+        private const string Game2Status = "Available";
+        private const decimal Game2Discount = 15.0m;
+        private const decimal Game2Rating = 4.0m;
+        private const int ExpectedCountGamesWishlist = 2;
 
         public UserGameRepositoryTest()
         {
             mockDataLink = new Mock<IDataLink>();
-            testUser = new User { UserIdentifier = TEST_USER_ID, WalletBalance = TEST_USER_WALLET, PointsBalance = TEST_USER_POINTS };
-            userGameRepository = new UserGameRepository(mockDataLink.Object, testUser);
+            mockUser = new User { UserIdentifier = TestUserId, WalletBalance = InitialWalletBalance, PointsBalance = InitialPointsBalance };
+            userGameRepository = new UserGameRepository(mockDataLink.Object, mockUser);
         }
 
         [Fact]
-        public void IsGamePurchased_ReturnsTrue_WhenGamePurchased()
+        public void IsGamePurchased_ReturnsTrue_WhenGameIsPurchased()
         {
-            var game = new Game { Identifier = TEST_GAME_ID };
+            var purchasedGame = new Game { Identifier = TestGameId };
+            mockDataLink.Setup(dataLink => dataLink.ExecuteScalar<int>(SqlConstants.IsGamePurchasedProcedure, It.IsAny<SqlParameter[]>()))
+                        .Returns(1);
 
-            mockDataLink.Setup(dl => dl.ExecuteScalar<int>("IsGamePurchased", It.IsAny<SqlParameter[]>())).Returns(1);
+            var isPurchased = userGameRepository.IsGamePurchased(purchasedGame);
 
-            var result = userGameRepository.IsGamePurchased(game);
-
-            Assert.True(result);
+            Assert.True(isPurchased);
         }
 
         [Fact]
-        public void IsGamePurchased_ReturnsFalse_WhenGameNotPurchased()
+        public void IsGamePurchased_ReturnsFalse_WhenGameIsNotPurchased()
         {
-            var game = new Game { Identifier = TEST_GAME_ID };
+            var unpurchasedGame = new Game { Identifier = TestGameId };
+            mockDataLink.Setup(dataLink => dataLink.ExecuteScalar<int>(SqlConstants.IsGamePurchasedProcedure, It.IsAny<SqlParameter[]>()))
+                        .Returns(0);
 
-            mockDataLink.Setup(dl => dl.ExecuteScalar<int>("IsGamePurchased", It.IsAny<SqlParameter[]>()))
-                .Returns(0);
+            var isPurchased = userGameRepository.IsGamePurchased(unpurchasedGame);
 
-            var result = userGameRepository.IsGamePurchased(game);
-
-            Assert.False(result);
+            Assert.False(isPurchased);
         }
 
         [Fact]
-        public void RemoveGameFromWishlist_ShouldExecuteSuccessfully_WhenValidGameIsProvided()
+        public void RemoveGameFromWishlist_CallsExecuteNonQuery_WhenGameIsValid()
         {
-            var game = new Game { Identifier = 1 };
-            mockDataLink.Setup(dl => dl.ExecuteNonQuery("RemoveGameFromWishlist", It.IsAny<SqlParameter[]>()))
+            var gameToRemove = new Game { Identifier = TestGameId };
+            mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.RemoveGameFromWishlistProcedure, It.IsAny<SqlParameter[]>()))
                         .Verifiable();
 
-            userGameRepository.RemoveGameFromWishlist(game);
+            userGameRepository.RemoveGameFromWishlist(gameToRemove);
 
-            mockDataLink.Verify(dl => dl.ExecuteNonQuery("RemoveGameFromWishlist", It.IsAny<SqlParameter[]>()), Times.Once);
+            mockDataLink.Verify(dataLink => dataLink.ExecuteNonQuery(SqlConstants.RemoveGameFromWishlistProcedure, It.IsAny<SqlParameter[]>()), Times.Once);
         }
 
         [Fact]
-        public void RemoveGameFromWishlist_ShouldThrowException_WhenDatabaseFails()
+        public void RemoveGameFromWishlist_ThrowsException_WhenDatabaseErrorOccurs()
         {
-            var game = new Game { Identifier = 1 };
-            mockDataLink.Setup(dl => dl.ExecuteNonQuery("RemoveGameFromWishlist", It.IsAny<SqlParameter[]>()))
-                        .Throws(new Exception("Database error"));
+            var gameToRemove = new Game { Identifier = TestGameId };
+            mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.RemoveGameFromWishlistProcedure, It.IsAny<SqlParameter[]>()))
+                        .Throws(new Exception(ExceptionMessageDatabaseError));
 
-            var exception = Assert.Throws<Exception>(() => userGameRepository.RemoveGameFromWishlist(game));
-            Assert.Equal("Database error", exception.Message);
+            var exception = Assert.Throws<Exception>(() => userGameRepository.RemoveGameFromWishlist(gameToRemove));
+            Assert.Equal(ExceptionMessageDatabaseError, exception.Message);
         }
 
         [Fact]
-        public void AddGameToPurchased_ThrowsException_WhenInsufficientFunds()
+        public void AddGameToPurchased_ThrowsException_WhenFundsAreInsufficient()
         {
-            var game = new Game { Identifier = TEST_GAME_ID, Price = 200m }; // Higher price than wallet balance.
+            var expensiveGame = new Game { Identifier = TestGameId, Price = TestGamePriceExpensive };
+            var exception = Assert.Throws<Exception>(() => userGameRepository.AddGameToPurchased(expensiveGame));
 
-            var exception = Assert.Throws<Exception>(() => userGameRepository.AddGameToPurchased(game));
-
-            Assert.Equal("Insufficient funds", exception.Message);
+            Assert.Equal(ExceptionMessageInsufficientFunds, exception.Message);
         }
 
         [Fact]
-        public void AddGameToPurchased_SuccessfullyPurchasesGame_WhenSufficientFunds()
+        public void AddGameToPurchased_UpdatesWalletBalance_WhenPurchaseIsSuccessful()
         {
-            var game = new Game { Identifier = TEST_GAME_ID, Price = 50m };
-
-            mockDataLink.Setup(dl => dl.ExecuteNonQuery("AddGameToPurchased", It.IsAny<SqlParameter[]>()))
-                .Verifiable();
-
-            userGameRepository.AddGameToPurchased(game);
-
-            Assert.Equal(50, testUser.WalletBalance);
-            mockDataLink.Verify(dl => dl.ExecuteNonQuery("AddGameToPurchased", It.IsAny<SqlParameter[]>()), Times.Once);
-        }
-
-        [Fact]
-        public void AddGameToWishlist_ShouldExecuteSuccessfully_WhenValidGameIsProvided()
-        {
-            var game = new Game { Identifier = 1 };
-            mockDataLink.Setup(dl => dl.ExecuteNonQuery("AddGameToWishlist", It.IsAny<SqlParameter[]>()))
+            var affordableGame = new Game { Identifier = TestGameId, Price = TestGamePriceCheap };
+            mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.AddGameToPurchasedGamesProcedure, It.IsAny<SqlParameter[]>()))
                         .Verifiable();
 
-            userGameRepository.AddGameToWishlist(game);
+            userGameRepository.AddGameToPurchased(affordableGame);
 
-            mockDataLink.Verify(dl => dl.ExecuteNonQuery("AddGameToWishlist", It.IsAny<SqlParameter[]>()), Times.Once);
+            Assert.Equal(TestGameCheckPrice, mockUser.WalletBalance);
+            mockDataLink.Verify(dataLink => dataLink.ExecuteNonQuery(SqlConstants.AddGameToPurchasedGamesProcedure, It.IsAny<SqlParameter[]>()), Times.Once);
         }
 
         [Fact]
-        public void AddGameToWishlist_ShouldThrowException_WhenDatabaseFails()
+        public void AddGameToWishlist_CallsExecuteNonQuery_WhenGameIsValid()
         {
-            var game = new Game { Identifier = 1 };
-            mockDataLink.Setup(dl => dl.ExecuteNonQuery("AddGameToWishlist", It.IsAny<SqlParameter[]>()))
-                        .Throws(new Exception("Database error"));
-
-            var exception = Assert.Throws<Exception>(() => userGameRepository.AddGameToWishlist(game));
-            Assert.Equal("Database error", exception.Message);
-        }
-
-        [Fact]
-        public void GetGameTags_ShouldReturnTags_WhenTagsExist()
-        {
-            var gameId = 1;
-            var dataTable = new DataTable();
-            dataTable.Columns.Add(SqlConstants.TagNameColumn);
-            dataTable.Rows.Add("Action");
-            dataTable.Rows.Add("Adventure");
-
-            mockDataLink.Setup(dl => dl.ExecuteReader("getGameTags", It.IsAny<SqlParameter[]>()))
-                        .Returns(dataTable);
-
-            var tags = userGameRepository.GetGameTags(gameId);
-
-            Assert.Equal(2, tags.Length);
-            Assert.Contains("Action", tags);
-            Assert.Contains("Adventure", tags);
-        }
-
-        [Fact]
-        public void GetGameTags_ShouldThrowException_WhenDatabaseFails()
-        {
-            var gameId = 1;
-            mockDataLink.Setup(dl => dl.ExecuteReader("getGameTags", It.IsAny<SqlParameter[]>()))
-                        .Throws(new Exception("Database error"));
-
-            var exception = Assert.Throws<Exception>(() => userGameRepository.GetGameTags(gameId));
-            Assert.Equal("Error getting tags for game 1: Database error", exception.Message);
-        }
-
-        [Fact]
-        public void GetGameOwnerCount_ShouldReturnValidCount_WhenDataIsAvailable()
-        {
-            var gameId = 1;
-            var dataTable = new DataTable();
-            dataTable.Columns.Add("OwnerCount");
-            dataTable.Rows.Add(5);
-
-            mockDataLink.Setup(dl => dl.ExecuteReader("GetGameOwnerCount", It.IsAny<SqlParameter[]>()))
-                        .Returns(dataTable);
-
-            var ownerCount = userGameRepository.GetGameOwnerCount(gameId);
-
-            Assert.Equal(5, ownerCount);
-        }
-
-        [Fact]
-        public void GetGameOwnerCount_ShouldReturnDefaultValue_WhenNoDataAvailable()
-        {
-            var gameId = 1;
-            var dataTable = new DataTable(); // Empty table
-
-            mockDataLink.Setup(dl => dl.ExecuteReader("GetGameOwnerCount", It.IsAny<SqlParameter[]>()))
-                        .Returns(dataTable);
-
-            var ownerCount = userGameRepository.GetGameOwnerCount(gameId);
-
-            Assert.Equal(0, ownerCount); // Default value of 0 owners
-        }
-
-        [Fact]
-        public void AddPointsForPurchase_ShouldAddPoints_WhenValidPurchaseAmount()
-        {
-            var purchaseAmount = 10.0f;
-            testUser.PointsBalance = 0; // Initially no points
-            mockDataLink.Setup(dl => dl.ExecuteNonQuery("UpdateUserPointBalance", It.IsAny<SqlParameter[]>()))
+            var gameToAdd = new Game { Identifier = TestGameId };
+            mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.AddGameToWishlistProcedure, It.IsAny<SqlParameter[]>()))
                         .Verifiable();
 
-            userGameRepository.AddPointsForPurchase(purchaseAmount);
+            userGameRepository.AddGameToWishlist(gameToAdd);
 
-            Assert.Equal(1210, testUser.PointsBalance); // 121 points for every $1
-            mockDataLink.Verify(dl => dl.ExecuteNonQuery("UpdateUserPointBalance", It.IsAny<SqlParameter[]>()), Times.Once);
+            mockDataLink.Verify(dataLink => dataLink.ExecuteNonQuery(SqlConstants.AddGameToWishlistProcedure, It.IsAny<SqlParameter[]>()), Times.Once);
         }
 
         [Fact]
-        public void AddPointsForPurchase_ShouldThrowException_WhenDatabaseFails()
+        public void AddGameToWishlist_ThrowsException_WhenDatabaseFails()
         {
-            var purchaseAmount = 10.0f;
-            mockDataLink.Setup(dl => dl.ExecuteNonQuery("UpdateUserPointBalance", It.IsAny<SqlParameter[]>()))
-                        .Throws(new Exception("Database error"));
+            var gameToAdd = new Game { Identifier = TestGameId };
+            mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.AddGameToWishlistProcedure, It.IsAny<SqlParameter[]>()))
+                        .Throws(new Exception(ExceptionMessageDatabaseError));
 
-            var exception = Assert.Throws<Exception>(() => userGameRepository.AddPointsForPurchase(purchaseAmount));
-            Assert.Equal("Failed to add points for purchase: Database error", exception.Message);
+            var exception = Assert.Throws<Exception>(() => userGameRepository.AddGameToWishlist(gameToAdd));
+            Assert.Equal(ExceptionMessageDatabaseError, exception.Message);
+        }
+
+        [Fact]
+        public void GetGameTags_ReturnsTagList_WhenTagsAreAvailable()
+        {
+            var tagsTable = new DataTable();
+            tagsTable.Columns.Add(SqlConstants.TagNameColumn);
+            tagsTable.Rows.Add(TestTag1);
+            tagsTable.Rows.Add(TestTag2);
+
+            mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, It.IsAny<SqlParameter[]>()))
+                        .Returns(tagsTable);
+
+            var tags = userGameRepository.GetGameTags(TestGameId);
+
+            Assert.Equal(GetNumberGameTagsExpected, tags.Length);
+            Assert.Contains(TestTag1, tags);
+            Assert.Contains(TestTag2, tags);
+        }
+
+        [Fact]
+        public void GetGameTags_ThrowsException_WhenDatabaseFails()
+        {
+            mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, It.IsAny<SqlParameter[]>()))
+                        .Throws(new Exception(ExceptionMessageDatabaseError));
+
+            var exception = Assert.Throws<Exception>(() => userGameRepository.GetGameTags(TestGameId));
+            Assert.Equal($"Error getting tags for game {TestGameId}: {ExceptionMessageDatabaseError}", exception.Message);
+        }
+
+        [Fact]
+        public void GetGameOwnerCount_ReturnsCorrectCount_WhenDataExists()
+        {
+            var ownerCountTable = new DataTable();
+            ownerCountTable.Columns.Add(OwnerCountParameter);
+            ownerCountTable.Rows.Add(OwnerCountValue);
+
+            mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetGameOwnerCountProcedure, It.IsAny<SqlParameter[]>()))
+                        .Returns(ownerCountTable);
+
+            var result = userGameRepository.GetGameOwnerCount(TestGameId);
+
+            Assert.Equal(OwnerCountValue, result);
+        }
+
+        [Fact]
+        public void GetGameOwnerCount_ReturnsZero_WhenNoDataAvailable()
+        {
+            var emptyTable = new DataTable();
+
+            mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetGameOwnerCountProcedure, It.IsAny<SqlParameter[]>()))
+                        .Returns(emptyTable);
+
+            var result = userGameRepository.GetGameOwnerCount(TestGameId);
+
+            Assert.Equal(OwnerCountMinimum, result);
+        }
+
+        [Fact]
+        public void AddPointsForPurchase_IncreasesUserPoints_WhenValidAmountIsProvided()
+        {
+            mockUser.PointsBalance = PointBalanceMinimum;
+            mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.UpdateUserPointBalance, It.IsAny<SqlParameter[]>()))
+                        .Verifiable();
+
+            userGameRepository.AddPointsForPurchase(TestPurchaseAmount);
+
+            Assert.Equal(TestRewardPoints, mockUser.PointsBalance);
+            mockDataLink.Verify(dataLink => dataLink.ExecuteNonQuery(SqlConstants.UpdateUserPointBalance, It.IsAny<SqlParameter[]>()), Times.Once);
+        }
+
+        [Fact]
+        public void AddPointsForPurchase_ThrowsException_WhenDatabaseFails()
+        {
+            mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.UpdateUserPointBalance, It.IsAny<SqlParameter[]>()))
+                        .Throws(new Exception(ExceptionMessageDatabaseError));
+
+            var exception = Assert.Throws<Exception>(() => userGameRepository.AddPointsForPurchase(TestPurchaseAmount));
+
+            Assert.Equal(ExceptionMessageFailAddPoints, exception.Message);
         }
 
         [Fact]
         public void GetUserPointsBalance_ReturnsCorrectBalance()
         {
-            testUser.PointsBalance = 150;
+            mockUser.PointsBalance = InitialPointsBalance;
+
             var result = userGameRepository.GetUserPointsBalance();
-            Assert.Equal(150, result);
+
+            Assert.Equal(InitialPointsBalance, result);
         }
 
         [Fact]
-        public void GetWishlistGames_ShouldReturnGames_WhenDataIsAvailable()
+        public void GetWishlistGames_ReturnsListOfGames_WhenDataExists()
         {
-            var dataTable = new DataTable();
-            dataTable.Columns.Add(SqlConstants.GameIdColumn, typeof(int));
-            dataTable.Columns.Add(SqlConstants.GameNameColumn, typeof(string));
-            dataTable.Columns.Add(SqlConstants.GamePriceColumn, typeof(decimal));
-            dataTable.Columns.Add("Description", typeof(string));
-            dataTable.Columns.Add(SqlConstants.ImageUrlColumn, typeof(string));
-            dataTable.Columns.Add(SqlConstants.MinimumRequirementsColumn, typeof(string));
-            dataTable.Columns.Add(SqlConstants.RecommendedRequirementsColumn, typeof(string));
-            dataTable.Columns.Add(SqlConstants.GameStatusColumn, typeof(string));
-            dataTable.Columns.Add(SqlConstants.DiscountColumn, typeof(decimal));
-            dataTable.Columns.Add(SqlConstants.RatingColumn, typeof(decimal));
+            var wishlistTable = new DataTable();
+            wishlistTable.Columns.Add(SqlConstants.GameIdColumn, typeof(int));
+            wishlistTable.Columns.Add(SqlConstants.GameNameColumn, typeof(string));
+            wishlistTable.Columns.Add(SqlConstants.GamePriceColumn, typeof(decimal));
+            wishlistTable.Columns.Add(SqlConstants.DescriptionIdColumnWithCapitalLetter, typeof(string));
+            wishlistTable.Columns.Add(SqlConstants.ImageUrlColumn, typeof(string));
+            wishlistTable.Columns.Add(SqlConstants.MinimumRequirementsColumn, typeof(string));
+            wishlistTable.Columns.Add(SqlConstants.RecommendedRequirementsColumn, typeof(string));
+            wishlistTable.Columns.Add(SqlConstants.GameStatusColumn, typeof(string));
+            wishlistTable.Columns.Add(SqlConstants.DiscountColumn, typeof(decimal));
+            wishlistTable.Columns.Add(SqlConstants.RatingColumn, typeof(decimal));
 
-            // Adding rows with mock data
-            dataTable.Rows.Add(1, "Game1", 19.99m, "Description1", "ImagePath1", "MinReq1", "RecReq1", "Available", 10.0m, 4.5m);
-            dataTable.Rows.Add(2, "Game2", 29.99m, "Description2", "ImagePath2", "MinReq2", "RecReq2", "Available", 15.0m, 4.0m);
+            wishlistTable.Rows.Add(Game1Id, Game1Name, Game1Price, Game1Description, Game1Image, Game1MinReq, Game1RecReq, Game1Status, Game1Discount, Game1Rating);
+            wishlistTable.Rows.Add(Game2Id, Game2Name, Game2Price, Game2Description, Game2Image, Game2MinReq, Game2RecReq, Game2Status, Game2Discount, Game2Rating);
 
-            // Setting up the mockDataLink to return the mock DataTable
-            mockDataLink.Setup(dl => dl.ExecuteReader("GetWishlistGames", It.IsAny<SqlParameter[]>()))
-                        .Returns(dataTable);
+            mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetWishlistGamesProcedure, It.IsAny<SqlParameter[]>()))
+                        .Returns(wishlistTable);
 
-            // Act
-            var games = userGameRepository.GetWishlistGames();
+            var wishlist = userGameRepository.GetWishlistGames();
 
-            // Assert
-            Assert.Equal(2, games.Count);
+            Assert.Equal(ExpectedCountGamesWishlist, wishlist.Count);
         }
 
         [Fact]
-        public void GetWishlistGames_ShouldReturnEmpty_WhenNoDataAvailable()
+        public void GetWishlistGames_ReturnsEmptyList_WhenNoDataExists()
         {
-            var dataTable = new DataTable(); // Empty table
+            var emptyWishlist = new DataTable();
 
-            mockDataLink.Setup(dl => dl.ExecuteReader("GetWishlistGames", It.IsAny<SqlParameter[]>()))
-                        .Returns(dataTable);
+            mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetWishlistGamesProcedure, It.IsAny<SqlParameter[]>()))
+                        .Returns(emptyWishlist);
 
-            var games = userGameRepository.GetWishlistGames();
+            var wishlist = userGameRepository.GetWishlistGames();
 
-            Assert.Empty(games);
+            Assert.Empty(wishlist);
         }
     }
 }
