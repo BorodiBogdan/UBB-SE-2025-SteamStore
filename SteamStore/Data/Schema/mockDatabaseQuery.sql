@@ -392,7 +392,7 @@ GO
 CREATE PROCEDURE ValidateGame
     @game_id INT
 AS
-BEGIN 
+BEGIN
     SET NOCOUNT ON;
     UPDATE games
     SET status = 'Approved',
@@ -589,7 +589,7 @@ BEGIN
 	ELSE
 		SELECT 0 AS Result;
 END;
-go
+GO
 
 DROP PROCEDURE IF EXISTS DeleteGameTags;
 GO
@@ -1132,6 +1132,36 @@ BEGIN
 END
 
 GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'ResetUserInventoryToDefault')
+    DROP PROCEDURE ResetUserInventoryToDefault;
+Go
+
+CREATE PROCEDURE ResetUserInventoryToDefault
+    @UserId INT
+AS
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM UserInventoryItems 
+        WHERE UserId = @UserId AND ItemId = 1
+    )
+    BEGIN
+        INSERT INTO UserInventoryItems (UserId, ItemId, PurchaseDate, IsActive)
+        VALUES
+            (@UserId, 1, GETDATE(), 1),  -- Blue background
+            (@UserId, 3, GETDATE(), 0),  -- Golden frame
+            (@UserId, 5, GETDATE(), 1);  -- Happy emoticon
+    END
+    ELSE
+    BEGIN
+        DELETE FROM UserInventoryItems 
+        WHERE UserId = @UserId AND ItemId NOT IN (1, 3, 5);
+
+        UPDATE UserInventoryItems SET IsActive = 1 WHERE UserId = @UserId AND ItemId = 1;
+        UPDATE UserInventoryItems SET IsActive = 0 WHERE UserId = @UserId AND ItemId = 3;
+        UPDATE UserInventoryItems SET IsActive = 1 WHERE UserId = @UserId AND ItemId = 5;
+    END
+END
 
 --EXEC GetAllUnvalidated @publisher_id = "1";
 
