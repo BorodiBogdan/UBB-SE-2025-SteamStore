@@ -135,7 +135,7 @@ namespace SteamStore.Repositories
         public void ActivateItem(PointShopItem item)
         {
             if (item == null)
-            {
+            { 
                 throw new ArgumentNullException(nameof(item), "Cannot activate a null item");
             }
 
@@ -215,12 +215,11 @@ namespace SteamStore.Repositories
 
             try
             {
-                string query = "ResetUserInventoryToDefault";
                 SqlParameter[] parameters = new SqlParameter[]
                 {
                     new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, this.user.UserIdentifier),
                 };
-                this.data.ExecuteNonQuery(query, parameters);
+                this.data.ExecuteNonQuery(SqlConstants.ResetUserInventoryToDefault, parameters);
             }
             catch (Exception ex)
             {
