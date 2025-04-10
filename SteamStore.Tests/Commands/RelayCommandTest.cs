@@ -1,9 +1,9 @@
-﻿using SteamStore.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SteamStore.ViewModels;
 
 namespace SteamStore.Tests.Commands
 {
@@ -32,8 +32,10 @@ namespace SteamStore.Tests.Commands
         public void Constructor_ValidParameters_InitializesCommand()
         {
             // Arrange
-            Action<string> execute = (param) => { this.executeCalled = true; this.lastParameter = param; };
-            Predicate<string> canExecute = (param) => { this.canExecuteCalled = true; return true; };
+            Action<string> execute = (parameter) => { this.executeCalled = true;
+                this.lastParameter = parameter; };
+            Predicate<string> canExecute = (parameter) => { this.canExecuteCalled = true;
+                return true; };
 
             // Act
             this.relayCommand = new RelayCommand<string>(execute, canExecute);
@@ -46,7 +48,7 @@ namespace SteamStore.Tests.Commands
         public void CanExecute_NoCanExecuteFunction_ReturnsTrue()
         {
             // Arrange
-            this.relayCommand = new RelayCommand<string>((param) => { });
+            this.relayCommand = new RelayCommand<string>((parameter) => { });
 
             // Act
             bool result = this.relayCommand.CanExecute("test");
@@ -59,7 +61,7 @@ namespace SteamStore.Tests.Commands
         public void CanExecute_NullParameterForValueType_ReturnsFalse()
         {
             // Arrange
-            var intCommand = new RelayCommand<int>((param) => { });
+            var intCommand = new RelayCommand<int>((parameter) => { });
 
             // Act
             bool result = intCommand.CanExecute(null);
@@ -72,7 +74,7 @@ namespace SteamStore.Tests.Commands
         public void CanExecute_NonNullValueTypeParameter_ReturnsTrue()
         {
             // Arrange
-            var intCommand = new RelayCommand<int>((param) => { });
+            var intCommand = new RelayCommand<int>((parameter) => { });
 
             // Act
             bool result = intCommand.CanExecute(42);
@@ -86,8 +88,9 @@ namespace SteamStore.Tests.Commands
         {
             // Arrange
             this.relayCommand = new RelayCommand<string>(
-                (param) => { },
-                (param) => { this.canExecuteCalled = true; return true; });
+                (parameter) => { },
+                (parameter) => { this.canExecuteCalled = true;
+                    return true; });
 
             // Act
             this.relayCommand.CanExecute("test");
@@ -101,10 +104,10 @@ namespace SteamStore.Tests.Commands
         {
             // Arrange
             const string testParameter = "test parameter";
-            this.relayCommand = new RelayCommand<string>((param) =>
+            this.relayCommand = new RelayCommand<string>((parameter) =>
             {
                 this.executeCalled = true;
-                this.lastParameter = param;
+                this.lastParameter = parameter;
             });
 
             // Act
@@ -120,7 +123,7 @@ namespace SteamStore.Tests.Commands
         {
             // Arrange
             bool eventRaised = false;
-            this.relayCommand = new RelayCommand<string>((param) => { });
+            this.relayCommand = new RelayCommand<string>((parameter) => { });
             this.relayCommand.CanExecuteChanged += (sender, args) => eventRaised = true;
 
             // Act
@@ -136,7 +139,7 @@ namespace SteamStore.Tests.Commands
             // Arrange
             bool eventRaised = false;
             EventHandler handler = (sender, args) => eventRaised = true;
-            this.relayCommand = new RelayCommand<string>((param) => { });
+            this.relayCommand = new RelayCommand<string>((parameter) => { });
 
             // Act
             this.relayCommand.CanExecuteChanged += handler;
@@ -158,8 +161,8 @@ namespace SteamStore.Tests.Commands
         {
             // Arrange
             this.relayCommand = new RelayCommand<string>(
-                (param) => { },
-                (param) => param == "valid");
+                (parameter) => { },
+                (parameter) => parameter == "valid");
 
             // Act
             bool validResult = this.relayCommand.CanExecute("valid");

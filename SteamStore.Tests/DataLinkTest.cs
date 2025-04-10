@@ -20,7 +20,7 @@ namespace SteamStore.Tests
         private const string ErrorExecuteReader = "Error - ExecuteReader";
         private const string ErrorExecuteNonQuery = "Error - ExecuteNonQuery";
         private const string ErrorExecuteScalar = "Error - ExecutingScalar";
-        private const int DataTableRowCountComparisonValue = 0;
+        private const int NumberRowsEmptyTable = 0;
         private const int GameOwnerCountComparisonValue = 0;
         private const int GameRatingComparisonMinimum = 0;
         private const int GameRatingComparisonMaximum = 5;
@@ -47,7 +47,7 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_NullParameters_ThrowsException()
+        public void ExecuteReader_NullParameters_ThrowsException()
         {
             var exception = Assert.Throws<Exception>(() =>
                 dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, null));
@@ -55,7 +55,7 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_EmptyParameters_ThrowsException()
+        public void ExecuteReader_EmptyParameters_ThrowsException()
         {
             var exception = Assert.Throws<Exception>(() =>
                 dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, new SqlParameter[] { }));
@@ -63,7 +63,7 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_InvalidParameters_ThrowsException()
+        public void ExecuteReader_InvalidParameters_ThrowsException()
         {
             var parameters = new SqlParameter[]
             {
@@ -75,7 +75,7 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_UnsupportedProcedure_ThrowsException()
+        public void ExecuteReader_UnsupportedProcedure_ThrowsException()
         {
             var exception = Assert.Throws<Exception>(() =>
                 dataLink.ExecuteReader(UnsupportedProcedure));
@@ -83,7 +83,7 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteNonQuery_UnsupportedProcedure_ThrowsException()
+        public void ExecuteNonQuery_UnsupportedProcedure_ThrowsException()
         {
             var exception = Assert.Throws<Exception>(() =>
                 dataLink.ExecuteNonQuery(AnyProcedure));
@@ -91,7 +91,7 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteScalar_UnsupportedProcedure_ThrowsException()
+        public void ExecuteScalar_UnsupportedProcedure_ThrowsException()
         {
             var exception = Assert.Throws<Exception>(() =>
                 dataLink.ExecuteScalar<int>(AnyProcedure));
@@ -99,7 +99,7 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_GetUserById_ReturnsDataWithExpectedStructure()
+        public void ExecuteReader_GetUserById_ReturnsDataWithExpectedStructure()
         {
             var parameters = new SqlParameter[]
             {
@@ -110,18 +110,18 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_GetUserById_ReturnsDataWithValidContent()
+        public void ExecuteReader_GetUserById_ReturnsDataWithValidContent()
         {
             var parameters = new SqlParameter[]
             {
                 new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, SqlDbType.Int) { Value = TestUserIdentifier }
             };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserByIdProcedure, parameters);
-            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
+            Assert.True(dataTable.Rows.Count > NumberRowsEmptyTable);
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_getUserGames_ReturnsDataWithExpectedStructure()
+        public void ExecuteReader_getUserGames_ReturnsDataWithExpectedStructure()
         {
             var parameters = new SqlParameter[]
             {
@@ -132,18 +132,18 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_getUserGames_ReturnsDataWithValidContent()
+        public void ExecuteReader_getUserGames_ReturnsDataWithValidContent()
         {
             var parameters = new SqlParameter[]
             {
                 new SqlParameter(SqlConstants.UserIdentifierParameter, SqlDbType.Int) { Value = TestUserIdentifier }
             };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters);
-            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
+            Assert.True(dataTable.Rows.Count > NumberRowsEmptyTable);
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_getAllTags_ReturnsDataWithExpectedStructure()
+        public void ExecuteReader_getAllTags_ReturnsDataWithExpectedStructure()
         {
             var parameters = new SqlParameter[] { };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
@@ -151,15 +151,15 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_getAllTags_ReturnsDataWithValidContent()
+        public void ExecuteReader_getAllTags_ReturnsDataWithValidContent()
         {
             var parameters = new SqlParameter[] { };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
-            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
+            Assert.True(dataTable.Rows.Count > NumberRowsEmptyTable);
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_getGameTags_ReturnsDataWithExpectedStructure()
+        public void ExecuteReader_getGameTags_ReturnsDataWithExpectedStructure()
         {
             var parameters = new SqlParameter[]
             {
@@ -170,18 +170,18 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_getGameTags_ReturnsDataWithValidContent()
+        public void ExecuteReader_getGameTags_ReturnsDataWithValidContent()
         {
             var parameters = new SqlParameter[]
             {
                 new SqlParameter(SqlConstants.GameIdShortcutParameter, SqlDbType.Int) { Value = TestGameIdentifier }
             };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, parameters);
-            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
+            Assert.True(dataTable.Rows.Count > NumberRowsEmptyTable);
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_GetAllGames_ReturnsDataWithExpectedStructure()
+        public void ExecuteReader_GetAllGames_ReturnsDataWithExpectedStructure()
         {
             var parameters = new SqlParameter[] { };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure, parameters);
@@ -189,15 +189,15 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_GetAllGames_ReturnsDataWithValidContent()
+        public void ExecuteReader_GetAllGames_ReturnsDataWithValidContent()
         {
             var parameters = new SqlParameter[] { };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure, parameters);
-            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
+            Assert.True(dataTable.Rows.Count > NumberRowsEmptyTable);
         }
 
         [Fact]
-        public void DataLink_ExecuteScalar_GetGameOwnerCount_StructureIsCorrect()
+        public void ExecuteScalar_GetGameOwnerCount_StructureIsCorrect()
         {
             var parameters = new SqlParameter[]
             {
@@ -208,7 +208,7 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteScalar_GetGameOwnerCount_ReturnsCorrectCount()
+        public void ExecuteScalar_GetGameOwnerCount_ReturnsCorrectCount()
         {
             var parameters = new SqlParameter[]
             {
@@ -219,7 +219,7 @@ namespace SteamStore.Tests
         }
 
         [Fact]
-        public void DataLink_ExecuteScalar_GetAverageGameRating_ReturnsCorrectAverage()
+        public void ExecuteScalar_GetAverageGameRating_ReturnsCorrectAverage()
         {
             var parameters = new SqlParameter[]
             {
