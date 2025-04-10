@@ -66,6 +66,8 @@ namespace SteamStore.Constants
         public const string GetUserPointShopItemsProcedure = "GetUserPointShopItems";
         public const string PurchasePointShopItemProcedure = "PurchasePointShopItem";
         public const string ActivatePointSHopIntemProcedure = "ActivatePointShopItem";
+        public const string GetUserByIdProcedure = "GetUserById";
+        public const string GetUserGamesProcedure = "getUserGames";
         public const string UpdateUserPointBalance = "UpdateUserPointBalance";
         public const string GetAllPointShopItems = "GetAllPointShopItems";
         public const string ResetUserInventoryToDefault = "ResetUserInventoryToDefault";
@@ -96,5 +98,6 @@ namespace SteamStore.Constants
         public const string ItemTypeColumnWithCapitalLetter = "ItemType";
         public const string IsActiveColumn = "IsActive";
 
+        public const string UserIdColumn = "user_id";
     }
 }
