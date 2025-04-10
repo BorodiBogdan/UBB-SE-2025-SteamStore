@@ -214,7 +214,7 @@ namespace SteamStore.Pages
             {
                 this.NotificationTip.Title = NotificationStrings.AddToWishlistErrorTitle;
                 string errorMessage = exception.Message;
-                if (errorMessage.Contains(ErrorStrings.SQLNONQUERYFAILUREINDICATORr))
+                if (errorMessage.Contains(ErrorStrings.SQLNONQUERYFAILUREINDICATOR))
                 {
                     errorMessage = string.Format(ErrorStrings.ADDTOWISHLISTALREADYEXISTSMESSAGE, this.viewModel.Game.Name);
                 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using Moq;
 using SteamStore.Models;
 using SteamStore.Repositories;
@@ -12,8 +13,20 @@ namespace SteamStore.Tests.Services
 		private readonly Mock<IGameRepository> gameRepositoryMock = new Mock<IGameRepository>();
 		private readonly Mock<ITagRepository> tagRepositoryMock = new Mock<ITagRepository>();
 		private readonly Mock<IUserGameRepository> userGameRepoMock = new Mock<IUserGameRepository>();
+        private const int TestGameId = 1;
+		private const string TestGameIdText = "1";
+		private const string TestGameNameText = "Test";
+		private const string TestGamePriceText = "10";
+		private const string TestGameDescriptionText = "Desc";
+		private const string TestGameImageInfoText = "img.png";
+        private const string TestGameTrailerInfoText = "trailer";
+        private const string TestGameGameplayInfoText = "gameplay";
+        private const string TestGameMinimumRequirementText = "min";
+        private const string TestGameRecommendedRequirementText = "rec";
+        private const string TestGameDiscountText = "5";
+		private const string TestGameNoDiscountText = "0";
 
-		private readonly User testUser = new User() { UserIdentifier = 42 };
+        private readonly User testUser = new User() { UserIdentifier = 42 };
 
 		public DeveloperServiceTests()
 		{
@@ -29,23 +42,23 @@ namespace SteamStore.Tests.Services
 		[Fact]
 		public void ValidateGame_ShouldCallRepository()
 		{
-			service.ValidateGame(1);
-			gameRepositoryMock.Verify(repo => repo.ValidateGame(1), Times.Once);
+			service.ValidateGame(TestGameId);
+			gameRepositoryMock.Verify(repo => repo.ValidateGame(TestGameId), Times.Once);
 		}
 
 		[Fact]
 		public void ValidateInputForAddingAGame_ShouldReturnGame_WhenValid()
 		{
-			var gameIdText = "1";
-			var name = "Test";
-			var priceText = "10";
-			var description = "Desc";
-			var imageUrl = "img.png";
-			var tralerUrl = "trailer";
-			var gameplayUrl = "gameplay";
-			var minimumRequirement = "min";
-			var recommendedRequirement = "rec";
-			var dicountText = "5";
+			var gameIdText = TestGameIdText;
+			var name = TestGameNameText;
+			var priceText = TestGamePriceText;
+			var description = TestGameDescriptionText;
+			var imageUrl = TestGameImageInfoText;
+			var tralerUrl = TestGameTrailerInfoText;
+			var gameplayUrl = TestGameGameplayInfoText;
+			var minimumRequirement = TestGameMinimumRequirementText;
+			var recommendedRequirement = TestGameRecommendedRequirementText;
+			var dicountText = TestGameDiscountText;
 			var tags = new List<Tag> { new Tag { TagId = 1 } };
 
 			var expectedIdentifier = 1;
@@ -269,7 +282,7 @@ namespace SteamStore.Tests.Services
 
 			var result = service.GetGameOwnerCount(expectedGameIdentifier);
 
-			Assert.Equal(7, result);
+			Assert.Equal(expectedGameOwnerCount, result);
 		}
 
 		[Fact]
@@ -283,16 +296,16 @@ namespace SteamStore.Tests.Services
 		[Fact]
 		public void CreateValidatedGame_ShouldThrowIfIdInUse()
 		{
-			var gameIdText = "1";
-			var name = "Test";
-			var priceText = "10";
-			var description = "Desc";
-			var imageUrl = "img.png";
-			var tralerUrl = "trailer";
-			var gameplayUrl = "gameplay";
-			var minimumRequirement = "min";
-			var recommendedRequirement = "rec";
-			var dicountText = "0";
+			var gameIdText = TestGameIdText;
+			var name = TestGameNameText;
+			var priceText = TestGamePriceText;
+			var description = TestGameDescriptionText;
+			var imageUrl = TestGameImageInfoText;
+			var tralerUrl = TestGameTrailerInfoText;
+			var gameplayUrl = TestGameGameplayInfoText;
+			var minimumRequirement = TestGameMinimumRequirementText;
+			var recommendedRequirement = TestGameRecommendedRequirementText;
+			var dicountText = TestGameNoDiscountText;
 			var tags = new List<Tag> { new Tag { TagId = 1 } };
 
 			var expectedIdentifier = 1;
@@ -359,12 +372,13 @@ namespace SteamStore.Tests.Services
 			var gameTags = new List<Tag> { new Tag() { TagId = 1 } };
 			var expectedIdentifier = 1;
 			var expectedTagIdentifier = 1;
+			var firstIndexOfResult = 0;
 
 			gameRepositoryMock.Setup(r => r.GetGameTags(expectedIdentifier)).Returns(gameTags);
 			var result = service.GetMatchingTagsForGame(expectedIdentifier, allTags);
 
 			Assert.Single(result);
-			Assert.Equal(expectedTagIdentifier, result[0].TagId);
+			Assert.Equal(expectedTagIdentifier, result[firstIndexOfResult].TagId);
 		}
 	}
 }

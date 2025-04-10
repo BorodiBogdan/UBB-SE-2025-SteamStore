@@ -269,7 +269,7 @@ public class DeveloperService : IDeveloperService
 
     public void RejectGameAndRemoveFromUnvalidated(int gameId, ObservableCollection<Game> unvalidatedGames)
     {
-        this.RejectGame(gameId); // your existing rejection logic (e.g., DB update)
+        this.RejectGame(gameId);
 
         Game gameToRemove = null;
         foreach (var game in unvalidatedGames)

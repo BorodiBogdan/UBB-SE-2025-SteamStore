@@ -188,8 +188,6 @@ public class GameRepository : IGameRepository
 
         var usageResultTable = this.dataLink.ExecuteReader(SqlConstants.IsGameIdInUseProcedure, checkingIfGameIsInUseParameters);
 
-        
-
         var gameUsageCount = Convert.ToInt32(usageResultTable.Rows[FirstRowIndex][SqlConstants.QueryResultColumn]);
         return gameUsageCount > ZeroUsagesOfAGame;
     }
@@ -201,7 +199,7 @@ public class GameRepository : IGameRepository
         var tagRows = this.dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, gameIdParameters);
 
         List<Tag> tags = (from DataRow row in tagRows.Rows
-                          orderby (string)row[SqlConstants.TagNameColumn] 
+                          orderby (string)row[SqlConstants.TagNameColumn]
                           select new Tag
                           {
                               TagId = (int)row[SqlConstants.TagIdColumn],

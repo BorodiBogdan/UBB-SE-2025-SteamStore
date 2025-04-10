@@ -27,6 +27,7 @@ public class CartRepositoryTests
 	public void GetCartGames_ShouldReturnMappedGames_WhenDataExists()
 	{
 		var table = new DataTable();
+		int firstRowIndex = 0;
 		table.Columns.Add(SqlConstants.GAMEIDCOLUMN, typeof(int));
 		table.Columns.Add(SqlConstants.NAMECOLUMN, typeof(string));
 		table.Columns.Add(SqlConstants.DESCRIPTIONCOLUMN, typeof(string));
@@ -50,7 +51,7 @@ public class CartRepositoryTests
 			.Returns(table);
 
 		var result = cartRepository.GetCartGames();
-		var actualFirstItem = result[0];
+		var actualFirstItem = result[firstRowIndex];
 
 		Assert.Single(result);
 		Assert.Equal(expectedIdentifier, actualFirstItem.Identifier);

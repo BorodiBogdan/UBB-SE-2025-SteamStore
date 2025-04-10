@@ -162,7 +162,7 @@ public class UserGameService : IUserGameService
                 }
             }
 
-            game.TagScore = game.TagScore * (1 / 3m);
+            game.TagScore = game.TagScore * (TagScoreMultiplierNumerator / TagScoreMultiplierDenominator);
         }
     }
 
