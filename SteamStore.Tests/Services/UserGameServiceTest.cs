@@ -146,7 +146,7 @@ namespace SteamStore.Tests.Services
             var tag = new Tag { Tag_name = TagName1 };
             var gameWithTag = new Game { Name = GameName1, Tags = new[] { TagName1 } };
 
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(new Collection<Game> { gameWithTag });
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { gameWithTag });
 
             var tagCollection = new Collection<Tag> { tag };
 
@@ -161,7 +161,7 @@ namespace SteamStore.Tests.Services
             var tag = new Tag { Tag_name = TagName2 };
             var gameWithoutTag = new Game { Name = GameName1, Tags = new[] { TagName1 } };
 
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(new Collection<Game> { gameWithoutTag });
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { gameWithoutTag });
 
             var tagCollection = new Collection<Tag> { tag };
 
@@ -177,7 +177,7 @@ namespace SteamStore.Tests.Services
             var game1 = new Game { Name = GameName1, Tags = new[] { TagName1 } };
             var game2 = new Game { Name = GameName2, Tags = new[] { TagName1, TagName2 } };
 
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(new Collection<Game> { game1, game2 });
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { game1, game2 });
 
             var tagCollection = new Collection<Tag> { tag };
 
@@ -194,7 +194,7 @@ namespace SteamStore.Tests.Services
 
             var multiTagGame = new Game { Name = GameName1, Tags = new[] { TagName1, TagName2 } };
 
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(new Collection<Game> { multiTagGame });
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { multiTagGame });
 
             var tagCollection = new Collection<Tag> { tag1, tag2 };
 
@@ -220,8 +220,8 @@ namespace SteamStore.Tests.Services
                 new Game { Tags = new[] { TagName1, TagName2 } }
             };
 
-            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(userGames);
 
             var favoriteTags = userGameService.GetFavoriteUserTags();
 
@@ -244,8 +244,8 @@ namespace SteamStore.Tests.Services
                 new Game { Tags = new[] { TagName1, TagName2 } }
             };
 
-            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(userGames);
 
             var favoriteTags = userGameService.GetFavoriteUserTags();
 
@@ -255,8 +255,8 @@ namespace SteamStore.Tests.Services
         [Fact]
         public void GetFavoriteUserTags_ReturnsEmpty_WhenNoGames()
         {
-            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(new Collection<Tag>());
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(new Collection<Game>());
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(new Collection<Tag>());
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game>());
 
             var favoriteTags = userGameService.GetFavoriteUserTags();
 
@@ -279,8 +279,8 @@ namespace SteamStore.Tests.Services
                 new Game { Tags = new[] { TagName2 } }
             };
 
-            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(userGames);
 
             var favoriteTags = userGameService.GetFavoriteUserTags();
 
@@ -303,8 +303,8 @@ namespace SteamStore.Tests.Services
                 new Game { Tags = new[] { TagName2 } }
             };
 
-            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(userGames);
 
             var favoriteTags = userGameService.GetFavoriteUserTags();
 
@@ -324,8 +324,8 @@ namespace SteamStore.Tests.Services
                 new Game { Tags = new[] { TagName1, TagName2, TagName3 } }
             };
 
-            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(userGames);
 
             var favoriteTags = userGameService.GetFavoriteUserTags();
 
@@ -351,8 +351,8 @@ namespace SteamStore.Tests.Services
                 new Game { Tags = new[] { TagName4 } }
             };
 
-            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(userGames);
 
             var favoriteTags = userGameService.GetFavoriteUserTags();
 
@@ -378,8 +378,8 @@ namespace SteamStore.Tests.Services
                 new Tag { Tag_name = TagName3 }
             };
 
-            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(allUserGames);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(allUserGames);
 
             userGameService.ComputeTagScoreForGames(allUserGames);
 
@@ -400,8 +400,8 @@ namespace SteamStore.Tests.Services
                 new Tag { Tag_name = TagName3 }
             };
 
-            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(knownTags);
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(allUserGames);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(knownTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(allUserGames);
 
             userGameService.ComputeTagScoreForGames(allUserGames);
 
@@ -427,8 +427,8 @@ namespace SteamStore.Tests.Services
                 new Tag { Tag_name = TagName2 }
             };
 
-            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(knownTags);
-            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(allUserGames);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(knownTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(allUserGames);
 
             userGameService.ComputeTagScoreForGames(allUserGames);
 

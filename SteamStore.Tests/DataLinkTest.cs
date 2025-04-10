@@ -105,8 +105,8 @@ namespace SteamStore.Tests
             {
                 new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, SqlDbType.Int) { Value = TestUserIdentifier }
             };
-            DataTable dt = dataLink.ExecuteReader(SqlConstants.GetUserByIdProcedure, parameters);
-            Assert.True(dt.Columns.Contains(SqlConstants.UserIdColumn));
+            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserByIdProcedure, parameters);
+            Assert.True(dataTable.Columns.Contains(SqlConstants.UserIdColumn));
         }
 
         [Fact]
@@ -116,8 +116,8 @@ namespace SteamStore.Tests
             {
                 new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, SqlDbType.Int) { Value = TestUserIdentifier }
             };
-            DataTable dt = dataLink.ExecuteReader(SqlConstants.GetUserByIdProcedure, parameters);
-            Assert.True(dt.Rows.Count > DataTableRowCountComparisonValue);
+            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserByIdProcedure, parameters);
+            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
         }
 
         [Fact]
@@ -127,8 +127,8 @@ namespace SteamStore.Tests
             {
                 new SqlParameter(SqlConstants.UserIdentifierParameter, SqlDbType.Int) { Value = TestUserIdentifier }
             };
-            DataTable dt = dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters);
-            Assert.True(dt.Columns.Contains(SqlConstants.GAMEIDCOLUMN));
+            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters);
+            Assert.True(dataTable.Columns.Contains(SqlConstants.GAMEIDCOLUMN));
         }
 
         [Fact]
@@ -138,24 +138,24 @@ namespace SteamStore.Tests
             {
                 new SqlParameter(SqlConstants.UserIdentifierParameter, SqlDbType.Int) { Value = TestUserIdentifier }
             };
-            DataTable dt = dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters);
-            Assert.True(dt.Rows.Count > DataTableRowCountComparisonValue);
+            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters);
+            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
         }
 
         [Fact]
         public void DataLink_ExecuteReader_getAllTags_ReturnsDataWithExpectedStructure()
         {
             var parameters = new SqlParameter[] { };
-            DataTable dt = dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
-            Assert.True(dt.Columns.Contains(SqlConstants.TagIdColumn));
+            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
+            Assert.True(dataTable.Columns.Contains(SqlConstants.TagIdColumn));
         }
 
         [Fact]
         public void DataLink_ExecuteReader_getAllTags_ReturnsDataWithValidContent()
         {
             var parameters = new SqlParameter[] { };
-            DataTable dt = dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
-            Assert.True(dt.Rows.Count > DataTableRowCountComparisonValue);
+            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
+            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
         }
 
         [Fact]
@@ -165,8 +165,8 @@ namespace SteamStore.Tests
             {
                 new SqlParameter(SqlConstants.GameIdShortcutParameter, SqlDbType.Int) { Value = TestGameIdentifier }
             };
-            DataTable dt = dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, parameters);
-            Assert.True(dt.Columns.Contains(SqlConstants.TagIdColumn));
+            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, parameters);
+            Assert.True(dataTable.Columns.Contains(SqlConstants.TagIdColumn));
         }
 
         [Fact]
@@ -176,24 +176,24 @@ namespace SteamStore.Tests
             {
                 new SqlParameter(SqlConstants.GameIdShortcutParameter, SqlDbType.Int) { Value = TestGameIdentifier }
             };
-            DataTable dt = dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, parameters);
-            Assert.True(dt.Rows.Count > DataTableRowCountComparisonValue);
+            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, parameters);
+            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
         }
 
         [Fact]
         public void DataLink_ExecuteReader_GetAllGames_ReturnsDataWithExpectedStructure()
         {
             var parameters = new SqlParameter[] { };
-            DataTable dt = dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure, parameters);
-            Assert.True(dt.Columns.Contains(SqlConstants.GAMEIDCOLUMN));
+            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure, parameters);
+            Assert.True(dataTable.Columns.Contains(SqlConstants.GAMEIDCOLUMN));
         }
 
         [Fact]
         public void DataLink_ExecuteReader_GetAllGames_ReturnsDataWithValidContent()
         {
             var parameters = new SqlParameter[] { };
-            DataTable dt = dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure, parameters);
-            Assert.True(dt.Rows.Count > DataTableRowCountComparisonValue);
+            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure, parameters);
+            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
         }
 
         [Fact]
