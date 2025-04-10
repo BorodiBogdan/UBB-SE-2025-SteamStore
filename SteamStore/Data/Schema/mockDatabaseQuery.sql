@@ -405,7 +405,7 @@ GO
 CREATE PROCEDURE ValidateGame
     @game_id INT
 AS
-BEGIN
+BEGIN 
     SET NOCOUNT ON;
     UPDATE games
     SET status = 'Approved',
@@ -602,7 +602,7 @@ BEGIN
 	ELSE
 		SELECT 0 AS Result;
 END;
-GO
+go
 
 DROP PROCEDURE IF EXISTS DeleteGameTags;
 GO

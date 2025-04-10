@@ -11,36 +11,36 @@ namespace SteamStore.Tests.Repositories
 {
     public class PointShopRepositoryTest
     {
-        const string userName = "John Doe";
-        const int userIdentifier = 1;
-        const float initialPointsBalance = 999999.99f;
+        private const string UserName = "John Doe";
+        private const int UserIdentifier = 1;
+        private const float InitialPointsBalance = 999999.99f;
 
-        const int itemIdentifier1 = 1;
-        const int itemIdentifier3 = 3;
-        const float itemPointPrice = 9999999.99f;
-        const float newPointBalance = 100;
+        private const int ItemIdentifier1 = 1;
+        private const int ItemIdentifier3 = 3;
+        private const float ItemPointPrice = 9999999.99f;
+        private const float NewPointBalance = 100;
 
-        private readonly PointShopRepository _repository;
-        private readonly PointShopRepository _nullRepository;
-        private readonly User _testUser;
+        private readonly PointShopRepository repository;
+        private readonly PointShopRepository nullRepository;
+        private readonly User testUser;
 
         public PointShopRepositoryTest()
         {
-            _testUser = new User
+            testUser = new User
             {
-                UserIdentifier = userIdentifier,
-                Name = userName,
-                PointsBalance = initialPointsBalance
+                UserIdentifier = UserIdentifier,
+                Name = UserName,
+                PointsBalance = InitialPointsBalance
             };
 
-            _repository = new PointShopRepository(_testUser, TestDataLink.GetDataLink());
-            _nullRepository = new PointShopRepository(null, TestDataLink.GetDataLink());
+            repository = new PointShopRepository(testUser, DataLinkTestUtils.GetDataLink());
+            nullRepository = new PointShopRepository(null, DataLinkTestUtils.GetDataLink());
         }
 
         [Fact]
         public void GetAllItems_ShouldReturnItems()
         {
-            var items = _repository.GetAllItems();
+            var items = repository.GetAllItems();
             Assert.NotNull(items);
             Assert.NotEmpty(items);
         }
@@ -48,7 +48,7 @@ namespace SteamStore.Tests.Repositories
         [Fact]
         public void GetUserItems_ShouldReturnUserItems()
         {
-            var items = _repository.GetUserItems();
+            var items = repository.GetUserItems();
             Assert.NotNull(items);
         }
 
@@ -57,19 +57,18 @@ namespace SteamStore.Tests.Repositories
         {
             var item = new PointShopItem
             {
-                ItemIdentifier = itemIdentifier1
+                ItemIdentifier = ItemIdentifier1
             };
 
-            var exception = Assert.Throws<InvalidOperationException>(() => _nullRepository.PurchaseItem(item));
+            var exception = Assert.Throws<InvalidOperationException>(() => nullRepository.PurchaseItem(item));
             Assert.Contains("User is not initialized", exception.Message);
         }
 
         [Fact]
         public void PurchaseItem_NullItem()
         {
-            var exception = Assert.Throws<ArgumentNullException>(() => _repository.PurchaseItem(null));
+            var exception = Assert.Throws<ArgumentNullException>(() => repository.PurchaseItem(null));
             Assert.Contains("Cannot purchase a null item", exception.Message);
-
         }
 
         [Fact]
@@ -77,11 +76,11 @@ namespace SteamStore.Tests.Repositories
         {
             var item = new PointShopItem
             {
-                ItemIdentifier = itemIdentifier3,
-                PointPrice = itemPointPrice
+                ItemIdentifier = ItemIdentifier3,
+                PointPrice = ItemPointPrice
             };
 
-            var exception = Assert.Throws<Exception>(() => _repository.PurchaseItem(item));
+            var exception = Assert.Throws<Exception>(() => repository.PurchaseItem(item));
             Assert.Contains("Insufficient points to purchase this item", exception.Message);
         }
 
@@ -90,9 +89,9 @@ namespace SteamStore.Tests.Repositories
         {
             var item = new PointShopItem
             {
-                ItemIdentifier = itemIdentifier1
+                ItemIdentifier = ItemIdentifier1
             };
-            _repository.ActivateItem(item);
+            repository.ActivateItem(item);
         }
 
         [Fact]
@@ -100,7 +99,7 @@ namespace SteamStore.Tests.Repositories
         {
             PointShopItem? item = null;
 
-            var exception = Assert.Throws<ArgumentNullException>(() => _repository.ActivateItem(item));
+            var exception = Assert.Throws<ArgumentNullException>(() => repository.ActivateItem(item));
             Assert.Contains("Cannot activate a null item", exception.Message);
         }
 
@@ -109,9 +108,9 @@ namespace SteamStore.Tests.Repositories
         {
             var item = new PointShopItem
             {
-                ItemIdentifier = itemIdentifier1
+                ItemIdentifier = ItemIdentifier1
             };
-            var exception = Assert.Throws<InvalidOperationException>(() => _nullRepository.ActivateItem(item));
+            var exception = Assert.Throws<InvalidOperationException>(() => nullRepository.ActivateItem(item));
             Assert.Contains("User is not initialized", exception.Message);
         }
 
@@ -120,40 +119,38 @@ namespace SteamStore.Tests.Repositories
         {
             var item = new PointShopItem
             {
-                ItemIdentifier = itemIdentifier1
+                ItemIdentifier = ItemIdentifier1
             };
-            _repository.DeactivateItem(item);
+            repository.DeactivateItem(item);
         }
 
         [Fact]
         public void DeactivateItem_ShouldThrowException_WhenUserIsNotInitialized()
         {
-            var item = new PointShopItem { ItemIdentifier = itemIdentifier1 };
+            var item = new PointShopItem { ItemIdentifier = ItemIdentifier1 };
 
-            var exception = Assert.Throws<InvalidOperationException>(() => _nullRepository.DeactivateItem(item));
+            var exception = Assert.Throws<InvalidOperationException>(() => nullRepository.DeactivateItem(item));
             Assert.Equal("User is not initialized", exception.Message);
         }
 
         [Fact]
         public void DeactivateItem_NullItem()
         {
-            var exception = Assert.Throws<ArgumentNullException>(() => _repository.DeactivateItem(null));
+            var exception = Assert.Throws<ArgumentNullException>(() => repository.DeactivateItem(null));
             Assert.Contains("Cannot deactivate a null item", exception.Message);
-
         }
 
         [Fact]
         public void UpdateUserPointBalance_ShouldUpdatePoints()
         {
-            _testUser.PointsBalance = newPointBalance;
-            _repository.UpdateUserPointBalance();
+            testUser.PointsBalance = NewPointBalance;
+            repository.UpdateUserPointBalance();
 
-            var updatedBalance = _repository.GetUserItems()
+            var updatedBalance = repository.GetUserItems()
                 .FirstOrDefault()?.PointPrice;
-            Assert.Equal(newPointBalance, _testUser.PointsBalance);
-            _testUser.PointsBalance = initialPointsBalance;
-            _repository.UpdateUserPointBalance();
+            Assert.Equal(NewPointBalance, testUser.PointsBalance);
+            testUser.PointsBalance = InitialPointsBalance;
+            repository.UpdateUserPointBalance();
         }
-
     }
 }
