@@ -27,6 +27,7 @@ namespace SteamStore.Tests.Services
         private const string TAG_NAME_1 = "RPG";
         private const string TAG_NAME_2 = "FPS";
         private const string TAG_NAME_3 = "MMG";
+        private const string TAG_NAME_4 = "BLP";
         private const int USER_POINTS_BEFORE_PURCHASE = 10;
         private const int USER_POINTS_AFTER_PURCHASE = 15;
         private const decimal EXPECTED_TAG_SCORE = 1m;
@@ -95,6 +96,22 @@ namespace SteamStore.Tests.Services
         }
 
         [Fact]
+        public void PurchaseGames_CallsRepository()
+        {
+            var gameToPurchase = new Game { Name = GAME_NAME_1 };
+            var gamesToPurchase = new List<Game> { gameToPurchase };
+
+            mockUserGameRepository.SetupSequence(repository => repository.GetUserPointsBalance())
+                                  .Returns(USER_POINTS_BEFORE_PURCHASE)
+                                  .Returns(USER_POINTS_AFTER_PURCHASE);
+
+            userGameService.PurchaseGames(gamesToPurchase);
+
+            mockUserGameRepository.Verify(repository => repository.AddGameToPurchased(gameToPurchase), Times.Once);
+            mockUserGameRepository.Verify(repository => repository.RemoveGameFromWishlist(gameToPurchase), Times.Once);
+        }
+
+        [Fact]
         public void PurchaseGames_CalculatesPointsCorrectly()
         {
             var gameToPurchase = new Game { Name = GAME_NAME_1 };
@@ -106,60 +123,239 @@ namespace SteamStore.Tests.Services
 
             userGameService.PurchaseGames(gamesToPurchase);
 
-            Assert.Equal(5, userGameService.LastEarnedPoints);
-            mockUserGameRepository.Verify(repository => repository.AddGameToPurchased(gameToPurchase), Times.Once);
-            mockUserGameRepository.Verify(repository => repository.RemoveGameFromWishlist(gameToPurchase), Times.Once);
+            Assert.Equal(USER_POINTS_AFTER_PURCHASE - USER_POINTS_BEFORE_PURCHASE, userGameService.LastEarnedPoints);
         }
 
         [Fact]
-        public void ComputeNoOfUserGamesForEachTag_Works()
+        public void ComputeNoOfUserGamesForEachTag_ShouldSetCountToOne_WhenTagIsUsedInOneGame()
         {
-            var tagForUser = new Tag { Tag_name = TAG_NAME_1 };
-            var userGame = new Game { Tags = new string[] { TAG_NAME_1 } };
+            var tag = new Tag { Tag_name = TAG_NAME_1 };
+            var gameWithTag = new Game { Name = GAME_NAME_1, Tags = new[] { TAG_NAME_1 } };
 
-            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { userGame });
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(new Collection<Game> { gameWithTag });
 
-            var tagsForUser = new Collection<Tag> { tagForUser };
-            userGameService.ComputeNoOfUserGamesForEachTag(tagsForUser);
+            var tagCollection = new Collection<Tag> { tag };
 
-            Assert.Equal(1, tagForUser.NumberOfUserGamesWithTag);
+            userGameService.ComputeNoOfUserGamesForEachTag(tagCollection);
+
+            Assert.Equal(1, tag.NumberOfUserGamesWithTag);
         }
 
         [Fact]
-        public void GetFavoriteUserTags_ReturnsTop3()
+        public void ComputeNoOfUserGamesForEachTag_ShouldSetCountToZero_WhenTagNotPresentInAnyGame()
         {
-            var userTags = new Collection<Tag>
+            var tag = new Tag { Tag_name = TAG_NAME_2 };
+            var gameWithoutTag = new Game { Name = GAME_NAME_1, Tags = new[] { TAG_NAME_1 } };
+
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(new Collection<Game> { gameWithoutTag });
+
+            var tagCollection = new Collection<Tag> { tag };
+
+            userGameService.ComputeNoOfUserGamesForEachTag(tagCollection);
+
+            Assert.Equal(0, tag.NumberOfUserGamesWithTag);
+        }
+
+        [Fact]
+        public void ComputeNoOfUserGamesForEachTag_ShouldCorrectlyCountMultipleGamesForSameTag()
+        {
+            var tag = new Tag { Tag_name = TAG_NAME_1 };
+            var game1 = new Game { Name = GAME_NAME_1, Tags = new[] { TAG_NAME_1 } };
+            var game2 = new Game { Name = GAME_NAME_2, Tags = new[] { TAG_NAME_1, TAG_NAME_2 } };
+
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(new Collection<Game> { game1, game2 });
+
+            var tagCollection = new Collection<Tag> { tag };
+
+            userGameService.ComputeNoOfUserGamesForEachTag(tagCollection);
+
+            Assert.Equal(2, tag.NumberOfUserGamesWithTag);
+        }
+
+        [Fact]
+        public void ComputeNoOfUserGamesForEachTag_ShouldHandleMultipleTagsAndGames()
+        {
+            var tag1 = new Tag { Tag_name = TAG_NAME_1 };
+            var tag2 = new Tag { Tag_name = TAG_NAME_2 };
+
+            var multiTagGame = new Game { Name = GAME_NAME_1, Tags = new[] { TAG_NAME_1, TAG_NAME_2 } };
+
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(new Collection<Game> { multiTagGame });
+
+            var tagCollection = new Collection<Tag> { tag1, tag2 };
+
+            userGameService.ComputeNoOfUserGamesForEachTag(tagCollection);
+
+            Assert.Equal(1, tag1.NumberOfUserGamesWithTag);
+            Assert.Equal(1, tag2.NumberOfUserGamesWithTag);
+        }
+
+
+        [Fact]
+        public void GetFavoriteUserTags_ReturnsTop3_VerifyCount()
+        {
+            var allTags = new Collection<Tag>
             {
                 new Tag { Tag_name = TAG_NAME_1 },
                 new Tag { Tag_name = TAG_NAME_2 },
                 new Tag { Tag_name = TAG_NAME_3 }
             };
 
-            var userGames = new List<Game>
+            var userGames = new Collection<Game>
             {
                 new Game { Tags = new[] { TAG_NAME_2, TAG_NAME_3 } },
                 new Game { Tags = new[] { TAG_NAME_1, TAG_NAME_2 } }
             };
 
-            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(userTags);
-            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game>());
+            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
 
-            var resultTags = userGameService.GetFavoriteUserTags();
+            var favoriteTags = userGameService.GetFavoriteUserTags();
 
-            Assert.Equal(3, resultTags.Count);
-            Assert.Equal(TAG_NAME_2, resultTags[0].Tag_name);
+            Assert.Equal(3, favoriteTags.Count);
+        }
+
+        [Fact]
+        public void GetFavoriteUserTags_ReturnsTop3_VerifyTag()
+        {
+            var allTags = new Collection<Tag>
+            {
+                new Tag { Tag_name = TAG_NAME_1 },
+                new Tag { Tag_name = TAG_NAME_2 },
+                new Tag { Tag_name = TAG_NAME_3 }
+            };
+
+            var userGames = new Collection<Game>
+            {
+                new Game { Tags = new[] { TAG_NAME_2, TAG_NAME_3 } },
+                new Game { Tags = new[] { TAG_NAME_1, TAG_NAME_2 } }
+            };
+
+            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+
+            var favoriteTags = userGameService.GetFavoriteUserTags();
+
+            Assert.Equal(TAG_NAME_2, favoriteTags[0].Tag_name);
+        }
+
+        [Fact]
+        public void GetFavoriteUserTags_ReturnsEmpty_WhenNoGames()
+        {
+            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(new Collection<Tag>());
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(new Collection<Game>());
+
+            var favoriteTags = userGameService.GetFavoriteUserTags();
+
+            Assert.Empty(favoriteTags);
+        }
+
+        [Fact]
+        public void GetFavoriteUserTags_ReturnsOnlyExistingTags_VerifyCount()
+        {
+            var allTags = new Collection<Tag>
+            {
+                new Tag { Tag_name = TAG_NAME_1 },
+                new Tag { Tag_name = TAG_NAME_2 }
+            };
+
+            var userGames = new Collection<Game>
+            {
+                new Game { Tags = new[] { TAG_NAME_1 } },
+                new Game { Tags = new[] { TAG_NAME_1 } },
+                new Game { Tags = new[] { TAG_NAME_2 } }
+            };
+
+            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+
+            var favoriteTags = userGameService.GetFavoriteUserTags();
+
+            Assert.Equal(2, favoriteTags.Count);
+        }
+
+        [Fact]
+        public void GetFavoriteUserTags_ReturnsOnlyExistingTags_VerifyTag()
+        {
+            var allTags = new Collection<Tag>
+            {
+                new Tag { Tag_name = TAG_NAME_1 },
+                new Tag { Tag_name = TAG_NAME_2 }
+            };
+
+            var userGames = new Collection<Game>
+            {
+                new Game { Tags = new[] { TAG_NAME_1 } },
+                new Game { Tags = new[] { TAG_NAME_1 } },
+                new Game { Tags = new[] { TAG_NAME_2 } }
+            };
+
+            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+
+            var favoriteTags = userGameService.GetFavoriteUserTags();
+
+            Assert.Equal(TAG_NAME_1, favoriteTags[0].Tag_name);
+        }
+
+        [Fact]
+        public void GetFavoriteUserTags_IgnoresTagsNotInList()
+        {
+            var allTags = new Collection<Tag>
+            {
+                new Tag { Tag_name = TAG_NAME_1 }
+            };
+
+            var userGames = new Collection<Game>
+            {
+                new Game { Tags = new[] { TAG_NAME_1, TAG_NAME_2, TAG_NAME_3 } }
+            };
+
+            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+
+            var favoriteTags = userGameService.GetFavoriteUserTags();
+
+            Assert.Single(favoriteTags);
+            Assert.Equal(TAG_NAME_1, favoriteTags[0].Tag_name);
+        }
+
+        [Fact]
+        public void GetFavoriteUserTags_ReturnsTop3_WhenMoreTags()
+        {
+            var allTags = new Collection<Tag>
+            {
+                new Tag { Tag_name = TAG_NAME_1 },
+                new Tag { Tag_name = TAG_NAME_2 },
+                new Tag { Tag_name = TAG_NAME_3 },
+                new Tag { Tag_name = TAG_NAME_4 }
+            };
+
+            var userGames = new Collection<Game>
+            {
+                new Game { Tags = new[] { TAG_NAME_1, TAG_NAME_2, TAG_NAME_3 } },
+                new Game { Tags = new[] { TAG_NAME_2, TAG_NAME_4 } },
+                new Game { Tags = new[] { TAG_NAME_4 } }
+            };
+
+            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(userGames);
+
+            var favoriteTags = userGameService.GetFavoriteUserTags();
+
+            Assert.Equal(3, favoriteTags.Count);
         }
 
         [Fact]
         public void ComputeTagScoreForGames_CalculatesProperly()
         {
-            var gameWithTags = new Game { Tags = new string[] { TAG_NAME_1, TAG_NAME_2 } };
+            var gameToScore = new Game { Tags = new[] { TAG_NAME_1, TAG_NAME_2 } };
 
             var allUserGames = new Collection<Game>
             {
-                gameWithTags,
-                new Game { Tags = new string[] { TAG_NAME_2 } },
-                new Game { Tags = new string[] { TAG_NAME_3 } }
+                gameToScore,
+                new Game { Tags = new[] { TAG_NAME_2 } },
+                new Game { Tags = new[] { TAG_NAME_3 } }
             };
 
             var allTags = new Collection<Tag>
@@ -169,22 +365,71 @@ namespace SteamStore.Tests.Services
                 new Tag { Tag_name = TAG_NAME_3 }
             };
 
-            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(allTags);
-            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(allUserGames);
+            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(allUserGames);
 
             userGameService.ComputeTagScoreForGames(allUserGames);
 
-            Assert.True(Math.Abs(gameWithTags.TagScore - 1m) < 0.0001m);
+            Assert.True(Math.Abs(EXPECTED_TAG_SCORE - gameToScore.TagScore) < 0.0001m);
+        }
+
+        [Fact]
+        public void ComputeTagScoreForGames_SetsZero_WhenNoMatchingTags()
+        {
+            var gameWithoutValidTags = new Game { Tags = new[] { TAG_NAME_4 } };
+
+            var allUserGames = new Collection<Game> { gameWithoutValidTags };
+
+            var knownTags = new Collection<Tag>
+            {
+                new Tag { Tag_name = TAG_NAME_1 },
+                new Tag { Tag_name = TAG_NAME_2 },
+                new Tag { Tag_name = TAG_NAME_3 }
+            };
+
+            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(knownTags);
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(allUserGames);
+
+            userGameService.ComputeTagScoreForGames(allUserGames);
+
+            Assert.Equal(0, gameWithoutValidTags.TagScore);
+        }
+
+        [Fact]
+        public void ComputeTagScoreForGames_CalculatesCorrectly_WithUnevenTagCounts()
+        {
+            var gameToEvaluate = new Game { Tags = new[] { TAG_NAME_2 } };
+
+            var allUserGames = new Collection<Game>
+            {
+                gameToEvaluate,
+                new Game { Tags = new[] { TAG_NAME_2 } },
+                new Game { Tags = new[] { TAG_NAME_2 } },
+                new Game { Tags = new[] { TAG_NAME_1 } }
+            };
+
+            var knownTags = new Collection<Tag>
+            {
+                new Tag { Tag_name = TAG_NAME_1 },
+                new Tag { Tag_name = TAG_NAME_2 }
+            };
+
+            mockTagRepository.Setup(repo => repo.GetAllTags()).Returns(knownTags);
+            mockUserGameRepository.Setup(repo => repo.GetAllUserGames()).Returns(allUserGames);
+
+            userGameService.ComputeTagScoreForGames(allUserGames);
+
+            Assert.True(gameToEvaluate.TagScore > 0);
         }
 
         [Fact]
         public void ComputeTrendingScores_SetsTrendingScore()
         {
             var trendingGames = new Collection<Game>
-            {
-                new Game { Name = GAME_NAME_1, NumberOfRecentPurchases = RECENT_PURCHASES_GAME_1 },
-                new Game { Name = GAME_NAME_2, NumberOfRecentPurchases = RECENT_PURCHASES_GAME_2 }
-            };
+        {
+            new Game { Name = GAME_NAME_1, NumberOfRecentPurchases = RECENT_PURCHASES_GAME_1 },
+            new Game { Name = GAME_NAME_2, NumberOfRecentPurchases = RECENT_PURCHASES_GAME_2 }
+        };
 
             userGameService.ComputeTrendingScores(trendingGames);
 
@@ -193,12 +438,25 @@ namespace SteamStore.Tests.Services
         }
 
         [Fact]
+        public void ComputeTrendingScores_HandlesSingleGame()
+        {
+            var singleGame = new Collection<Game>
+        {
+            new Game { Name = GAME_NAME_1, NumberOfRecentPurchases = RECENT_PURCHASES_GAME_1 }
+        };
+
+            userGameService.ComputeTrendingScores(singleGame);
+
+            Assert.Equal(1.0m, singleGame[0].TrendingScore);
+        }
+
+        [Fact]
         public void GetRecommendedGames_ReturnsTop10()
         {
             var recommendedGames = new Collection<Game>
             {
-                new Game { NumberOfRecentPurchases = 10, Tags = new[] { TAG_NAME_1 } },
-                new Game { NumberOfRecentPurchases = 20, Tags = new[] { TAG_NAME_1 } }
+                new Game { NumberOfRecentPurchases = RECENT_PURCHASES_GAME_1, Tags = new[] { TAG_NAME_1 } },
+                new Game { NumberOfRecentPurchases = RECENT_PURCHASES_GAME_2, Tags = new[] { TAG_NAME_1 } }
             };
 
             var allTags = new Collection<Tag>
@@ -216,7 +474,53 @@ namespace SteamStore.Tests.Services
         }
 
         [Fact]
-        public void SearchWishListByName_ReturnsMatches()
+        public void GetRecommendedGames_ReturnsTop10_WhenMoreThan10Games()
+        {
+            var allTags = new Collection<Tag>
+            {
+                new Tag { Tag_name = TAG_NAME_1, NumberOfUserGamesWithTag = 15 }
+            };
+
+            var allGames = Enumerable.Range(1, 15).Select(i => new Game
+            {
+                Name = $"Game{i}",
+                NumberOfRecentPurchases = i,
+                Tags = new[] { TAG_NAME_1 }
+            }).ToList();
+
+            mockGameRepository.Setup(r => r.GetAllGames()).Returns(new Collection<Game>(allGames));
+            mockTagRepository.Setup(r => r.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(r => r.GetAllUserGames()).Returns(new Collection<Game>(allGames));
+
+            var recommendedGames = userGameService.GetRecommendedGames();
+
+            Assert.Equal(10, recommendedGames.Count);
+        }
+
+        [Fact]
+        public void GetRecommendedGames_ReturnsEmpty_WhenNoMatchingTags()
+        {
+            var allTags = new Collection<Tag>
+            {
+                new Tag { Tag_name = TAG_NAME_1, NumberOfUserGamesWithTag = 5 }
+            };
+
+            var allGames = new Collection<Game>
+            {
+                new Game { Name = GAME_NAME_2, NumberOfRecentPurchases = 10, Tags = new[] { TAG_NAME_2 } }
+            };
+
+            mockGameRepository.Setup(r => r.GetAllGames()).Returns(allGames);
+            mockTagRepository.Setup(r => r.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(r => r.GetAllUserGames()).Returns(allGames);
+
+            var recommended = userGameService.GetRecommendedGames();
+
+            Assert.Empty(recommended);
+        }
+
+        [Fact]
+        public void SearchWishListByName_ReturnsMatches_SpecificWord()
         {
             var wishlistGames = new Collection<Game>
             {
@@ -226,9 +530,24 @@ namespace SteamStore.Tests.Services
 
             mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(wishlistGames);
 
-            var matchedGames = userGameService.SearchWishListByName("foot");
+            var matchedGames = userGameService.SearchWishListByName(GAME_NAME_1);
             Assert.Single(matchedGames);
             Assert.Equal(GAME_NAME_1, matchedGames[0].Name);
+        }
+
+        [Fact]
+        public void SearchWishListByName_ReturnsMatches_AllWords()
+        {
+            var wishlistGames = new Collection<Game>
+            {
+                new Game { Name = GAME_NAME_1 },
+                new Game { Name = GAME_NAME_2 }
+            };
+
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(wishlistGames);
+
+            var matchedGames = userGameService.SearchWishListByName("Game");
+            Assert.Equal(wishlistGames, matchedGames);
         }
 
         [Fact]

@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using System.Data;
 using Xunit;
 using SteamStore.Data;
+using SteamStore.Constants;
 using SteamStore.Tests.TestUtils;
 
 namespace SteamStore.Tests
@@ -129,7 +130,7 @@ namespace SteamStore.Tests
         public void DataLink_ExecuteReader_getAllTags_ReturnsDataWithExpectedStructure()
         {
             var parameters = new SqlParameter[] { };
-            DataTable dt = _dataLink.ExecuteReader(GET_ALL_TAGS_PROCEDURE, parameters);
+            DataTable dt = _dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
             Assert.True(dt.Columns.Contains("tag_id"));
         }
 
@@ -137,7 +138,7 @@ namespace SteamStore.Tests
         public void DataLink_ExecuteReader_getAllTags_ReturnsDataWithValidContent()
         {
             var parameters = new SqlParameter[] { };
-            DataTable dt = _dataLink.ExecuteReader(GET_ALL_TAGS_PROCEDURE, parameters);
+            DataTable dt = _dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
             Assert.True(dt.Rows.Count > 0);
         }
 

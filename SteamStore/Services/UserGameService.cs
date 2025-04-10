@@ -158,8 +158,8 @@ public class UserGameService : IUserGameService
                 {
                     game.TagScore += tag.NumberOfUserGamesWithTag;
                 }
-
             }
+
             game.TagScore = game.TagScore * (1 / 3m);
         }
     }
