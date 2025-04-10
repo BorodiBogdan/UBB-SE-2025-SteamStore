@@ -51,8 +51,6 @@ public class UserGameService : IUserGameService
             if (this.IsGamePurchased(game))
             {
                 throw new Exception(string.Format(ExceptionMessages.GameAlreadyOwned, game.Name));
-
-                // throw new Exception($"Failed to add {game.Name} to your wishlist: Game already owned");
             }
 
             this.UserGameRepository.AddGameToWishlist(game);
@@ -162,9 +160,9 @@ public class UserGameService : IUserGameService
                 {
                     game.TagScore += tag.NumberOfUserGamesWithTag;
                 }
-
-                game.TagScore = game.TagScore * (TagScoreMultiplierNumerator / TagScoreMultiplierDenominator);
             }
+
+            game.TagScore = game.TagScore * (1 / 3m);
         }
     }
 

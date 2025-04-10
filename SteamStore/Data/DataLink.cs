@@ -12,10 +12,10 @@ public class DataLink : SteamStore.Data.IDataLink
     private readonly string connectionString;
     private SqlConnection sqlConnection;
 
-    public DataLink(IConfiguration configuration)
-    {
-        this.connectionString = configuration["ConnectionString"];
 
+    public DataLink(IConfiguration configuration)
+    { 
+        this.connectionString = configuration.GetConnectionString("ConnectionString");
         try
         {
             this.sqlConnection = new SqlConnection(this.connectionString);

@@ -24,5 +24,7 @@ namespace SteamStore.Repositories.Interfaces
         void DeactivateItem(PointShopItem item);
 
         void UpdateUserPointBalance();
+
+        void ResetUserInventory();
     }
 }

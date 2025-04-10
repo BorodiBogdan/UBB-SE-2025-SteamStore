@@ -3,7 +3,7 @@ using SteamStore.Data;
 
 namespace SteamStore.Tests.TestUtils;
 
-public static class TestDataLink
+public static class DataLinkTestUtils
 {
     private const string TESTSETTINGS_JSON = "testsettings.json";
 
@@ -15,4 +15,5 @@ public static class TestDataLink
 
         return new DataLink(configuration);
     }
+
 }
