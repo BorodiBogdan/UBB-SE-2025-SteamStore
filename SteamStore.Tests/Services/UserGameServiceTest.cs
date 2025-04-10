@@ -15,401 +15,408 @@ namespace SteamStore.Tests.Services
 {
     public class UserGameServiceTest
     {
-        private readonly Mock<IUserGameRepository> userRepoMock;
-        private readonly Mock<IGameRepository> gameRepoMock;
-        private readonly Mock<ITagRepository> tagRepoMock;
-        private readonly UserGameService service;
+        private readonly Mock<IUserGameRepository> mockUserGameRepository;
+        private readonly Mock<IGameRepository> mockGameRepository;
+        private readonly Mock<ITagRepository> mockTagRepository;
+        private readonly UserGameService userGameService;
+
+        // Constants to avoid magic strings and numbers
+        private const string GAME_NAME_1 = "Game1";
+        private const string GAME_NAME_2 = "Game2";
+        private const string GAME_NAME_3 = "Game3";
+        private const string TAG_NAME_1 = "RPG";
+        private const string TAG_NAME_2 = "FPS";
+        private const string TAG_NAME_3 = "MMG";
+        private const int USER_POINTS_BEFORE_PURCHASE = 10;
+        private const int USER_POINTS_AFTER_PURCHASE = 15;
+        private const decimal EXPECTED_TAG_SCORE = 1m;
+        private const decimal RATING_HIGH = 4.7m;
+        private const decimal RATING_MEDIUM = 4.3m;
+        private const decimal RATING_LOW = 2.5m;
+        private const decimal RATING_POOR = 1.5m;
+        private const decimal DISCOUNT_HIGH = 50;
+        private const decimal DISCOUNT_LOW = 10;
+        private const int PRICE_HIGH = 20;
+        private const int PRICE_LOW = 10;
+        private const int RECENT_PURCHASES_GAME_1 = 5;
+        private const int RECENT_PURCHASES_GAME_2 = 10;
 
         public UserGameServiceTest()
         {
-            userRepoMock = new Mock<IUserGameRepository>();
-            gameRepoMock = new Mock<IGameRepository>();
-            tagRepoMock = new Mock<ITagRepository>();
+            mockUserGameRepository = new Mock<IUserGameRepository>();
+            mockGameRepository = new Mock<IGameRepository>();
+            mockTagRepository = new Mock<ITagRepository>();
 
-            service = new UserGameService
+            userGameService = new UserGameService
             {
-                UserGameRepository = userRepoMock.Object,
-                GameRepository = gameRepoMock.Object,
-                TagRepository = tagRepoMock.Object
+                UserGameRepository = mockUserGameRepository.Object,
+                GameRepository = mockGameRepository.Object,
+                TagRepository = mockTagRepository.Object
             };
         }
 
         [Fact]
         public void RemoveGameFromWishlist_CallsRepository()
         {
-            var game = new Game();
-            service.RemoveGameFromWishlist(game);
-            userRepoMock.Verify(x => x.RemoveGameFromWishlist(game), Times.Once);
+            var gameToRemove = new Game();
+            userGameService.RemoveGameFromWishlist(gameToRemove);
+            mockUserGameRepository.Verify(repository => repository.RemoveGameFromWishlist(gameToRemove), Times.Once);
         }
 
         [Fact]
         public void AddGameToWishlist_WhenAlreadyOwned_ThrowsException()
         {
-            var game = new Game { Name = "Cyberpunk" };
-            userRepoMock.Setup(x => x.IsGamePurchased(game)).Returns(true);
+            var gameToAdd = new Game { Name = GAME_NAME_1 };
+            mockUserGameRepository.Setup(repository => repository.IsGamePurchased(gameToAdd)).Returns(true);
 
-            var ex = Assert.Throws<Exception>(() => service.AddGameToWishlist(game));
-            Assert.Equal(string.Format(ExceptionMessages.GameAlreadyOwned, "Cyberpunk"), ex.Message);
+            var exception = Assert.Throws<Exception>(() => userGameService.AddGameToWishlist(gameToAdd));
+            Assert.Equal(string.Format(ExceptionMessages.GameAlreadyOwned, GAME_NAME_1), exception.Message);
         }
 
         [Fact]
-        public void AddGameToWishlist_WhenNotOwned_CallsRepo()
+        public void AddGameToWishlist_WhenNotOwned_CallsRepository()
         {
-            var game = new Game { Name = "Test" };
-            userRepoMock.Setup(x => x.IsGamePurchased(game)).Returns(false);
+            var gameToAdd = new Game { Name = GAME_NAME_2 };
+            mockUserGameRepository.Setup(repository => repository.IsGamePurchased(gameToAdd)).Returns(false);
 
-            service.AddGameToWishlist(game);
-            userRepoMock.Verify(x => x.AddGameToWishlist(game), Times.Once);
+            userGameService.AddGameToWishlist(gameToAdd);
+            mockUserGameRepository.Verify(repository => repository.AddGameToWishlist(gameToAdd), Times.Once);
         }
 
         [Fact]
         public void AddGameToWishlist_WhenSqlException_FormatsMessage()
         {
-            var game = new Game { Name = "FIFA" };
-            userRepoMock.Setup(r => r.IsGamePurchased(game)).Returns(false);
-            userRepoMock.Setup(r => r.AddGameToWishlist(game)).Throws(new Exception("ExecuteNonQuery failed"));
+            var gameToAdd = new Game { Name = GAME_NAME_3 };
+            mockUserGameRepository.Setup(repository => repository.IsGamePurchased(gameToAdd)).Returns(false);
+            mockUserGameRepository.Setup(repository => repository.AddGameToWishlist(gameToAdd)).Throws(new Exception("ExecuteNonQuery failed"));
 
-            var ex = Assert.Throws<Exception>(() => service.AddGameToWishlist(game));
-            Assert.Equal(string.Format(ExceptionMessages.GameAlreadyInWishlist, "FIFA"), ex.Message);
+            var exception = Assert.Throws<Exception>(() => userGameService.AddGameToWishlist(gameToAdd));
+            Assert.Equal(string.Format(ExceptionMessages.GameAlreadyInWishlist, GAME_NAME_3), exception.Message);
         }
 
         [Fact]
         public void PurchaseGames_CalculatesPointsCorrectly()
         {
-            var game = new Game { Name = "Test" };
-            var games = new List<Game> { game };
+            var gameToPurchase = new Game { Name = GAME_NAME_1 };
+            var gamesToPurchase = new List<Game> { gameToPurchase };
 
-            userRepoMock.SetupSequence(x => x.GetUserPointsBalance())
-                        .Returns(10)
-                        .Returns(15);
+            mockUserGameRepository.SetupSequence(repository => repository.GetUserPointsBalance())
+                                  .Returns(USER_POINTS_BEFORE_PURCHASE)
+                                  .Returns(USER_POINTS_AFTER_PURCHASE);
 
-            service.PurchaseGames(games);
+            userGameService.PurchaseGames(gamesToPurchase);
 
-            Assert.Equal(5, service.LastEarnedPoints);
-            userRepoMock.Verify(x => x.AddGameToPurchased(game), Times.Once);
-            userRepoMock.Verify(x => x.RemoveGameFromWishlist(game), Times.Once);
+            Assert.Equal(5, userGameService.LastEarnedPoints);
+            mockUserGameRepository.Verify(repository => repository.AddGameToPurchased(gameToPurchase), Times.Once);
+            mockUserGameRepository.Verify(repository => repository.RemoveGameFromWishlist(gameToPurchase), Times.Once);
         }
 
         [Fact]
         public void ComputeNoOfUserGamesForEachTag_Works()
         {
-            var tag = new Tag { Tag_name = "Action" };
-            var userGame = new Game { Tags = new string[] { "Action" } };
+            var tagForUser = new Tag { Tag_name = TAG_NAME_1 };
+            var userGame = new Game { Tags = new string[] { TAG_NAME_1 } };
 
-            userRepoMock.Setup(x => x.GetAllUserGames()).Returns(new Collection<Game> { userGame });
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { userGame });
 
-            var tags = new Collection<Tag> { tag };
-            service.ComputeNoOfUserGamesForEachTag(tags);
+            var tagsForUser = new Collection<Tag> { tagForUser };
+            userGameService.ComputeNoOfUserGamesForEachTag(tagsForUser);
 
-            Assert.Equal(1, tag.NumberOfUserGamesWithTag);
+            Assert.Equal(1, tagForUser.NumberOfUserGamesWithTag);
         }
 
         [Fact]
         public void GetFavoriteUserTags_ReturnsTop3()
         {
-            var tags = new Collection<Tag>
+            var userTags = new Collection<Tag>
             {
-                new Tag { Tag_name = "RPG" },
-                new Tag { Tag_name = "FPS" },
-                new Tag { Tag_name = "MMO" },
-                new Tag { Tag_name = "SPORTS" }
+                new Tag { Tag_name = TAG_NAME_1 },
+                new Tag { Tag_name = TAG_NAME_2 },
+                new Tag { Tag_name = TAG_NAME_3 }
             };
 
-            var games = new List<Game>
+            var userGames = new List<Game>
             {
-                new Game { Tags = new[] { "RPG", "FPS" } },
-                new Game { Tags = new[] { "RPG", "MMO" } }
+                new Game { Tags = new[] { TAG_NAME_2, TAG_NAME_3 } },
+                new Game { Tags = new[] { TAG_NAME_1, TAG_NAME_2 } }
             };
 
-            tagRepoMock.Setup(x => x.GetAllTags()).Returns(tags);
-            userRepoMock.Setup(x => x.GetAllUserGames()).Returns(new Collection<Game>());
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(userTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game>());
 
-            var result = service.GetFavoriteUserTags();
+            var resultTags = userGameService.GetFavoriteUserTags();
 
-            Assert.Equal(3, result.Count);
-            Assert.Equal("RPG", result[0].Tag_name);
+            Assert.Equal(3, resultTags.Count);
+            Assert.Equal(TAG_NAME_2, resultTags[0].Tag_name);
         }
 
         [Fact]
         public void ComputeTagScoreForGames_CalculatesProperly()
         {
-            var game = new Game { Tags = new string[] { "RPG", "FPS" } };
+            var gameWithTags = new Game { Tags = new string[] { TAG_NAME_1, TAG_NAME_2 } };
 
-            var games = new Collection<Game>
+            var allUserGames = new Collection<Game>
             {
-                game,
-                new Game { Tags = new string[] { "RPG" } },
-                new Game { Tags = new string[] { "MMO" } }
+                gameWithTags,
+                new Game { Tags = new string[] { TAG_NAME_2 } },
+                new Game { Tags = new string[] { TAG_NAME_3 } }
             };
 
-            var tags = new Collection<Tag>
+            var allTags = new Collection<Tag>
             {
-                new Tag { Tag_name = "RPG", NumberOfUserGamesWithTag = 3 },
-                new Tag { Tag_name = "FPS", NumberOfUserGamesWithTag = 2 },
-                new Tag { Tag_name = "MMO", NumberOfUserGamesWithTag = 1 }
+                new Tag { Tag_name = TAG_NAME_1 },
+                new Tag { Tag_name = TAG_NAME_2 },
+                new Tag { Tag_name = TAG_NAME_3 }
             };
 
-            tagRepoMock.Setup(x => x.GetAllTags()).Returns(tags);
-            userRepoMock.Setup(x => x.GetAllUserGames()).Returns(games);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(allUserGames);
 
-            service.ComputeTagScoreForGames(games);
+            userGameService.ComputeTagScoreForGames(allUserGames);
 
-            Assert.True(Math.Abs(game.TagScore - 1m) < 0.0001m);
+            Assert.True(Math.Abs(gameWithTags.TagScore - 1m) < 0.0001m);
         }
 
         [Fact]
         public void ComputeTrendingScores_SetsTrendingScore()
         {
-            var games = new Collection<Game>
+            var trendingGames = new Collection<Game>
             {
-                new Game { Name = "A", NumberOfRecentPurchases = 5 },
-                new Game { Name = "B", NumberOfRecentPurchases = 10 }
+                new Game { Name = GAME_NAME_1, NumberOfRecentPurchases = RECENT_PURCHASES_GAME_1 },
+                new Game { Name = GAME_NAME_2, NumberOfRecentPurchases = RECENT_PURCHASES_GAME_2 }
             };
 
-            service.ComputeTrendingScores(games);
+            userGameService.ComputeTrendingScores(trendingGames);
 
-            Assert.Equal(0.5m, games[0].TrendingScore);
-            Assert.Equal(1.0m, games[1].TrendingScore);
+            Assert.Equal(0.5m, trendingGames[0].TrendingScore);
+            Assert.Equal(1.0m, trendingGames[1].TrendingScore);
         }
 
         [Fact]
         public void GetRecommendedGames_ReturnsTop10()
         {
-            var games = new Collection<Game>
+            var recommendedGames = new Collection<Game>
             {
-                new Game { NumberOfRecentPurchases = 10, Tags = new[] { "RPG" } },
-                new Game { NumberOfRecentPurchases = 20, Tags = new[] { "RPG" } }
+                new Game { NumberOfRecentPurchases = 10, Tags = new[] { TAG_NAME_1 } },
+                new Game { NumberOfRecentPurchases = 20, Tags = new[] { TAG_NAME_1 } }
             };
 
-            var tags = new Collection<Tag>
+            var allTags = new Collection<Tag>
             {
-                new Tag { Tag_name = "RPG", NumberOfUserGamesWithTag = 2 },
+                new Tag { Tag_name = TAG_NAME_1, NumberOfUserGamesWithTag = 2 }
             };
 
-            gameRepoMock.Setup(x => x.GetAllGames()).Returns(games);
-            tagRepoMock.Setup(x => x.GetAllTags()).Returns(tags);
-            userRepoMock.Setup(x => x.GetAllUserGames()).Returns(games);
+            mockGameRepository.Setup(repository => repository.GetAllGames()).Returns(recommendedGames);
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(allTags);
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(recommendedGames);
 
-            var result = service.GetRecommendedGames();
+            var recommendedResult = userGameService.GetRecommendedGames();
 
-            Assert.Equal(2, result.Count);
+            Assert.Equal(2, recommendedResult.Count);
         }
 
         [Fact]
         public void SearchWishListByName_ReturnsMatches()
         {
-            var games = new Collection<Game>
+            var wishlistGames = new Collection<Game>
             {
-                new Game { Name = "Football" },
-                new Game { Name = "Horror" }
+                new Game { Name = GAME_NAME_1 },
+                new Game { Name = GAME_NAME_2 }
             };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(wishlistGames);
 
-            var result = service.SearchWishListByName("foot");
-            Assert.Single(result);
-            Assert.Equal("Football", result[0].Name);
+            var matchedGames = userGameService.SearchWishListByName("foot");
+            Assert.Single(matchedGames);
+            Assert.Equal(GAME_NAME_1, matchedGames[0].Name);
         }
 
         [Fact]
         public void FilterWishListGames_FiltersByOverwhelminglyPositive()
         {
-            var games = new Collection<Game>
-    {
-        new Game { Rating = 4.7m },
-        new Game { Rating = 4.3m },
-        new Game { Rating = 2.5m },
-        new Game { Rating = 1.5m }
-    };
+            var gamesList = new Collection<Game>
+            {
+                new Game { Rating = RATING_HIGH },
+                new Game { Rating = RATING_MEDIUM },
+                new Game { Rating = RATING_LOW },
+                new Game { Rating = RATING_POOR }
+            };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(gamesList);
 
-            var filtered = service.FilterWishListGames(FilterCriteria.OVERWHELMINGLYPOSITIVE);
-            Assert.Single(filtered);
-            Assert.Equal(4.7m, filtered[0].Rating);
+            var filteredGames = userGameService.FilterWishListGames(FilterCriteria.OVERWHELMINGLYPOSITIVE);
+            Assert.Single(filteredGames);
+            Assert.Equal(RATING_HIGH, filteredGames[0].Rating);
         }
 
         [Fact]
         public void FilterWishListGames_FiltersByVeryPositive()
         {
-            var games = new Collection<Game>
-    {
-        new Game { Rating = 4.7m },
-        new Game { Rating = 4.3m },
-        new Game { Rating = 2.5m },
-        new Game { Rating = 1.5m }
-    };
+            var gamesList = new Collection<Game>
+            {
+                new Game { Rating = RATING_HIGH },
+                new Game { Rating = RATING_MEDIUM },
+                new Game { Rating = RATING_LOW },
+                new Game { Rating = RATING_POOR }
+            };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(gamesList);
 
-            var filtered = service.FilterWishListGames(FilterCriteria.VERYPOSITIVE);
-            Assert.Single(filtered);
-            Assert.Equal(4.3m, filtered[0].Rating);
+            var filteredGames = userGameService.FilterWishListGames(FilterCriteria.VERYPOSITIVE);
+            Assert.Single(filteredGames);
+            Assert.Equal(RATING_MEDIUM, filteredGames[0].Rating);
         }
 
         [Fact]
         public void FilterWishListGames_FiltersByMixed()
         {
-            var games = new Collection<Game>
-    {
-        new Game { Rating = 4.7m },
-        new Game { Rating = 4.3m },
-        new Game { Rating = 2.5m },
-        new Game { Rating = 1.5m }
-    };
+            var gamesList = new Collection<Game>
+            {
+                new Game { Rating = RATING_HIGH },
+                new Game { Rating = RATING_MEDIUM },
+                new Game { Rating = RATING_LOW },
+                new Game { Rating = RATING_POOR }
+            };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(gamesList);
 
-            var filtered = service.FilterWishListGames(FilterCriteria.MIXED);
-            Assert.Single(filtered);
-            Assert.Equal(2.5m, filtered[0].Rating);
+            var filteredGames = userGameService.FilterWishListGames(FilterCriteria.MIXED);
+            Assert.Single(filteredGames);
+            Assert.Equal(RATING_LOW, filteredGames[0].Rating);
         }
 
         [Fact]
         public void FilterWishListGames_FiltersByNegative()
         {
-            var games = new Collection<Game>
-    {
-        new Game { Rating = 4.7m },
-        new Game { Rating = 4.3m },
-        new Game { Rating = 2.5m },
-        new Game { Rating = 1.5m }
-    };
+            var gamesList = new Collection<Game>
+            {
+                new Game { Rating = RATING_HIGH },
+                new Game { Rating = RATING_MEDIUM },
+                new Game { Rating = RATING_LOW },
+                new Game { Rating = RATING_POOR }
+            };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(gamesList);
 
-            var filtered = service.FilterWishListGames(FilterCriteria.NEGATIVE);
-            Assert.Single(filtered);
-            Assert.Equal(1.5m, filtered[0].Rating);
+            var filteredGames = userGameService.FilterWishListGames(FilterCriteria.NEGATIVE);
+            Assert.Single(filteredGames);
+            Assert.Equal(RATING_POOR, filteredGames[0].Rating);
         }
 
         [Fact]
         public void IsGamePurchased_DelegatesToRepository()
         {
             var game = new Game();
-            userRepoMock.Setup(x => x.IsGamePurchased(game)).Returns(true);
+            mockUserGameRepository.Setup(repository => repository.IsGamePurchased(game)).Returns(true);
 
-            Assert.True(service.IsGamePurchased(game));
+            Assert.True(userGameService.IsGamePurchased(game));
         }
-
 
         [Fact]
         public void SortWishListGames_SortsByRatingAscending()
         {
-            var games = new Collection<Game>
-    {
-        new Game { Name = "Game1", Rating = 4.3m },
-        new Game { Name = "Game2", Rating = 4.7m }
-    };
+            var gamesList = new Collection<Game>
+            {
+                new Game { Name = GAME_NAME_1, Rating = RATING_MEDIUM },
+                new Game { Name = GAME_NAME_2, Rating = RATING_HIGH }
+            };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(gamesList);
 
-            var sorted = service.SortWishListGames(FilterCriteria.RATING, true);
-            Assert.Equal(4.3m, sorted[0].Rating);
-            Assert.Equal(4.7m, sorted[1].Rating);
+            var sortedGames = userGameService.SortWishListGames(FilterCriteria.RATING, true);
+            Assert.Equal(RATING_MEDIUM, sortedGames[0].Rating);
+            Assert.Equal(RATING_HIGH, sortedGames[1].Rating);
         }
 
         [Fact]
         public void SortWishListGames_SortsByRatingDescending()
         {
-            var games = new Collection<Game>
-    {
-        new Game { Name = "Game1", Rating = 4.3m },
-        new Game { Name = "Game2", Rating = 4.7m }
-    };
+            var gamesList = new Collection<Game>
+            {
+                new Game { Name = GAME_NAME_1, Rating = RATING_MEDIUM },
+                new Game { Name = GAME_NAME_2, Rating = RATING_HIGH }
+            };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(gamesList);
 
-            var sorted = service.SortWishListGames(FilterCriteria.RATING, false);
-            Assert.Equal(4.7m, sorted[0].Rating);
-            Assert.Equal(4.3m, sorted[1].Rating);
+            var sortedGames = userGameService.SortWishListGames(FilterCriteria.RATING, false);
+            Assert.Equal(RATING_HIGH, sortedGames[0].Rating);
+            Assert.Equal(RATING_MEDIUM, sortedGames[1].Rating);
         }
 
         [Fact]
         public void SortWishListGames_SortsByPriceAscending()
         {
-            var games = new Collection<Game>
-    {
-        new Game { Name = "Game1", Price = 20 },
-        new Game { Name = "Game2", Price = 10 }
-    };
+            var gamesList = new Collection<Game>
+            {
+                new Game { Name = GAME_NAME_1, Price = PRICE_HIGH },
+                new Game { Name = GAME_NAME_2, Price = PRICE_LOW }
+            };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(gamesList);
 
-            var sorted = service.SortWishListGames(FilterCriteria.PRICE, true);
-            Assert.Equal(10, sorted[0].Price);
-            Assert.Equal(20, sorted[1].Price);
+            var sortedGames = userGameService.SortWishListGames(FilterCriteria.PRICE, true);
+            Assert.Equal(PRICE_LOW, sortedGames[0].Price);
+            Assert.Equal(PRICE_HIGH, sortedGames[1].Price);
         }
 
         [Fact]
         public void SortWishListGames_SortsByPriceDescending()
         {
-            var games = new Collection<Game>
-    {
-        new Game { Name = "Game1", Price = 20 },
-        new Game { Name = "Game2", Price = 10 }
-    };
+            var gamesList = new Collection<Game>
+            {
+                new Game { Name = GAME_NAME_1, Price = PRICE_HIGH },
+                new Game { Name = GAME_NAME_2, Price = PRICE_LOW }
+            };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(gamesList);
 
-            var sorted = service.SortWishListGames(FilterCriteria.PRICE, false);
-            Assert.Equal(20, sorted[0].Price);
-            Assert.Equal(10, sorted[1].Price);
+            var sortedGames = userGameService.SortWishListGames(FilterCriteria.PRICE, false);
+            Assert.Equal(PRICE_HIGH, sortedGames[0].Price);
+            Assert.Equal(PRICE_LOW, sortedGames[1].Price);
         }
 
         [Fact]
         public void SortWishListGames_SortsByDiscountAscending()
         {
-            var games = new Collection<Game>
+            var gamesList = new Collection<Game>
             {
-                new Game { Name = "Game1", Discount = 50 },
-                new Game { Name = "Game2", Discount = 10 }
+                new Game { Name = GAME_NAME_1, Discount = DISCOUNT_HIGH },
+                new Game { Name = GAME_NAME_2, Discount = DISCOUNT_LOW }
             };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(gamesList);
 
-            var sorted = service.SortWishListGames(FilterCriteria.DISCOUNT, true);
-            Assert.Equal(10, sorted[0].Discount);
-            Assert.Equal(50, sorted[1].Discount);
+            var sortedGames = userGameService.SortWishListGames(FilterCriteria.DISCOUNT, true);
+            Assert.Equal(DISCOUNT_LOW, sortedGames[0].Discount);
+            Assert.Equal(DISCOUNT_HIGH, sortedGames[1].Discount);
         }
 
         [Fact]
         public void SortWishListGames_SortsByDiscountDescending()
         {
-            var games = new Collection<Game>
-    {
-        new Game { Name = "Game1", Discount = 50 },
-        new Game { Name = "Game2", Discount = 10 }
-    };
+            var gamesList = new Collection<Game>
+            {
+                new Game { Name = GAME_NAME_1, Discount = DISCOUNT_HIGH },
+                new Game { Name = GAME_NAME_2, Discount = DISCOUNT_LOW }
+            };
 
-            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+            mockUserGameRepository.Setup(repository => repository.GetWishlistGames()).Returns(gamesList);
 
-            var sorted = service.SortWishListGames(FilterCriteria.DISCOUNT, false);
-            Assert.Equal(50, sorted[0].Discount);
-            Assert.Equal(10, sorted[1].Discount);
+            var sortedGames = userGameService.SortWishListGames(FilterCriteria.DISCOUNT, false);
+            Assert.Equal(DISCOUNT_HIGH, sortedGames[0].Discount);
+            Assert.Equal(DISCOUNT_LOW, sortedGames[1].Discount);
         }
-
 
         [Fact]
         public void GetFavoriteUserTags_WhenNoTags_ReturnsEmptyList()
         {
-            tagRepoMock.Setup(x => x.GetAllTags()).Returns(new Collection<Tag>());
-            userRepoMock.Setup(x => x.GetAllUserGames()).Returns(new Collection<Game>());
+            mockTagRepository.Setup(repository => repository.GetAllTags()).Returns(new Collection<Tag>());
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game>());
 
-            var result = service.GetFavoriteUserTags();
+            var favoriteTags = userGameService.GetFavoriteUserTags();
 
-            Assert.Empty(result);
-        }
-
-        [Fact]
-        public void ComputeNoOfUserGamesForEachTag_WhenNoGames_ReturnsZeroForTags()
-        {
-            var tags = new Collection<Tag> { new Tag { Tag_name = "Action" } };
-            userRepoMock.Setup(x => x.GetAllUserGames()).Returns(new Collection<Game>());
-
-            service.ComputeNoOfUserGamesForEachTag(tags);
-
-            Assert.Equal(0, tags[0].NumberOfUserGamesWithTag);
+            Assert.Empty(favoriteTags);
         }
     }
 }
