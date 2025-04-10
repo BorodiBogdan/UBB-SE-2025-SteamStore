@@ -1,14 +1,14 @@
-﻿using Moq;
-using SteamStore.Constants;
-using SteamStore.Data;
-using SteamStore.Repositories.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Moq;
+using SteamStore.Constants;
+using SteamStore.Data;
+using SteamStore.Repositories.Interfaces;
 using Windows.System;
 
 namespace SteamStore.Tests.Repositories
@@ -25,7 +25,6 @@ namespace SteamStore.Tests.Repositories
         private const int TEST_GAME_ID = 1;
         private const string TEST_GAME_NAME = "Test Game";
         private const decimal TEST_GAME_PRICE = 29.99m;
-
 
         public UserGameRepositoryTest()
         {
@@ -221,7 +220,6 @@ namespace SteamStore.Tests.Repositories
             var result = userGameRepository.GetUserPointsBalance();
             Assert.Equal(150, result);
         }
-
 
         [Fact]
         public void GetWishlistGames_ShouldReturnGames_WhenDataIsAvailable()

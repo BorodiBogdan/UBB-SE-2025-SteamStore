@@ -1,15 +1,15 @@
-﻿using Moq;
-using SteamStore.Repositories.Interfaces;
-using SteamStore.Repositories;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.WebUI;
+using Moq;
 using SteamStore.Constants;
 using SteamStore.Models;
-using System.Collections.ObjectModel;
+using SteamStore.Repositories;
+using SteamStore.Repositories.Interfaces;
+using Windows.UI.WebUI;
 
 namespace SteamStore.Tests.Services
 {
@@ -189,7 +189,6 @@ namespace SteamStore.Tests.Services
             Assert.Equal(1, tag1.NumberOfUserGamesWithTag);
             Assert.Equal(1, tag2.NumberOfUserGamesWithTag);
         }
-
 
         [Fact]
         public void GetFavoriteUserTags_ReturnsTop3_VerifyCount()
