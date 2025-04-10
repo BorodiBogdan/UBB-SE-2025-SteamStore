@@ -32,10 +32,16 @@ namespace SteamStore.Tests.Commands
         public void Constructor_ValidParameters_InitializesCommand()
         {
             // Arrange
-            Action<string> execute = (parameter) => { this.executeCalled = true;
-                this.lastParameter = parameter; };
-            Predicate<string> canExecute = (parameter) => { this.canExecuteCalled = true;
-                return true; };
+            Action<string> execute = (parameter) =>
+            {
+                this.executeCalled = true;
+                this.lastParameter = parameter;
+            };
+            Predicate<string> canExecute = (parameter) =>
+            {
+                this.canExecuteCalled = true;
+                return true;
+            };
 
             // Act
             this.relayCommand = new RelayCommand<string>(execute, canExecute);
@@ -89,8 +95,11 @@ namespace SteamStore.Tests.Commands
             // Arrange
             this.relayCommand = new RelayCommand<string>(
                 (parameter) => { },
-                (parameter) => { this.canExecuteCalled = true;
-                    return true; });
+                (parameter) =>
+                {
+                    this.canExecuteCalled = true;
+                    return true;
+                });
 
             // Act
             this.relayCommand.CanExecute("test");

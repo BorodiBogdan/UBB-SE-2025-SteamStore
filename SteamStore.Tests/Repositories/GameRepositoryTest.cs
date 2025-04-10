@@ -69,7 +69,9 @@ public class GameRepositoryTest
     public void RejectGame_GetNullRejectionMessage()
     {
         var testGame = CreateRandomGame(PENDING_STATUS);
+
         subject.RejectGame(testGame.Identifier);
+
         Assert.Equal(string.Empty, subject.GetRejectionMessage(NONEXISTENT_GAME_ID));
     }
 
