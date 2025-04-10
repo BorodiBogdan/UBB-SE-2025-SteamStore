@@ -22,7 +22,7 @@ namespace SteamStore.Services.Interfaces
 
         Collection<Game> SearchGames(string search_query);
 
-        Collection<Game> FilterGames(int minRating, int minPrice, int maxPrice, string[] tags);
+        Collection<Game> FilterGames(int minimumRating, int minimumPrice, int maximumPrice, string[] tags);
 
         void ComputeTrendingScores(Collection<Game> games);
 

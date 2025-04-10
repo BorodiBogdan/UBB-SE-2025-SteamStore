@@ -12,6 +12,7 @@ using SteamStore.Services.Interfaces;
 
 public class CartService : ICartService
 {
+    private const int InitialZeroSum = 0;
     private ICartRepository cartRepository;
 
     public CartService(ICartRepository cartRepository)
@@ -56,7 +57,7 @@ public class CartService : ICartService
 
     public decimal GetTotalSumToBePaid()
     {
-        decimal total = 0;
+        decimal total = InitialZeroSum;
 
         foreach (var game in this.cartRepository.GetCartGames())
         {

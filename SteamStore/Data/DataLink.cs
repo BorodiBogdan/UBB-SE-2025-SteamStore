@@ -21,9 +21,9 @@ public class DataLink : SteamStore.Data.IDataLink
         {
             this.sqlConnection = new SqlConnection(this.connectionString);
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new Exception($"Error initializing SQL connection: {this.connectionString}", ex);
+            throw new Exception($"Error initializing SQL connection: {this.connectionString}", exception);
         }
     }
 

@@ -13,6 +13,9 @@ using SteamStore.Repositories.Interfaces;
 using SteamStore.Services.Interfaces;
 public class GameService : IGameService
 {
+    private const int MinimumTrendingDivider = 1;
+    private const decimal NoTrendingScore = 0m;
+    private const int NumberOfSimilarGamesToTake = 3;
     private static int lengthOfEmptyList = 0;
     private static int initializingValueForAMaxim = 0;
     private static int treasholdForDiscount = 0;
@@ -119,7 +122,7 @@ public class GameService : IGameService
 
         foreach (var game in games)
         {
-            game.TrendingScore = maximumRecentSales < 1 ? 0m : Convert.ToDecimal(game.NumberOfRecentPurchases) / maximumRecentSales;
+            game.TrendingScore = maximumRecentSales < MinimumTrendingDivider ? NoTrendingScore : Convert.ToDecimal(game.NumberOfRecentPurchases) / maximumRecentSales;
         }
     }
 
@@ -160,7 +163,7 @@ public class GameService : IGameService
         }
 
         // Shuffle the list
-        for (int currentIndex = 0; currentIndex < similarGames.Count; currentIndex++)
+        for (int currentIndex = startingValueOfIndex; currentIndex < similarGames.Count; currentIndex++)
         {
             var randomIndex = randy.Next(currentIndex, similarGames.Count);  // Get a random index from currentIndex to the end of the list
             var tempGame = similarGames[currentIndex];
@@ -169,7 +172,7 @@ public class GameService : IGameService
         }
 
         // Return the first 3 games
-        return similarGames.Take(3).ToList();
+        return similarGames.Take(NumberOfSimilarGamesToTake).ToList();
     }
 
     public Game GetGameById(int gameId)

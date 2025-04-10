@@ -63,16 +63,20 @@ namespace SteamStore.Pages
         {
             // You can access the filter values from PopupRatingSlider, MinPriceSlider, MaxPriceSlider here.
             int ratingFilter = (int)this.PopupRatingSlider.Value;
-            int minPrice = (int)this.MinPriceSlider.Value;
-            int maxPrice = (int)this.MaxPriceSlider.Value;
-            var selectedTags = this.TagListView.SelectedItems
-            .Cast<Tag>()
-            .Select(tag => tag.Tag_name)
-            .ToList();
+            int minimumPrice = (int)this.MinPriceSlider.Value;
+            int maximumPrice = (int)this.MaxPriceSlider.Value;
+            var selectedTags = new List<string>();
+            foreach (var item in this.TagListView.SelectedItems)
+            {
+                if (item is Tag tag)
+                {
+                    selectedTags.Add(tag.Tag_name);
+                }
+            }
 
             if (this.DataContext is HomePageViewModel viewModel)
             {
-                viewModel.FilterGames(ratingFilter, minPrice, maxPrice, selectedTags.ToArray());
+                viewModel.FilterGames(ratingFilter, minimumPrice, maximumPrice, selectedTags.ToArray());
             }
 
             // Close the popup

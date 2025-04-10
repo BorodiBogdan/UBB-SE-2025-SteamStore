@@ -35,6 +35,8 @@ namespace SteamStore.Pages
     /// </summary>
     public sealed partial class PointsShopPage : Page
     {
+        private const int TimerSeconds = 15;
+
         public PointsShopPage(IPointShopService pointShopService)
         {
             this.InitializeComponent();
@@ -64,15 +66,6 @@ namespace SteamStore.Pages
         {
             this.NotificationText.Text = message;
             this.NotificationBar.Visibility = Visibility.Visible;
-
-            var timer = this.DispatcherQueue.CreateTimer();
-            timer.Interval = TimeSpan.FromSeconds(15);
-            timer.Tick += (s, e) =>
-            {
-                this.NotificationBar.Visibility = Visibility.Collapsed;
-                timer.Stop();
-            };
-            timer.Start();
         }
 
         private void ItemsGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
