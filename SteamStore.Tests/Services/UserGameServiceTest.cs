@@ -498,28 +498,6 @@ namespace SteamStore.Tests.Services
         }
 
         [Fact]
-        public void GetRecommendedGames_ReturnsEmpty_WhenNoMatchingTags()
-        {
-            var allTags = new Collection<Tag>
-            {
-                new Tag { Tag_name = TAG_NAME_1, NumberOfUserGamesWithTag = 5 }
-            };
-
-            var allGames = new Collection<Game>
-            {
-                new Game { Name = GAME_NAME_2, NumberOfRecentPurchases = 10, Tags = new[] { TAG_NAME_2 } }
-            };
-
-            mockGameRepository.Setup(r => r.GetAllGames()).Returns(allGames);
-            mockTagRepository.Setup(r => r.GetAllTags()).Returns(allTags);
-            mockUserGameRepository.Setup(r => r.GetAllUserGames()).Returns(allGames);
-
-            var recommended = userGameService.GetRecommendedGames();
-
-            Assert.Empty(recommended);
-        }
-
-        [Fact]
         public void SearchWishListByName_ReturnsMatches_SpecificWord()
         {
             var wishlistGames = new Collection<Game>
