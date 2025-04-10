@@ -32,7 +32,7 @@ public class CartRepository : ICartRepository
             new SqlParameter(UserIdColumn, this.user.UserIdentifier),
         };
 
-        var allCartGames = this.dataLink.ExecuteReader(SqlConstants.GETALLCARTGAMES, userIdParameters);
+        var allCartGames = this.dataLink.ExecuteReader(SqlConstants.GetAllCartGamesProcedure, userIdParameters);
         List<Game> games = new List<Game>();
 
         if (allCartGames != null)
@@ -65,7 +65,7 @@ public class CartRepository : ICartRepository
 
         try
         {
-            this.dataLink.ExecuteNonQuery(SqlConstants.ADDGAMETOCART, cartParameters);
+            this.dataLink.ExecuteNonQuery(SqlConstants.AddGameToCartProcedure, cartParameters);
         }
         catch (Exception exception)
         {

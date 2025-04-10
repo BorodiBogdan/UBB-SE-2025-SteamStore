@@ -186,9 +186,9 @@ public class GamePageViewModel : INotifyPropertyChanged
 
         try
         {
-            var tags = this.gameService.GetAllGameTags(this.Game);
+            var allTags = this.gameService.GetAllGameTags(this.Game);
             this.GameTags.Clear();
-            foreach (var tag in tags)
+            foreach (var tag in allTags)
             {
                 this.GameTags.Add(tag.Tag_name);
             }

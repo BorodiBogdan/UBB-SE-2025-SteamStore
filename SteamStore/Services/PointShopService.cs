@@ -179,19 +179,19 @@ namespace SteamStore.Services
                 return false;
             }
 
-            bool alreadyOwns = false;
+            bool isAlreadyOwned = false;
             foreach (var item in userItems)
             {
                 if (item.ItemIdentifier == selectedItem.ItemIdentifier)
                 {
-                    alreadyOwns = true;
+                    isAlreadyOwned = true;
                     break;
                 }
             }
 
             bool hasEnoughPoints = user.PointsBalance >= selectedItem.PointPrice;
 
-            return !alreadyOwns && hasEnoughPoints;
+            return !isAlreadyOwned && hasEnoughPoints;
         }
 
         public List<PointShopItem> GetAvailableItems(User user)
@@ -203,18 +203,18 @@ namespace SteamStore.Services
 
             for (int indexForAllItems = InitialIndexAllItems; indexForAllItems < allItems.Count; indexForAllItems++)
             {
-                bool owned = false;
+                bool isGameOwned = false;
 
                 for (int indexForUsersItems = InitialIndexUserItems; indexForUsersItems < userItems.Count; indexForUsersItems++)
                 {
                     if (allItems[indexForAllItems].ItemIdentifier == userItems[indexForUsersItems].ItemIdentifier)
                     {
-                        owned = true;
+                        isGameOwned = true;
                         break;
                     }
                 }
 
-                if (!owned)
+                if (!isGameOwned)
                 {
                     availableItems.Add(allItems[indexForAllItems]);
                 }
@@ -236,19 +236,19 @@ namespace SteamStore.Services
             try
             {
                 // Check if transaction already exists
-                bool exists = false;
+                bool transactionExists = false;
                 for (int idexOfTransaction = InitialIndexOfTransaction; idexOfTransaction < transactionHistory.Count; idexOfTransaction++)
                 {
-                    var t = transactionHistory[idexOfTransaction];
-                    if (t.ItemName == selectedItem.Name &&
-                        Math.Abs(t.PointsSpent - selectedItem.PointPrice) < PointShopConstants.MINMALDIFFERENCEVALUECOMPARISON)
+                    var currentTransaction = transactionHistory[idexOfTransaction];
+                    if (currentTransaction.ItemName == selectedItem.Name &&
+                        Math.Abs(currentTransaction.PointsSpent - selectedItem.PointPrice) < PointShopConstants.MINMALDIFFERENCEVALUECOMPARISON)
                     {
-                        exists = true;
+                        transactionExists = true;
                         break;
                     }
                 }
 
-                if (!exists)
+                if (!transactionExists)
                 {
                     newTransaction = new PointShopTransaction(
                         transactionHistory.Count + IncrementingValue,
@@ -277,6 +277,7 @@ namespace SteamStore.Services
                     break;
                 }
             }
+
             if (item == null)
             {
                 return item;
