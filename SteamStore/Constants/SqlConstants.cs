@@ -4,19 +4,11 @@
 
 namespace SteamStore.Constants
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Windows.ApplicationModel.Background;
-
     public static class SqlConstants
     {
         // Stored Procedure Names
-        public const string GETALLCARTGAMES = "GetAllCartGames";
-        public const string ADDGAMETOCART = "AddGameToCart";
+        public const string GetAllCartGamesProcedure = "GetAllCartGames";
+        public const string AddGameToCartProcedure = "AddGameToCart";
         public const string REMOVEGAMEFROMCART = "RemoveGameFromCart";
 
         // Column Names
@@ -32,7 +24,7 @@ namespace SteamStore.Constants
         public const string PublisherIdParameter = "@publisher_id";
         public const string TagIdParameter = "@tag_id";
         public const string RejectionMessageParameter = "@rejection_message";
-        public const string GidParameter = "@gid";
+        public const string GameIdShortcutParameter = "@gid";
         public const string NameParameter = "@name";
         public const string PriceParameter = "@price";
         public const string DescriptionParameter = "@description";

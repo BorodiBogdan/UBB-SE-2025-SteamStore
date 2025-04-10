@@ -5,10 +5,12 @@ namespace SteamStore.Tests.TestUtils;
 
 public static class DataLinkTestUtils
 {
+    private const string TESTSETTINGS_JSON = "testsettings.json";
+
     public static IDataLink GetDataLink()
     {
         var configuration = new ConfigurationBuilder()
-            .AddJsonFile("testsettings.json")
+            .AddJsonFile(TESTSETTINGS_JSON)
             .Build();
 
         return new DataLink(configuration);

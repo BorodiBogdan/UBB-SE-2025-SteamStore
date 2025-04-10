@@ -123,8 +123,12 @@ public class CartViewModel : INotifyPropertyChanged
         }
         else if (this.SelectedPaymentMethod == PaymentMethods.SteamWalletPaymentWallet)
         {
-            float totalPrice = this.CartGames.Sum(game => (float)game.Price);
-            //float totalPrice = this.userGameService.ComputeSumOfGamesInCart(this.CartGames.ToList());
+            float totalPrice1 = this.CartGames.Sum(game => (float)game.Price);
+            System.Diagnostics.Debug.WriteLine(totalPrice1);
+            float totalPrice = this.cartService.GetTheTotalSumOfItemsInCart(this.CartGames.ToList());
+
+            System.Diagnostics.Debug.WriteLine(totalPrice);
+            // float totalPrice = this.userGameService.ComputeSumOfGamesInCart(this.CartGames.ToList());
             float userFunds = this.ShowUserFunds();
             if (userFunds < totalPrice)
             {

@@ -18,7 +18,7 @@ public class DeveloperService : IDeveloperService
     private const int ComparingValueForMinimumDicount = 0;
     private const int ComparingValueForMaximumDicount = 100;
     private const int EmptyListLength = 0;
-    private static string pENDINGSTATE = "Pending";
+    private const string PendingState = "Pending";
 
     public IGameRepository GameRepository { get; set; }
 
@@ -74,7 +74,7 @@ public class DeveloperService : IDeveloperService
             TrailerPath = trailerUrl,
             MinimumRequirements = minimumRequirement,
             RecommendedRequirements = reccommendedRequirement,
-            Status = pENDINGSTATE,
+            Status = PendingState,
             Discount = discount,
         };
         return game;
@@ -101,14 +101,7 @@ public class DeveloperService : IDeveloperService
 
     public void CreateGameWithTags(Game game, IList<Tag> selectedTags)
     {
-        try
-        {
-            this.CreateGame(game);
-        }
-        catch (Exception exception)
-        {
-            throw new Exception(exception.Message);
-        }
+        this.CreateGame(game);
 
         if (selectedTags != null && selectedTags.Count > EmptyListLength)
         {
@@ -121,32 +114,16 @@ public class DeveloperService : IDeveloperService
 
     public void UpdateGame(Game game)
     {
-        try
-        {
-            game.PublisherIdentifier = this.User.UserIdentifier;
-            this.GameRepository.UpdateGame(game.Identifier, game);
-        }
-        catch (Exception exception)
-        {
-            throw new Exception(exception.Message);
-        }
+        game.PublisherIdentifier = this.User.UserIdentifier;
+        this.GameRepository.UpdateGame(game.Identifier, game);
     }
 
     public void UpdateGameWithTags(Game game, IList<Tag> selectedTags)
     {
+        game.PublisherIdentifier = this.User.UserIdentifier;
+        this.GameRepository.UpdateGame(game.Identifier, game);
         try
         {
-            game.PublisherIdentifier = this.User.UserIdentifier;
-            this.GameRepository.UpdateGame(game.Identifier, game);
-        }
-        catch (Exception exception)
-        {
-            throw new Exception(exception.Message);
-        }
-
-        try
-        {
-            // System.Diagnostics.Debug.WriteLine("deleting the tags!");
             this.DeleteGameTags(game.Identifier);
             if (selectedTags != null && selectedTags.Count > EmptyListLength)
             {

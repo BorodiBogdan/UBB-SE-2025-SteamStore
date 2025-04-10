@@ -26,6 +26,8 @@ public class UserGameService : IUserGameService
     private const decimal MinimumValueForOverwhelminglyPositive = 4.5m;
     private const decimal MinimumValueForVeryPositive = 4m;
     private const decimal MinimumValueForMixed = 2m;
+    private const int ValueToDecrementPositionWith = 1;
+    private const int ValueToIncrementPositionWith = 1;
 
     public IUserGameRepository UserGameRepository { get; set; }
 
@@ -124,15 +126,15 @@ public class UserGameService : IUserGameService
 
         List<Tag> sortedTags = new List<Tag>(allTags);
 
-        for (int currentIndex = StartingIndexValue; currentIndex < sortedTags.Count - 1; currentIndex++)
+        for (int currentIndex = StartingIndexValue; currentIndex < sortedTags.Count - ValueToDecrementPositionWith; currentIndex++)
         {
-            for (int comparisonIndex = currentIndex + 1; comparisonIndex < sortedTags.Count; comparisonIndex++)
+            for (int comparisonIndex = currentIndex + ValueToIncrementPositionWith; comparisonIndex < sortedTags.Count; comparisonIndex++)
             {
                 if (sortedTags[comparisonIndex].NumberOfUserGamesWithTag > sortedTags[currentIndex].NumberOfUserGamesWithTag)
                 {
-                    var temp = sortedTags[currentIndex];
+                    var tagToSwap = sortedTags[currentIndex];
                     sortedTags[currentIndex] = sortedTags[comparisonIndex];
-                    sortedTags[comparisonIndex] = temp;
+                    sortedTags[comparisonIndex] = tagToSwap;
                 }
             }
         }
@@ -191,9 +193,9 @@ public class UserGameService : IUserGameService
 
                 if (comparisonScore > currentScore)
                 {
-                    Game temp = sortedGames[currentIndex];
+                    Game gameToSwap = sortedGames[currentIndex];
                     sortedGames[currentIndex] = sortedGames[comparisonIndex];
-                    sortedGames[comparisonIndex] = temp;
+                    sortedGames[comparisonIndex] = gameToSwap;
                 }
             }
         }
@@ -337,43 +339,43 @@ public class UserGameService : IUserGameService
         return new Collection<Game>(games);
     }
 
-    private int CompareByPriceAscending(Game x, Game y)
+    private int CompareByPriceAscending(Game firstGame, Game secondGame)
     {
-        return x.Price.CompareTo(y.Price);
+        return firstGame.Price.CompareTo(secondGame.Price);
     }
 
-    private int CompareByPriceDescending(Game x, Game y)
+    private int CompareByPriceDescending(Game firstGame, Game secondGame)
     {
-        return y.Price.CompareTo(x.Price);
+        return secondGame.Price.CompareTo(firstGame.Price);
     }
 
-    private int CompareByRatingAscending(Game x, Game y)
+    private int CompareByRatingAscending(Game firstGame, Game secondGame)
     {
-        return x.Rating.CompareTo(y.Rating);
+        return firstGame.Rating.CompareTo(secondGame.Rating);
     }
 
-    private int CompareByRatingDescending(Game x, Game y)
+    private int CompareByRatingDescending(Game firstGame, Game secondGame)
     {
-        return y.Rating.CompareTo(x.Rating);
+        return secondGame.Rating.CompareTo(firstGame.Rating);
     }
 
-    private int CompareByDiscountAscending(Game x, Game y)
+    private int CompareByDiscountAscending(Game firstGame, Game secondGame)
     {
-        return x.Discount.CompareTo(y.Discount);
+        return firstGame.Discount.CompareTo(secondGame.Discount);
     }
 
-    private int CompareByDiscountDescending(Game x, Game y)
+    private int CompareByDiscountDescending(Game firstGame, Game secondGame)
     {
-        return y.Discount.CompareTo(x.Discount);
+        return secondGame.Discount.CompareTo(firstGame.Discount);
     }
 
-    private int CompareByNameAscending(Game x, Game y)
+    private int CompareByNameAscending(Game firstGame, Game secondGame)
     {
-        return string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
+        return string.Compare(firstGame.Name, secondGame.Name, StringComparison.OrdinalIgnoreCase);
     }
 
-    private int CompareByNameDescending(Game x, Game y)
+    private int CompareByNameDescending(Game firstGame, Game secondGame)
     {
-        return string.Compare(y.Name, x.Name, StringComparison.OrdinalIgnoreCase);
+        return string.Compare(secondGame.Name, firstGame.Name, StringComparison.OrdinalIgnoreCase);
     }
 }

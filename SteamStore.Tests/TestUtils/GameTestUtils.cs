@@ -6,53 +6,52 @@ namespace SteamStore.Tests.TestUtils;
 
 public static class GameTestUtils
 {
-    private static readonly Random Random = new();
+    private const string APPROVED_STATUS = "Approved";
+    private static readonly Random Random = new Random();
+    private const int DISCOUNT_DECIMAL_COUNT = 0;
+    private const int DESCRIPTION_SIZE = 100;
+    private const string PENDING_STATUS = "Pending";
+    private const int NAME_SIZE = 50;
+    private const int STARTING_PRICE = 0;
+    private const int MAX_PRICE = 1000;
+    private const int PRICE_DECIMAL_COUNT = 2;
+    private const int RATING_DECIMAL_COUNT = 2;
+    private const int REQUIREMENTS_SIZE = 100;
+    private const int STARTING_RATING = 0;
+    private const int MAX_RATING = 10;
+    private const int PUBLISHER_IDENTIFIER = 1;
+    private const int STARTING_DISCOUNT = 0;
+    private const int MAX_DISCOUNT = 100;
+    private const int INDEX_FOR_RANDOM_TAGS = 1;
 
     public static Game CreateRandomGame()
     {
         return new Game
         {
             Identifier = (int)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-            Name = CommonTestUtils.RandomName(50),
-            Description = CommonTestUtils.RandomName(100),
+            Name = CommonTestUtils.RandomName(NAME_SIZE),
+            Description = CommonTestUtils.RandomName(DESCRIPTION_SIZE),
             ImagePath = CommonTestUtils.RandomPath(),
-            Price = CommonTestUtils.RandomNumber(0, 1000, 2),
+            Price = CommonTestUtils.RandomNumber(STARTING_PRICE, MAX_PRICE, PRICE_DECIMAL_COUNT),
             TrailerPath = CommonTestUtils.RandomPath(),
             GameplayPath = CommonTestUtils.RandomPath(),
-            MinimumRequirements = CommonTestUtils.RandomName(100),
-            RecommendedRequirements = CommonTestUtils.RandomName(100),
-            Status = CommonTestUtils.RandomElement(new[] { "Approved", "Pending" }),
+            MinimumRequirements = CommonTestUtils.RandomName(REQUIREMENTS_SIZE),
+            RecommendedRequirements = CommonTestUtils.RandomName(REQUIREMENTS_SIZE),
+            Status = CommonTestUtils.RandomElement(new[] { APPROVED_STATUS, PENDING_STATUS }),
             Tags = null,
-            Rating = CommonTestUtils.RandomNumber(0, 10, 2),
-            Discount = CommonTestUtils.RandomNumber(0, 100, 0),
-            PublisherIdentifier = 1
+            Rating = CommonTestUtils.RandomNumber(STARTING_RATING, MAX_RATING, RATING_DECIMAL_COUNT),
+            Discount = CommonTestUtils.RandomNumber(STARTING_DISCOUNT, MAX_DISCOUNT, DISCOUNT_DECIMAL_COUNT),
+            PublisherIdentifier = PUBLISHER_IDENTIFIER
         };
     }
 
     public static Tag[] RandomTags()
     {
-        Tag[] allTags =
-        {
-            new() { TagId = 1, Tag_name = "Rogue-Like" },
-            new() { TagId = 2, Tag_name = "Third-Person Shooter" },
-            new() { TagId = 3, Tag_name = "Multiplayer" },
-            new() { TagId = 4, Tag_name = "Horror" },
-            new() { TagId = 5, Tag_name = "First-Person Shooter" },
-            new() { TagId = 6, Tag_name = "Action" },
-            new() { TagId = 7, Tag_name = "Platformer" },
-            new() { TagId = 8, Tag_name = "Adventure" },
-            new() { TagId = 9, Tag_name = "Puzzle" },
-            new() { TagId = 10, Tag_name = "Exploration" },
-            new() { TagId = 11, Tag_name = "Sandbox" },
-            new() { TagId = 12, Tag_name = "Survival" },
-            new() { TagId = 13, Tag_name = "Arcade" },
-            new() { TagId = 14, Tag_name = "RPG" },
-            new() { TagId = 15, Tag_name = "Racing" }
-        };
+        var allTags = TagsConstants.ALL_TAGS;
 
         var shuffled = allTags.OrderBy(tag => Random.Next()).ToList();
 
-        var subsetSize = Random.Next(1, allTags.Length + 1);
+        var subsetSize = Random.Next(INDEX_FOR_RANDOM_TAGS, allTags.Length + INDEX_FOR_RANDOM_TAGS);
 
         return shuffled.Take(subsetSize).OrderBy(tag => tag.Tag_name).ToArray();
     }

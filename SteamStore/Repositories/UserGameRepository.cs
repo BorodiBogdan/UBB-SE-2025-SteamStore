@@ -117,7 +117,7 @@ public class UserGameRepository : IUserGameRepository
     {
         SqlParameter[] gameTagsParameters = new SqlParameter[]
         {
-            new SqlParameter(SqlConstants.GidParameter, gameId),
+            new SqlParameter(SqlConstants.GameIdShortcutParameter, gameId),
         };
 
         try
@@ -156,12 +156,12 @@ public class UserGameRepository : IUserGameRepository
             new SqlParameter(SqlConstants.UserIdentifierParameter, this.user.UserIdentifier),
         };
 
-        var result = this.dataLink.ExecuteReader("getUserGames", allUsersParameters);
+        var allUserGames = this.dataLink.ExecuteReader("getUserGames", allUsersParameters);
         List<Game> games = new List<Game>();
 
-        if (result != null)
+        if (allUserGames != null)
         {
-            foreach (DataRow row in result.Rows)
+            foreach (DataRow row in allUserGames.Rows)
             {
                 Game game = new Game
                 {
@@ -194,13 +194,13 @@ public class UserGameRepository : IUserGameRepository
             this.user.PointsBalance += earnedPoints;
 
             // Update in database
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] addingPointsParameter = new SqlParameter[]
             {
-                new SqlParameter("@UserId", this.user.UserIdentifier),
+                new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, this.user.UserIdentifier),
                 new SqlParameter(SqlConstants.PointBalanceParameter, this.user.PointsBalance),
             };
 
-            this.dataLink.ExecuteNonQuery("UpdateUserPointBalance", parameters);
+            this.dataLink.ExecuteNonQuery("UpdateUserPointBalance", addingPointsParameter);
         }
         catch (Exception exception)
         {
@@ -222,7 +222,7 @@ public class UserGameRepository : IUserGameRepository
         };
 
         var wishlistGamesData = this.dataLink.ExecuteReader("GetWishlistGames", wishlistGamesParameters);
-        List<Game> games = new List<Game>();
+        List<Game> gamesInWishlist = new List<Game>();
 
         if (wishlistGamesData != null)
         {
@@ -232,7 +232,7 @@ public class UserGameRepository : IUserGameRepository
                 {
                     Identifier = (int)row[SqlConstants.GameIdColumn],
                     Name = (string)row[SqlConstants.GameNameColumn],
-                    Description = (string)row["Description"],
+                    Description = (string)row[SqlConstants.DescriptionIdColumnWithCapitalLetter],
                     ImagePath = (string)row[SqlConstants.ImageUrlColumn],
                     Price = Convert.ToDecimal(row[SqlConstants.GamePriceColumn]),
                     MinimumRequirements = (string)row[SqlConstants.MinimumRequirementsColumn],
@@ -242,10 +242,10 @@ public class UserGameRepository : IUserGameRepository
                     Discount = Convert.ToDecimal(row[SqlConstants.DiscountColumn]),
                     Tags = this.GetGameTags((int)row[SqlConstants.GameIdColumn]),
                 };
-                games.Add(game);
+                gamesInWishlist.Add(game);
             }
         }
 
-        return new Collection<Game>(games);
+        return new Collection<Game>(gamesInWishlist);
     }
 }

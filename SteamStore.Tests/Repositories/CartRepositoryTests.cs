@@ -8,19 +8,19 @@ namespace SteamStore.Tests.Repositories;
 
 public class CartRepositoryTests
 {
-	private readonly Mock<IDataLink> _dataLinkMock;
-	private readonly User _testUser;
-	private readonly CartRepository _cartRepository;
+	private readonly Mock<IDataLink> dataLinkMock;
+	private readonly User testUser;
+	private readonly CartRepository cartRepository;
 
 	public CartRepositoryTests()
 	{
-		_dataLinkMock = new Mock<IDataLink>();
-		_testUser = new User
+		dataLinkMock = new Mock<IDataLink>();
+		testUser = new User
 		{
 			UserIdentifier = 1,
 			WalletBalance = 100.50f
 		};
-		_cartRepository = new CartRepository(_dataLinkMock.Object, _testUser);
+		cartRepository = new CartRepository(dataLinkMock.Object, testUser);
 	}
 
 	[Fact]
@@ -45,11 +45,11 @@ public class CartRepositoryTests
 		var expectedName = "GameName";
 		var expectedStatus = "Approved";
 
-		_dataLinkMock
-			.Setup(d => d.ExecuteReader(SqlConstants.GETALLCARTGAMES, It.IsAny<SqlParameter[]>()))
+		dataLinkMock
+			.Setup(d => d.ExecuteReader(SqlConstants.GetAllCartGamesProcedure, It.IsAny<SqlParameter[]>()))
 			.Returns(table);
 
-		var result = _cartRepository.GetCartGames();
+		var result = cartRepository.GetCartGames();
 		var actualFirstItem = result[0];
 
 		Assert.Single(result);
@@ -61,11 +61,11 @@ public class CartRepositoryTests
 	[Fact]
 	public void GetCartGames_ShouldReturnEmptyList_WhenNoData()
 	{
-		_dataLinkMock
-			.Setup(d => d.ExecuteReader(SqlConstants.GETALLCARTGAMES, It.IsAny<SqlParameter[]>()))
+		dataLinkMock
+			.Setup(d => d.ExecuteReader(SqlConstants.GetAllCartGamesProcedure, It.IsAny<SqlParameter[]>()))
 			.Returns((DataTable)null);
 
-		var result = _cartRepository.GetCartGames();
+		var result = cartRepository.GetCartGames();
 
 		Assert.Empty(result);
 	}
@@ -75,9 +75,9 @@ public class CartRepositoryTests
 	{
 		var game = new Game { Identifier = 2 };
 
-		_cartRepository.AddGameToCart(game);
+		cartRepository.AddGameToCart(game);
 
-		_dataLinkMock.Verify(d => d.ExecuteNonQuery(SqlConstants.ADDGAMETOCART,
+		dataLinkMock.Verify(d => d.ExecuteNonQuery(SqlConstants.AddGameToCartProcedure,
 			It.IsAny<SqlParameter[]>()), Times.Once);
 	}
 
@@ -87,11 +87,11 @@ public class CartRepositoryTests
 		var game = new Game { Identifier = 3 };
 		var expectedExceptionErrorMessage = "SQL error";
 
-		_dataLinkMock
+		dataLinkMock
 			.Setup(d => d.ExecuteNonQuery(It.IsAny<string>(), It.IsAny<SqlParameter[]>()))
 			.Throws(new Exception(expectedExceptionErrorMessage));
 
-		var exception = Assert.Throws<Exception>(() => _cartRepository.AddGameToCart(game));
+		var exception = Assert.Throws<Exception>(() => cartRepository.AddGameToCart(game));
 
 		Assert.Equal(expectedExceptionErrorMessage, exception.Message);
 	}
@@ -101,9 +101,9 @@ public class CartRepositoryTests
 	{
 		var game = new Game { Identifier = 4 };
 
-		_cartRepository.RemoveGameFromCart(game);
+		cartRepository.RemoveGameFromCart(game);
 
-		_dataLinkMock.Verify(d => d.ExecuteNonQuery(SqlConstants.REMOVEGAMEFROMCART,
+		dataLinkMock.Verify(d => d.ExecuteNonQuery(SqlConstants.REMOVEGAMEFROMCART,
 			It.IsAny<SqlParameter[]>()), Times.Once);
 	}
 
@@ -113,11 +113,11 @@ public class CartRepositoryTests
 		var game = new Game { Identifier = 5 };
 		var expectedExceptionErrorMessage = "Something went wrong";
 
-		_dataLinkMock
+		dataLinkMock
 			.Setup(d => d.ExecuteNonQuery(It.IsAny<string>(), It.IsAny<SqlParameter[]>()))
 			.Throws(new Exception(expectedExceptionErrorMessage));
 
-		var exception = Record.Exception(() => _cartRepository.RemoveGameFromCart(game));
+		var exception = Record.Exception(() => cartRepository.RemoveGameFromCart(game));
 
 		Assert.Null(exception);
 	}
@@ -127,7 +127,7 @@ public class CartRepositoryTests
 	{
 		var expectedFunds = 100.5f;
 
-		var funds = _cartRepository.GetUserFunds();
+		var funds = cartRepository.GetUserFunds();
 
 		Assert.Equal(expectedFunds, funds);
 	}
