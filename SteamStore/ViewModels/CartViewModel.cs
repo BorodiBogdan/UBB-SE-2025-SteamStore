@@ -38,7 +38,8 @@ public class CartViewModel : INotifyPropertyChanged
         this.LastEarnedPoints = InitialValueForLastEarnedPoints;
         this.LoadGames();
 
-         // Initialize commands
+        // Initialize commands
+        this.RemoveGameCommand = new RelayCommand<Game>(this.RemoveGameFromCart);
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -123,11 +124,8 @@ public class CartViewModel : INotifyPropertyChanged
         }
         else if (this.SelectedPaymentMethod == PaymentMethods.SteamWalletPaymentWallet)
         {
-            float totalPrice1 = this.CartGames.Sum(game => (float)game.Price);
-            System.Diagnostics.Debug.WriteLine(totalPrice1);
             float totalPrice = this.cartService.GetTheTotalSumOfItemsInCart(this.CartGames.ToList());
 
-            System.Diagnostics.Debug.WriteLine(totalPrice);
             // float totalPrice = this.userGameService.ComputeSumOfGamesInCart(this.CartGames.ToList());
             float userFunds = this.ShowUserFunds();
             if (userFunds < totalPrice)
