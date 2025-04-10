@@ -16,7 +16,6 @@ public class DataLink : SteamStore.Data.IDataLink
     public DataLink(IConfiguration configuration)
     { 
         this.connectionString = configuration.GetConnectionString("ConnectionString");
-
         try
         {
             this.sqlConnection = new SqlConnection(this.connectionString);
