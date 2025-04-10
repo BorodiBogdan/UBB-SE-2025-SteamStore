@@ -18,7 +18,7 @@ public class DataLink : SteamStore.Data.IDataLink
 
         try
         {
-            this.sqlConnection = new SqlConnection(this.connectionString);
+            this.sqlConnection = new SqlConnection("Server=MARA-DELL\\SQLEXPRESS01;Initial Catalog=Steam;Integrated Security=True;TrustServerCertificate=True");
         }
         catch (Exception exception)
         {
