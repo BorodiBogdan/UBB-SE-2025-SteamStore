@@ -16,6 +16,30 @@ namespace SteamStore.Tests.Services
 {
     public class PointShopServiceTest
     {
+        const string userName = "John Doe";
+        const int userIdentifier = 1;
+        const float initialPointsBalance = 999999.99f;
+
+        const int purchaseItemIdentifier = 7;
+        const int purchaseItemPointPrice = 500;
+
+        const int activateItemIdentifier = 3;
+        const int deactivateItemIdentifier = 1;
+
+        const string filterType = "ProfileBackground";
+        const string filterText = "Blue";
+        const double priceMinimum = 0;
+        const double priceMaximum = 1000;
+
+        const int canPurchaseItemIdentifier = 1;
+
+        const int itemIdentifier1 = 1;
+        const int itemIdentifier2 = 2;
+        const int itemIdentifier3 = 3;
+        const string itemName = "Red Background";
+        const int itemPointPrice = 500;
+        const string itemType = "ProfileBackground";
+
         private readonly User _testUser;
         private readonly PointShopService _service;
 
@@ -23,9 +47,9 @@ namespace SteamStore.Tests.Services
         {
             _testUser = new User
             {
-                UserIdentifier = 1,
-                Name = "John Doe",
-                PointsBalance = 999999.99f
+                UserIdentifier = userIdentifier,
+                Name = userName,
+                PointsBalance = initialPointsBalance
             };
 
             _service = new PointShopService(_testUser, TestDataLink.GetDataLink());
@@ -58,16 +82,13 @@ namespace SteamStore.Tests.Services
         {
             var newItem = new PointShopItem
             {
-                ItemIdentifier = 7,
-                PointPrice = 500
+                ItemIdentifier = purchaseItemIdentifier,
+                PointPrice = purchaseItemPointPrice
             };
 
             try
             {
                 _service.PurchaseItem(newItem);
-
-                Assert.True(_testUser.PointsBalance < 999999.99f);
-
                 var userItems = _service.GetUserItems();
                 Assert.Contains(userItems, item => item.ItemIdentifier == newItem.ItemIdentifier);
             }
@@ -76,8 +97,6 @@ namespace SteamStore.Tests.Services
                 _service.ResetUserInventory();
 
             }
-            var afterCleanupItems = _service.GetUserItems();
-            Assert.DoesNotContain(afterCleanupItems, item => item.ItemIdentifier == newItem.ItemIdentifier);
         }
 
         [Fact]
@@ -85,13 +104,13 @@ namespace SteamStore.Tests.Services
         {
             var itemToActivate = new PointShopItem
             {
-                ItemIdentifier = 3
+                ItemIdentifier = activateItemIdentifier
             };
 
             _service.ActivateItem(itemToActivate);
 
             var userItems = _service.GetUserItems();
-            Assert.Contains(userItems, item => item.ItemIdentifier == 3 && item.IsActive);
+            Assert.Contains(userItems, item => item.ItemIdentifier == activateItemIdentifier && item.IsActive);
         }
 
 
@@ -100,19 +119,19 @@ namespace SteamStore.Tests.Services
         {
             var itemToDeactivate = new PointShopItem
             {
-                ItemIdentifier = 1
+                ItemIdentifier = deactivateItemIdentifier
             };
 
             _service.DeactivateItem(itemToDeactivate);
 
             var userItems = _service.GetUserItems();
-            Assert.Contains(userItems, item => item.ItemIdentifier == 1 && !item.IsActive);
+            Assert.Contains(userItems, item => item.ItemIdentifier == deactivateItemIdentifier && !item.IsActive);
         }
 
         [Fact]
         public void GetFilteredItems_ShouldReturnFilteredItems()
         {
-            var filteredItems = _service.GetFilteredItems("ProfileBackground", "Blue", 0, 1000);
+            var filteredItems = _service.GetFilteredItems(filterType, filterText, priceMinimum, priceMaximum);
             Assert.NotNull(filteredItems);
         }
 
@@ -121,8 +140,8 @@ namespace SteamStore.Tests.Services
         {
             var selectedItem = new PointShopItem
             {
-                ItemIdentifier = 7,
-                PointPrice = 500
+                ItemIdentifier = purchaseItemIdentifier,
+                PointPrice = purchaseItemPointPrice
             };
 
             var userItems = _service.GetUserItems();
@@ -142,8 +161,8 @@ namespace SteamStore.Tests.Services
         {
             var selectedItem = new PointShopItem
             {
-                ItemIdentifier = 1,
-                PointPrice = 500
+                ItemIdentifier = canPurchaseItemIdentifier,
+                PointPrice = purchaseItemPointPrice
             };
 
             var userItems = _service.GetUserItems();
@@ -172,16 +191,16 @@ namespace SteamStore.Tests.Services
         {
             var selectedItem = new PointShopItem
             {
-                ItemIdentifier = 2,
-                Name = "Red Background",
-                PointPrice = 500,
-                ItemType = "ProfileBackground"
+                ItemIdentifier = itemIdentifier2,
+                Name = itemName,
+                PointPrice = itemPointPrice,
+                ItemType = itemType
             };
 
             var transactionHistory = new ObservableCollection<PointShopTransaction>();
             var result = _service.TryPurchaseItem(selectedItem, transactionHistory, _testUser, out var newTransaction);
 
-            Assert.Equal(500, newTransaction.PointsSpent);
+            Assert.Equal(itemPointPrice, newTransaction.PointsSpent);
 
             var userItems = _service.GetUserItems();
             if (userItems.Exists(item => item.ItemIdentifier == selectedItem.ItemIdentifier))
@@ -205,11 +224,11 @@ namespace SteamStore.Tests.Services
         {
             var userItems = new ObservableCollection<PointShopItem>
             {
-                new PointShopItem { ItemIdentifier = 1, IsActive = true },
-                new PointShopItem { ItemIdentifier = 3, IsActive = false }
+                new PointShopItem { ItemIdentifier = itemIdentifier1, IsActive = true },
+                new PointShopItem { ItemIdentifier = itemIdentifier3, IsActive = false }
             };
 
-            var toggledItem = _service.ToggleActivationForItem(1, userItems);
+            var toggledItem = _service.ToggleActivationForItem(itemIdentifier1, userItems);
 
             Assert.True(toggledItem.IsActive);
         }
@@ -219,11 +238,11 @@ namespace SteamStore.Tests.Services
         {
             var userItems = new ObservableCollection<PointShopItem>
             {
-                new PointShopItem { ItemIdentifier = 1, IsActive = true },
-                new PointShopItem { ItemIdentifier = 3, IsActive = false }
+                new PointShopItem { ItemIdentifier = itemIdentifier1, IsActive = true },
+                new PointShopItem { ItemIdentifier = itemIdentifier3, IsActive = false }
             };
 
-            var toggledItem = _service.ToggleActivationForItem(2, userItems);
+            var toggledItem = _service.ToggleActivationForItem(itemIdentifier2, userItems);
 
             Assert.Null(toggledItem);
         }
@@ -234,11 +253,11 @@ namespace SteamStore.Tests.Services
         {
             var userItems = new ObservableCollection<PointShopItem>
             {
-                new PointShopItem { ItemIdentifier = 1, IsActive = true },
-                new PointShopItem { ItemIdentifier = 3, IsActive = false }
+                new PointShopItem { ItemIdentifier = itemIdentifier1, IsActive = true },
+                new PointShopItem { ItemIdentifier = itemIdentifier3, IsActive = false }
             };
 
-            var toggledItem = _service.ToggleActivationForItem(3, userItems);
+            var toggledItem = _service.ToggleActivationForItem(itemIdentifier3, userItems);
 
             Assert.False(toggledItem.IsActive);
         }

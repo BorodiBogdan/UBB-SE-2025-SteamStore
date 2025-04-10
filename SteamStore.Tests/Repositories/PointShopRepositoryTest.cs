@@ -11,6 +11,15 @@ namespace SteamStore.Tests.Repositories
 {
     public class PointShopRepositoryTest
     {
+        const string userName = "John Doe";
+        const int userIdentifier = 1;
+        const float initialPointsBalance = 999999.99f;
+
+        const int itemIdentifier1 = 1;
+        const int itemIdentifier3 = 3;
+        const float itemPointPrice = 9999999.99f;
+        const float newPointBalance = 100;
+
         private readonly PointShopRepository _repository;
         private readonly PointShopRepository _nullRepository;
         private readonly User _testUser;
@@ -19,9 +28,9 @@ namespace SteamStore.Tests.Repositories
         {
             _testUser = new User
             {
-                UserIdentifier = 1,
-                Name = "John Doe",
-                PointsBalance = 999999.99f
+                UserIdentifier = userIdentifier,
+                Name = userName,
+                PointsBalance = initialPointsBalance
             };
 
             _repository = new PointShopRepository(_testUser, TestDataLink.GetDataLink());
@@ -48,7 +57,7 @@ namespace SteamStore.Tests.Repositories
         {
             var item = new PointShopItem
             {
-                ItemIdentifier = 1
+                ItemIdentifier = itemIdentifier1
             };
 
             var exception = Assert.Throws<InvalidOperationException>(() => _nullRepository.PurchaseItem(item));
@@ -68,8 +77,8 @@ namespace SteamStore.Tests.Repositories
         {
             var item = new PointShopItem
             {
-                ItemIdentifier = 3,
-                PointPrice = 9999999.99f
+                ItemIdentifier = itemIdentifier3,
+                PointPrice = itemPointPrice
             };
 
             var exception = Assert.Throws<Exception>(() => _repository.PurchaseItem(item));
@@ -81,7 +90,7 @@ namespace SteamStore.Tests.Repositories
         {
             var item = new PointShopItem
             {
-                ItemIdentifier = 1
+                ItemIdentifier = itemIdentifier1
             };
             _repository.ActivateItem(item);
         }
@@ -100,7 +109,7 @@ namespace SteamStore.Tests.Repositories
         {
             var item = new PointShopItem
             {
-                ItemIdentifier = 1
+                ItemIdentifier = itemIdentifier1
             };
             var exception = Assert.Throws<InvalidOperationException>(() => _nullRepository.ActivateItem(item));
             Assert.Contains("User is not initialized", exception.Message);
@@ -111,7 +120,7 @@ namespace SteamStore.Tests.Repositories
         {
             var item = new PointShopItem
             {
-                ItemIdentifier = 1
+                ItemIdentifier = itemIdentifier1
             };
             _repository.DeactivateItem(item);
         }
@@ -119,7 +128,7 @@ namespace SteamStore.Tests.Repositories
         [Fact]
         public void DeactivateItem_ShouldThrowException_WhenUserIsNotInitialized()
         {
-            var item = new PointShopItem { ItemIdentifier = 1 };
+            var item = new PointShopItem { ItemIdentifier = itemIdentifier1 };
 
             var exception = Assert.Throws<InvalidOperationException>(() => _nullRepository.DeactivateItem(item));
             Assert.Equal("User is not initialized", exception.Message);
@@ -136,13 +145,13 @@ namespace SteamStore.Tests.Repositories
         [Fact]
         public void UpdateUserPointBalance_ShouldUpdatePoints()
         {
-            _testUser.PointsBalance = 999999.99f;
+            _testUser.PointsBalance = newPointBalance;
             _repository.UpdateUserPointBalance();
 
             var updatedBalance = _repository.GetUserItems()
                 .FirstOrDefault()?.PointPrice;
-            Assert.Equal(999999.99f, _testUser.PointsBalance);
-            _testUser.PointsBalance = 100;
+            Assert.Equal(newPointBalance, _testUser.PointsBalance);
+            _testUser.PointsBalance = initialPointsBalance;
             _repository.UpdateUserPointBalance();
         }
 
