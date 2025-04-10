@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using SteamStore.Constants;
 using SteamStore.Data;
 using SteamStore.Repositories.Interfaces;
@@ -87,7 +88,7 @@ public class CartRepository : ICartRepository
         }
         catch (Exception exception)
         {
-            Console.WriteLine(exception.Message);
+            Debug.WriteLine(exception.Message);
         }
     }
 
