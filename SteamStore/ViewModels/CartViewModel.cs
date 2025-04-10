@@ -38,7 +38,8 @@ public class CartViewModel : INotifyPropertyChanged
         this.LastEarnedPoints = InitialValueForLastEarnedPoints;
         this.LoadGames();
 
-         // Initialize commands
+        // Initialize commands
+        RemoveGameCommand = new RelayCommand<Game>(RemoveGameFromCart);
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
