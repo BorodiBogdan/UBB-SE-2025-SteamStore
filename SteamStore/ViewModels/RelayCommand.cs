@@ -27,5 +27,7 @@ namespace SteamStore.ViewModels
         public bool CanExecute(object parameter) => this.canExecute?.Invoke((T)parameter) ?? true;
 
         public void Execute(object parameter) => this.execute((T)parameter);
+
+        public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

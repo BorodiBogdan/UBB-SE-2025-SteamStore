@@ -11,6 +11,7 @@ namespace SteamStore.Repositories
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using System.Xml.Linq;
     using SteamStore.Constants;
     using SteamStore.Data;
     using SteamStore.Models;
@@ -121,22 +122,20 @@ namespace SteamStore.Repositories
 
                 this.data.ExecuteNonQuery(SqlConstants.PurchasePointShopItemProcedure, pointShopPurchaseParameters);
 
-                // Update user's point balance in memory
                 this.user.PointsBalance -= (float)item.PointPrice;
 
-                // Update user's point balance in the database
                 this.UpdateUserPointBalance();
             }
             catch (Exception exception)
             {
-                throw new Exception($"Failed to purchase item: {exception.Message}");
+                 throw new Exception($"Failed to purchase item: {exception.Message}");
             }
         }
 
         public void ActivateItem(PointShopItem item)
         {
             if (item == null)
-            {
+            { 
                 throw new ArgumentNullException(nameof(item), "Cannot activate a null item");
             }
 
@@ -204,6 +203,27 @@ namespace SteamStore.Repositories
             catch (Exception exception)
             {
                 throw new Exception($"Failed to update user point balance: {exception.Message}");
+            }
+        }
+
+        public void ResetUserInventory()
+        {
+            if (this.user == null)
+            {
+                throw new InvalidOperationException("User is not initialized");
+            }
+
+            try
+            {
+                SqlParameter[] parameters = new SqlParameter[]
+                {
+                    new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, this.user.UserIdentifier),
+                };
+                this.data.ExecuteNonQuery(SqlConstants.ResetUserInventoryToDefault, parameters);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to remove item from user: {ex.Message}");
             }
         }
     }

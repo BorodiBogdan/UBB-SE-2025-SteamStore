@@ -75,6 +75,7 @@ namespace SteamStore.Constants
         public const string GetGameOwnerCountProcedure = "GetGameOwnerCount";
         public const string GetUserGamesProcedure = "getUserGames";
         public const string GetWishlistGamesProcedure = "GetWishlistGames";
+        public const string ResetUserInventoryToDefault = "ResetUserInventoryToDefault";
 
         // Column Names
         public const string GameIdColumn = "game_id";

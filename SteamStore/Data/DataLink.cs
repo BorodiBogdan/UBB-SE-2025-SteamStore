@@ -12,10 +12,10 @@ public class DataLink : SteamStore.Data.IDataLink
     private readonly string connectionString;
     private SqlConnection sqlConnection;
 
-    public DataLink(IConfiguration configuration)
-    {
-        this.connectionString = configuration["ConnectionString"];
 
+    public DataLink(IConfiguration configuration)
+    { 
+        this.connectionString = configuration.GetConnectionString("ConnectionString");
         try
         {
             this.sqlConnection = new SqlConnection("Server=MARA-DELL\\SQLEXPRESS01;Initial Catalog=Steam;Integrated Security=True;TrustServerCertificate=True");

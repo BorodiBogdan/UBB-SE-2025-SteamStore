@@ -1,3 +1,5 @@
 ﻿{
-  "ConnectionString":  "Data Source=EDINGTON\\SQLEXPRESS;Initial Catalog=SteamStore;Integrated Security=True;TrustServerCertificate=True"
+  "ConnectionStrings": {
+    "ConnectionString": "Data Source=LAPTOP-MHT5DVFO\\SQLEXPRESS01;Initial Catalog=SteamStoreTest;Integrated Security=True;TrustServerCertificate=True"
+  }
 }

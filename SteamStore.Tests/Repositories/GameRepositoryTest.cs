@@ -13,7 +13,7 @@ public class GameRepositoryTest
     private const decimal UPDATED_GAME_RATING = 0m;
     private const int NONEXISTENT_GAME_ID = -1;
     private const int TEST_UNVALIDATED_USER_ID = 2;
-    private readonly GameRepository subject = new GameRepository(TestDataLink.GetDataLink());
+    private readonly GameRepository subject = new GameRepository(DataLinkTestUtils.GetDataLink());
 
     [Fact]
     public void CreateGame()

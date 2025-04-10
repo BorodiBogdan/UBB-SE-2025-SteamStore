@@ -6,7 +6,7 @@ namespace SteamStore.Tests.Repositories;
 public class TagRepositoryTest
 {
     private const int EXPECTED_TAG_COUNT = 15;
-    private readonly TagRepository subject = new TagRepository(TestDataLink.GetDataLink());
+    private readonly TagRepository subject = new TagRepository(DataLinkTestUtils.GetDataLink());
 
     [Fact]
     public void GetAllTags()
