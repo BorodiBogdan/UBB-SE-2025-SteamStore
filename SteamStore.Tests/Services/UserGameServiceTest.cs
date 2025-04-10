@@ -94,7 +94,7 @@ namespace SteamStore.Tests.Services
         public void ComputeNoOfUserGamesForEachTag_Works()
         {
             var tag = new Tag { Tag_name = "Action" };
-            var userGame = new Game { Tags = new string[]{ "Action" } };
+            var userGame = new Game { Tags = new string[] { "Action" } };
 
             userRepoMock.Setup(x => x.GetAllUserGames()).Returns(new Collection<Game> { userGame });
 
@@ -149,23 +149,22 @@ namespace SteamStore.Tests.Services
                 new Tag { Tag_name = "MMO", NumberOfUserGamesWithTag = 1 }
             };
 
-
             tagRepoMock.Setup(x => x.GetAllTags()).Returns(tags);
             userRepoMock.Setup(x => x.GetAllUserGames()).Returns(games);
 
             service.ComputeTagScoreForGames(games);
 
-            Assert.True(Math.Abs(game.TagScore - 1m) < 0.0001m); 
+            Assert.True(Math.Abs(game.TagScore - 1m) < 0.0001m);
         }
 
         [Fact]
         public void ComputeTrendingScores_SetsTrendingScore()
         {
             var games = new Collection<Game>
-        {
-            new Game { Name = "A", NumberOfRecentPurchases = 5 },
-            new Game { Name = "B", NumberOfRecentPurchases = 10 }
-        };
+            {
+                new Game { Name = "A", NumberOfRecentPurchases = 5 },
+                new Game { Name = "B", NumberOfRecentPurchases = 10 }
+            };
 
             service.ComputeTrendingScores(games);
 
@@ -200,10 +199,10 @@ namespace SteamStore.Tests.Services
         public void SearchWishListByName_ReturnsMatches()
         {
             var games = new Collection<Game>
-        {
-            new Game { Name = "Football" },
-            new Game { Name = "Horror" }
-        };
+            {
+                new Game { Name = "Football" },
+                new Game { Name = "Horror" }
+            };
 
             userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
 
@@ -213,22 +212,75 @@ namespace SteamStore.Tests.Services
         }
 
         [Fact]
-        public void FilterWishListGames_FiltersByCriteria()
+        public void FilterWishListGames_FiltersByOverwhelminglyPositive()
         {
             var games = new Collection<Game>
-        {
-            new Game { Rating = 4.7m },
-            new Game { Rating = 4.3m },
-            new Game { Rating = 2.5m },
-            new Game { Rating = 1.5m }
-        };
+    {
+        new Game { Rating = 4.7m },
+        new Game { Rating = 4.3m },
+        new Game { Rating = 2.5m },
+        new Game { Rating = 1.5m }
+    };
 
             userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
 
-            Assert.Single(service.FilterWishListGames(FilterCriteria.OVERWHELMINGLYPOSITIVE));
-            Assert.Single(service.FilterWishListGames(FilterCriteria.VERYPOSITIVE));
-            Assert.Single(service.FilterWishListGames(FilterCriteria.MIXED));
-            Assert.Single(service.FilterWishListGames(FilterCriteria.NEGATIVE));
+            var filtered = service.FilterWishListGames(FilterCriteria.OVERWHELMINGLYPOSITIVE);
+            Assert.Single(filtered);
+            Assert.Equal(4.7m, filtered[0].Rating);
+        }
+
+        [Fact]
+        public void FilterWishListGames_FiltersByVeryPositive()
+        {
+            var games = new Collection<Game>
+    {
+        new Game { Rating = 4.7m },
+        new Game { Rating = 4.3m },
+        new Game { Rating = 2.5m },
+        new Game { Rating = 1.5m }
+    };
+
+            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+
+            var filtered = service.FilterWishListGames(FilterCriteria.VERYPOSITIVE);
+            Assert.Single(filtered);
+            Assert.Equal(4.3m, filtered[0].Rating);
+        }
+
+        [Fact]
+        public void FilterWishListGames_FiltersByMixed()
+        {
+            var games = new Collection<Game>
+    {
+        new Game { Rating = 4.7m },
+        new Game { Rating = 4.3m },
+        new Game { Rating = 2.5m },
+        new Game { Rating = 1.5m }
+    };
+
+            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+
+            var filtered = service.FilterWishListGames(FilterCriteria.MIXED);
+            Assert.Single(filtered);
+            Assert.Equal(2.5m, filtered[0].Rating);
+        }
+
+        [Fact]
+        public void FilterWishListGames_FiltersByNegative()
+        {
+            var games = new Collection<Game>
+    {
+        new Game { Rating = 4.7m },
+        new Game { Rating = 4.3m },
+        new Game { Rating = 2.5m },
+        new Game { Rating = 1.5m }
+    };
+
+            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+
+            var filtered = service.FilterWishListGames(FilterCriteria.NEGATIVE);
+            Assert.Single(filtered);
+            Assert.Equal(1.5m, filtered[0].Rating);
         }
 
         [Fact]
@@ -240,22 +292,124 @@ namespace SteamStore.Tests.Services
             Assert.True(service.IsGamePurchased(game));
         }
 
+
         [Fact]
-        public void SortWishListGames_SortsByCriteria()
+        public void SortWishListGames_SortsByRatingAscending()
         {
             var games = new Collection<Game>
+    {
+        new Game { Name = "Game1", Rating = 4.3m },
+        new Game { Name = "Game2", Rating = 4.7m }
+    };
+
+            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+
+            var sorted = service.SortWishListGames(FilterCriteria.RATING, true);
+            Assert.Equal(4.3m, sorted[0].Rating);
+            Assert.Equal(4.7m, sorted[1].Rating);
+        }
+
+        [Fact]
+        public void SortWishListGames_SortsByRatingDescending()
         {
-            new Game { Name = "B", Price = 20, Rating = 3, Discount = 10 },
-            new Game { Name = "A", Price = 10, Rating = 5, Discount = 50 }
-        };
+            var games = new Collection<Game>
+    {
+        new Game { Name = "Game1", Rating = 4.3m },
+        new Game { Name = "Game2", Rating = 4.7m }
+    };
+
+            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+
+            var sorted = service.SortWishListGames(FilterCriteria.RATING, false);
+            Assert.Equal(4.7m, sorted[0].Rating);
+            Assert.Equal(4.3m, sorted[1].Rating);
+        }
+
+        [Fact]
+        public void SortWishListGames_SortsByPriceAscending()
+        {
+            var games = new Collection<Game>
+    {
+        new Game { Name = "Game1", Price = 20 },
+        new Game { Name = "Game2", Price = 10 }
+    };
 
             userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
 
             var sorted = service.SortWishListGames(FilterCriteria.PRICE, true);
-            Assert.Equal("A", sorted[0].Name);
+            Assert.Equal(10, sorted[0].Price);
+            Assert.Equal(20, sorted[1].Price);
+        }
 
-            sorted = service.SortWishListGames(FilterCriteria.DISCOUNT, false);
-            Assert.Equal("A", sorted[0].Name);
+        [Fact]
+        public void SortWishListGames_SortsByPriceDescending()
+        {
+            var games = new Collection<Game>
+    {
+        new Game { Name = "Game1", Price = 20 },
+        new Game { Name = "Game2", Price = 10 }
+    };
+
+            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+
+            var sorted = service.SortWishListGames(FilterCriteria.PRICE, false);
+            Assert.Equal(20, sorted[0].Price);
+            Assert.Equal(10, sorted[1].Price);
+        }
+
+        [Fact]
+        public void SortWishListGames_SortsByDiscountAscending()
+        {
+            var games = new Collection<Game>
+            {
+                new Game { Name = "Game1", Discount = 50 },
+                new Game { Name = "Game2", Discount = 10 }
+            };
+
+            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+
+            var sorted = service.SortWishListGames(FilterCriteria.DISCOUNT, true);
+            Assert.Equal(10, sorted[0].Discount);
+            Assert.Equal(50, sorted[1].Discount);
+        }
+
+        [Fact]
+        public void SortWishListGames_SortsByDiscountDescending()
+        {
+            var games = new Collection<Game>
+    {
+        new Game { Name = "Game1", Discount = 50 },
+        new Game { Name = "Game2", Discount = 10 }
+    };
+
+            userRepoMock.Setup(x => x.GetWishlistGames()).Returns(games);
+
+            var sorted = service.SortWishListGames(FilterCriteria.DISCOUNT, false);
+            Assert.Equal(50, sorted[0].Discount);
+            Assert.Equal(10, sorted[1].Discount);
+        }
+
+
+        [Fact]
+        public void GetFavoriteUserTags_WhenNoTags_ReturnsEmptyList()
+        {
+            tagRepoMock.Setup(x => x.GetAllTags()).Returns(new Collection<Tag>());
+            userRepoMock.Setup(x => x.GetAllUserGames()).Returns(new Collection<Game>());
+
+            var result = service.GetFavoriteUserTags();
+
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public void ComputeNoOfUserGamesForEachTag_WhenNoGames_ReturnsZeroForTags()
+        {
+            var tags = new Collection<Tag> { new Tag { Tag_name = "Action" } };
+            userRepoMock.Setup(x => x.GetAllUserGames()).Returns(new Collection<Game>());
+
+            service.ComputeNoOfUserGamesForEachTag(tags);
+
+            Assert.Equal(0, tags[0].NumberOfUserGamesWithTag);
         }
     }
 }
