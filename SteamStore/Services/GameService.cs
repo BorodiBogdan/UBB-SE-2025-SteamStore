@@ -40,17 +40,17 @@ public class GameService : IGameService
     public Collection<Tag> GetAllGameTags(Game game)
     {
         var allTags = this.TagRepository.GetAllTags();
-        var tagsForGame = new List<Tag>();
+        var tagsForCurrentGame = new List<Tag>();
 
         foreach (var tag in allTags)
         {
             if (game.Tags.Contains(tag.Tag_name))
             {
-                tagsForGame.Add(tag);
+                tagsForCurrentGame.Add(tag);
             }
         }
 
-        return new Collection<Tag>(tagsForGame);
+        return new Collection<Tag>(tagsForCurrentGame);
     }
 
     public Collection<Game> SearchGames(string searchQuery)
@@ -149,7 +149,7 @@ public class GameService : IGameService
 
     public List<Game> GetSimilarGames(int gameId)
     {
-        var randy = new Random(DateTime.Now.Millisecond);
+        var randomGenerator = new Random(DateTime.Now.Millisecond);
         var allGames = this.GameRepository.GetAllGames();
         var similarGames = new List<Game>();
 
@@ -165,10 +165,10 @@ public class GameService : IGameService
         // Shuffle the list
         for (int currentIndex = startingValueOfIndex; currentIndex < similarGames.Count; currentIndex++)
         {
-            var randomIndex = randy.Next(currentIndex, similarGames.Count);  // Get a random index from currentIndex to the end of the list
-            var tempGame = similarGames[currentIndex];
+            var randomIndex = randomGenerator.Next(currentIndex, similarGames.Count);  // Get a random index from currentIndex to the end of the list
+            var temporaryGame = similarGames[currentIndex];
             similarGames[currentIndex] = similarGames[randomIndex];
-            similarGames[randomIndex] = tempGame;
+            similarGames[randomIndex] = temporaryGame;
         }
 
         // Return the first 3 games
@@ -205,9 +205,9 @@ public class GameService : IGameService
                 if (games[currentIndex].TrendingScore < games[comparisonIndex].TrendingScore)
                 {
                     // Swap the games
-                    var tempGame = games[currentIndex];
+                    var temporaryGame = games[currentIndex];
                     games[currentIndex] = games[comparisonIndex];
-                    games[comparisonIndex] = tempGame;
+                    games[comparisonIndex] = temporaryGame;
                 }
             }
         }

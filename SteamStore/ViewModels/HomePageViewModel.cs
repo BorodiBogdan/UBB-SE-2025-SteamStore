@@ -156,8 +156,8 @@ public class HomePageViewModel : INotifyPropertyChanged
     private void LoadRecommendedGames()
     {
         this.RecommendedGames.Clear();
-        var games = this.userGameService.GetRecommendedGames();
-        foreach (var game in games)
+        var reccomendedGames = this.userGameService.GetRecommendedGames();
+        foreach (var game in reccomendedGames)
         {
             this.RecommendedGames.Add(game);
         }
@@ -166,8 +166,8 @@ public class HomePageViewModel : INotifyPropertyChanged
     private void LoadDiscountedGames()
     {
         this.DiscountedGames.Clear();
-        var games = this.gameService.GetDiscountedGames();
-        foreach (var game in games)
+        var discountedGames = this.gameService.GetDiscountedGames();
+        foreach (var game in discountedGames)
         {
             this.DiscountedGames.Add(game);
         }

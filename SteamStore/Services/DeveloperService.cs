@@ -18,7 +18,7 @@ public class DeveloperService : IDeveloperService
     private const int ComparingValueForMinimumDicount = 0;
     private const int ComparingValueForMaximumDicount = 100;
     private const int EmptyListLength = 0;
-    private static string pENDINGSTATE = "Pending";
+    private const string PendingState = "Pending";
 
     public IGameRepository GameRepository { get; set; }
 
@@ -74,7 +74,7 @@ public class DeveloperService : IDeveloperService
             TrailerPath = trailerUrl,
             MinimumRequirements = minimumRequirement,
             RecommendedRequirements = reccommendedRequirement,
-            Status = pENDINGSTATE,
+            Status = PendingState,
             Discount = discount,
         };
         return game;
