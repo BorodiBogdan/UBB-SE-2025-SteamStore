@@ -42,7 +42,7 @@ public class UserGameRepository : IUserGameRepository
         };
         try
         {
-            return this.dataLink.ExecuteScalar<int>("IsGamePurchased", gamePurchasedParameters) > ValueOfNotBeingPurchased;
+            return this.dataLink.ExecuteScalar<int>(SqlConstants.IsGamePurchasedProcedure, gamePurchasedParameters) > ValueOfNotBeingPurchased;
         }
         catch (Exception exception)
         {
@@ -60,7 +60,7 @@ public class UserGameRepository : IUserGameRepository
 
         try
         {
-            this.dataLink.ExecuteNonQuery("RemoveGameFromWishlist", removeGamesParameters);
+            this.dataLink.ExecuteNonQuery(SqlConstants.RemoveGameFromWishlistProcedure, removeGamesParameters);
         }
         catch (Exception exception)
         {
@@ -83,7 +83,7 @@ public class UserGameRepository : IUserGameRepository
                 throw new Exception("Insufficient funds");
             }
 
-            this.dataLink.ExecuteNonQuery("AddGameToPurchased", purchaseGameParameters);
+            this.dataLink.ExecuteNonQuery(SqlConstants.AddGameToPurchasedGamesProcedure, purchaseGameParameters);
             this.user.WalletBalance -= (float)game.Price;
 
             // Calculate and add points (121 points for every $1 spent)
@@ -105,7 +105,7 @@ public class UserGameRepository : IUserGameRepository
 
         try
         {
-            this.dataLink.ExecuteNonQuery("AddGameToWishlist", addGameToWishlistParameters);
+            this.dataLink.ExecuteNonQuery(SqlConstants.AddGameToWishlistProcedure, addGameToWishlistParameters);
         }
         catch (Exception exception)
         {
@@ -122,7 +122,7 @@ public class UserGameRepository : IUserGameRepository
 
         try
         {
-            DataTable gameTagsTable = this.dataLink.ExecuteReader("getGameTags", gameTagsParameters);
+            DataTable gameTagsTable = this.dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, gameTagsParameters);
             List<string> tags = new List<string>();
 
             if (gameTagsTable != null)
@@ -144,7 +144,7 @@ public class UserGameRepository : IUserGameRepository
     public int GetGameOwnerCount(int gameId)
     {
         var ownerCountParameters = new SqlParameter[] { new (SqlConstants.GameIdParameter, gameId) };
-        var result = this.dataLink.ExecuteReader("GetGameOwnerCount", ownerCountParameters);
+        var result = this.dataLink.ExecuteReader(SqlConstants.GetGameOwnerCountProcedure, ownerCountParameters);
 
         return result is { Rows.Count: > ZeroRowsCount } ? Convert.ToInt32(result.Rows[FirstRowIndex][OwnerCountColumn]) : DefaultValueOfOwners;
     }
@@ -156,7 +156,7 @@ public class UserGameRepository : IUserGameRepository
             new SqlParameter(SqlConstants.UserIdentifierParameter, this.user.UserIdentifier),
         };
 
-        var allUserGames = this.dataLink.ExecuteReader("getUserGames", allUsersParameters);
+        var allUserGames = this.dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, allUsersParameters);
         List<Game> games = new List<Game>();
 
         if (allUserGames != null)
@@ -200,7 +200,7 @@ public class UserGameRepository : IUserGameRepository
                 new SqlParameter(SqlConstants.PointBalanceParameter, this.user.PointsBalance),
             };
 
-            this.dataLink.ExecuteNonQuery("UpdateUserPointBalance", addingPointsParameter);
+            this.dataLink.ExecuteNonQuery(SqlConstants.UpdateUserPointBalance, addingPointsParameter);
         }
         catch (Exception exception)
         {
@@ -221,7 +221,7 @@ public class UserGameRepository : IUserGameRepository
             new SqlParameter(SqlConstants.UserIdParameter, this.user.UserIdentifier),
         };
 
-        var wishlistGamesData = this.dataLink.ExecuteReader("GetWishlistGames", wishlistGamesParameters);
+        var wishlistGamesData = this.dataLink.ExecuteReader(SqlConstants.GetWishlistGamesProcedure, wishlistGamesParameters);
         List<Game> gamesInWishlist = new List<Game>();
 
         if (wishlistGamesData != null)

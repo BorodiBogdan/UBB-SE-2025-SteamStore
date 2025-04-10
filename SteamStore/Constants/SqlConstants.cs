@@ -56,7 +56,7 @@ namespace SteamStore.Constants
         public const string GetRejectionMessageProcedure = "GetRejectionMessage";
         public const string InsertGameTagsProcedure = "InsertGameTags";
         public const string IsGameIdInUseProcedure = "IsGameIdInUse";
-        public const string GetGameTagsProcedure = "GetGameTags";
+        public const string GetGameTagsProcedure = "getGameTags";
         public const string InsertGameProcedure = "InsertGame";
         public const string GetGameRatingProcedure = "getGameRating";
         public const string GetNumberOfRecentSalesProcedure = "getNoOfRecentSalesForGame";
@@ -70,6 +70,12 @@ namespace SteamStore.Constants
         public const string GetUserGamesProcedure = "getUserGames";
         public const string UpdateUserPointBalance = "UpdateUserPointBalance";
         public const string GetAllPointShopItems = "GetAllPointShopItems";
+        public const string IsGamePurchasedProcedure = "IsGamePurchased";
+        public const string RemoveGameFromWishlistProcedure = "RemoveGameFromWishlist";
+        public const string AddGameToPurchasedGamesProcedure = "AddGameToPurchased";
+        public const string AddGameToWishlistProcedure = "AddGameToWishlist";
+        public const string GetGameOwnerCountProcedure = "GetGameOwnerCount";
+        public const string GetWishlistGamesProcedure = "GetWishlistGames";
         public const string ResetUserInventoryToDefault = "ResetUserInventoryToDefault";
 
         // Column Names
@@ -97,7 +103,6 @@ namespace SteamStore.Constants
         public const string PointPriceColumnWithCapitalLeter = "PointPrice";
         public const string ItemTypeColumnWithCapitalLetter = "ItemType";
         public const string IsActiveColumn = "IsActive";
-
         public const string UserIdColumn = "user_id";
     }
 }
