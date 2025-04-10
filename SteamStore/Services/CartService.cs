@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,14 +33,7 @@ public class CartService : ICartService
 
     public void AddGameToCart(Game game)
     {
-        try
-        {
-            this.cartRepository.AddGameToCart(game);
-        }
-        catch (Exception exception)
-        {
-            throw new Exception(exception.Message);
-        }
+        this.cartRepository.AddGameToCart(game);
     }
 
     public void RemoveGamesFromCart(List<Game> games)
@@ -57,13 +51,24 @@ public class CartService : ICartService
 
     public decimal GetTotalSumToBePaid()
     {
-        decimal total = InitialZeroSum;
+        decimal totalSumToBePaid = InitialZeroSum;
 
         foreach (var game in this.cartRepository.GetCartGames())
         {
-            total += (decimal)game.Price;
+            totalSumToBePaid += (decimal)game.Price;
         }
 
-        return total;
+        return totalSumToBePaid;
+    }
+
+    public float GetTheTotalSumOfItemsInCart(List<Game> cartGames)
+    {
+        float totalSum = InitialZeroSum;
+        foreach (var game in cartGames)
+        {
+            totalSum += (float)game.Price;
+        }
+
+        return totalSum;
     }
 }

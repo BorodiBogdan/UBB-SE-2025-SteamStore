@@ -74,7 +74,7 @@ namespace SteamStore.Repositories
 
                 foreach (DataRow row in result.Rows)
                 {
-                    var item = new PointShopItem
+                    var currentItem = new PointShopItem
                     {
                         ItemIdentifier = Convert.ToInt32(row[SqlConstants.ItemIdColumnWithCapitalLetter]),
                         Name = row[SqlConstants.NameIdColumnWithCapitalLetter].ToString(),
@@ -84,7 +84,7 @@ namespace SteamStore.Repositories
                         ItemType = row[SqlConstants.ItemTypeColumnWithCapitalLetter].ToString(),
                         IsActive = Convert.ToBoolean(row[SqlConstants.IsActiveColumn]),
                     };
-                    userPointShopItems.Add(item);
+                    userPointShopItems.Add(currentItem);
                 }
             }
             catch (Exception exception)

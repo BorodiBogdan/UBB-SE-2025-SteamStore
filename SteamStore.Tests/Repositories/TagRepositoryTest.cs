@@ -5,31 +5,15 @@ namespace SteamStore.Tests.Repositories;
 
 public class TagRepositoryTest
 {
-    private readonly TagRepository _subject = new(TestDataLink.GetDataLink());
+    private const int EXPECTED_TAG_COUNT = 15;
+    private readonly TagRepository subject = new TagRepository(TestDataLink.GetDataLink());
 
     [Fact]
     public void GetAllTags()
     {
-        var tags = _subject.GetAllTags();
-        Assert.Equal(15, tags.Count);
+        var tags = subject.GetAllTags();
+        Assert.Equal(EXPECTED_TAG_COUNT, tags.Count);
         var tagNames = tags.Select(tag => tag.Tag_name).ToList();
-        Assert.Equal(new List<string>
-        {
-            "Rogue-Like",
-            "Third-Person Shooter",
-            "Multiplayer",
-            "Horror",
-            "First-Person Shooter",
-            "Action",
-            "Platformer",
-            "Adventure",
-            "Puzzle",
-            "Exploration",
-            "Sandbox",
-            "Survival",
-            "Arcade",
-            "RPG",
-            "Racing"
-        }, tagNames);
+        Assert.Equal(TagsConstants.GetTagsName, tagNames);
     }
 }

@@ -31,15 +31,7 @@ public class PaypalProcessor
             return false;
         }
 
-        try
-        {
-            // Use a simple regex to validate the email format
-            return Regex.IsMatch(email, ValidEmailPattern);
-        }
-        catch (RegexMatchTimeoutException)
-        {
-            return false;
-        }
+        return Regex.IsMatch(email, ValidEmailPattern);
     }
 
     private bool IsValidPassword(string password)

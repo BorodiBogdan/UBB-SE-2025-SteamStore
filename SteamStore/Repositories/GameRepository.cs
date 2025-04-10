@@ -161,7 +161,7 @@ public class GameRepository : IGameRepository
 
         var rejectedMessagesForGivenGame = this.dataLink.ExecuteReader(SqlConstants.GetRejectionMessageProcedure, gettingRejectionMessageParameters);
 
-        if (rejectedMessagesForGivenGame == null || rejectedMessagesForGivenGame.Rows.Count <= LengthOfAnEmptyTable)
+        if (rejectedMessagesForGivenGame.Rows.Count <= LengthOfAnEmptyTable)
         {
             return string.Empty;
         }
@@ -188,10 +188,7 @@ public class GameRepository : IGameRepository
 
         var usageResultTable = this.dataLink.ExecuteReader(SqlConstants.IsGameIdInUseProcedure, checkingIfGameIsInUseParameters);
 
-        if (usageResultTable == null || usageResultTable.Rows.Count <= LengthOfAnEmptyTable)
-        {
-            return false;
-        }
+        
 
         var gameUsageCount = Convert.ToInt32(usageResultTable.Rows[FirstRowIndex][SqlConstants.QueryResultColumn]);
         return gameUsageCount > ZeroUsagesOfAGame;
@@ -199,12 +196,19 @@ public class GameRepository : IGameRepository
 
     public List<Tag> GetGameTags(int gameId)
     {
-        var gameIdParameters = new SqlParameter[] { new (SqlConstants.GidParameter, gameId) };
+        var gameIdParameters = new SqlParameter[] { new (SqlConstants.GameIdShortcutParameter, gameId) };
 
         var tagRows = this.dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, gameIdParameters);
-        return (from DataRow row in tagRows.Rows
-                select new Tag { TagId = (int)row[SqlConstants.TagIdColumn], Tag_name = (string)row[SqlConstants.TagNameColumn] })
-            .OrderBy(tag => tag.Tag_name).ToList();
+
+        List<Tag> tags = (from DataRow row in tagRows.Rows
+                          orderby (string)row[SqlConstants.TagNameColumn] 
+                          select new Tag
+                          {
+                              TagId = (int)row[SqlConstants.TagIdColumn],
+                              Tag_name = (string)row[SqlConstants.TagNameColumn],
+                          }).ToList();
+
+        return tags;
     }
 
     public void CreateGame(Game game)
@@ -229,7 +233,7 @@ public class GameRepository : IGameRepository
 
     public decimal GetGameRating(int gameId)
     {
-        SqlParameter[] gameRatingParameterss = { new (SqlConstants.GidParameter, gameId) };
+        SqlParameter[] gameRatingParameterss = { new (SqlConstants.GameIdShortcutParameter, gameId) };
 
         decimal? gameRating = this.dataLink.ExecuteScalar<decimal>(SqlConstants.GetGameRatingProcedure, gameRatingParameterss);
         return (decimal)gameRating;
@@ -237,7 +241,7 @@ public class GameRepository : IGameRepository
 
     public int GetNumberOfRecentSalesForGame(int gameId)
     {
-        SqlParameter[] salesCountParameters = { new (SqlConstants.GidParameter, gameId) };
+        SqlParameter[] salesCountParameters = { new (SqlConstants.GameIdShortcutParameter, gameId) };
         int? recentSalesCount = this.dataLink.ExecuteScalar<int>(SqlConstants.GetNumberOfRecentSalesProcedure, salesCountParameters);
         return (int)recentSalesCount;
     }

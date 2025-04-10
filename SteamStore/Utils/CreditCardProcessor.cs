@@ -22,19 +22,19 @@ public class CreditCardProcessor
 
     public async Task<bool> ProcessPaymentAsync(string cardNumber, string expirationDate, string cvv, string ownerName)
     {
-        if (this.IsValidCardNumber(cardNumber) &&
-            this.IsValidExpirationDate(expirationDate) &&
-            this.IsValidCvv(cvv) &&
-            this.IsValidOwnerName(ownerName))
+        if (!IsValidCardNumber(cardNumber) ||
+            !IsValidExpirationDate(expirationDate) ||
+            !IsValidCvv(cvv) ||
+            !IsValidOwnerName(ownerName))
         {
-            await Task.Delay(DelayForPayment);
-            return true;
+            return false;
         }
 
-        return false;
+        await Task.Delay(DelayForPayment);
+        return true;
     }
 
-    private bool IsValidCardNumber(string cardNumber)
+    private static bool IsValidCardNumber(string cardNumber)
     {
         if (string.IsNullOrWhiteSpace(cardNumber))
         {
@@ -43,15 +43,10 @@ public class CreditCardProcessor
 
         cardNumber = Regex.Replace(cardNumber, ReplaceCardNumberRegex, string.Empty);
 
-        if (cardNumber.Length < MinimumLenthCardNumber || cardNumber.Length > MaximumLengthCardNumber)
-        {
-            return false;
-        }
-
-        return true;
+        return cardNumber.Length is >= MinimumLenthCardNumber and <= MaximumLengthCardNumber;
     }
 
-    private bool IsValidExpirationDate(string expirationDate)
+    private static bool IsValidExpirationDate(string expirationDate)
     {
         if (string.IsNullOrWhiteSpace(expirationDate))
         {
@@ -63,38 +58,23 @@ public class CreditCardProcessor
             return false;
         }
 
-        string[] parts = expirationDate.Split(Separator);
-        int month = int.Parse(parts[FirstPartOfExpirationDateIndex]);
-        int year = int.Parse(parts[SecondPartOfExpirationDateIndex]);
+        var parts = expirationDate.Split(Separator);
+        var month = int.Parse(parts[FirstPartOfExpirationDateIndex]);
+        var year = int.Parse(parts[SecondPartOfExpirationDateIndex]);
 
-        int currentYear = DateTime.Now.Year % GetLastTwoDigits;
-        int currentMonth = DateTime.Now.Month;
+        var currentYear = DateTime.Now.Year % GetLastTwoDigits;
+        var currentMonth = DateTime.Now.Month;
 
-        if (year < currentYear || (year == currentYear && month < currentMonth))
-        {
-            return false;
-        }
-
-        return true;
+        return year >= currentYear && (year != currentYear || month >= currentMonth);
     }
 
-    private bool IsValidCvv(string cvv)
+    private static bool IsValidCvv(string cvv)
     {
-        if (string.IsNullOrWhiteSpace(cvv))
-        {
-            return false;
-        }
-
-        return Regex.IsMatch(cvv, ValidCVVPattern);
+        return !string.IsNullOrWhiteSpace(cvv) && Regex.IsMatch(cvv, ValidCVVPattern);
     }
 
-    private bool IsValidOwnerName(string ownerName)
+    private static bool IsValidOwnerName(string ownerName)
     {
-        if (string.IsNullOrWhiteSpace(ownerName))
-        {
-            return false;
-        }
-
-        return Regex.IsMatch(ownerName, ValidOwnerNamePattern);
+        return !string.IsNullOrWhiteSpace(ownerName) && Regex.IsMatch(ownerName, ValidOwnerNamePattern);
     }
 }
