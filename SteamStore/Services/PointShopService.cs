@@ -293,5 +293,10 @@ namespace SteamStore.Services
                 return item;
             }
         }
+
+        public void ResetUserInventory()
+        {
+            this.repository.ResetUserInventory();
+        }
     }
 }

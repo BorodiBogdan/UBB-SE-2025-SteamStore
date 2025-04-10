@@ -11,6 +11,7 @@ namespace SteamStore.Repositories
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using System.Xml.Linq;
     using SteamStore.Constants;
     using SteamStore.Data;
     using SteamStore.Models;
@@ -202,6 +203,28 @@ namespace SteamStore.Repositories
             catch (Exception exception)
             {
                 throw new Exception($"Failed to update user point balance: {exception.Message}");
+            }
+        }
+
+        public void ResetUserInventory()
+        {
+            if (this.user == null)
+            {
+                throw new InvalidOperationException("User is not initialized");
+            }
+
+            try
+            {
+                string query = "ResetUserInventoryToDefault";
+                SqlParameter[] parameters = new SqlParameter[]
+                {
+                    new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, this.user.UserIdentifier),
+                };
+                this.data.ExecuteNonQuery(query, parameters);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to remove item from user: {ex.Message}");
             }
         }
     }
