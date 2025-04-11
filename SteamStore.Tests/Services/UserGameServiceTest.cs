@@ -31,6 +31,7 @@ namespace SteamStore.Tests.Services
         private const int UserPointsBeforePurchase = 10;
         private const int UserPointsAfterPurchase = 15;
 
+        private const int NumberOfUsersGamesWithTagUsedOnce = 1;
         private const int NumberOfFavoriteTagsMaximum = 3;
         private const int NumberOfFavoriteTagsExpected = 2;
         private const decimal TagScoreComparator = 0.0001m;
@@ -72,7 +73,9 @@ namespace SteamStore.Tests.Services
         public void RemoveGameFromWishlist_Successful_CallsRepository()
         {
             var gameToRemove = new Game();
+
             userGameService.RemoveGameFromWishlist(gameToRemove);
+
             mockUserGameRepository.Verify(repository => repository.RemoveGameFromWishlist(gameToRemove), Times.Once);
         }
 
@@ -80,16 +83,18 @@ namespace SteamStore.Tests.Services
         public void AddGameToWishlist_WhenAlreadyOwned_ThrowsException()
         {
             var gameToAdd = new Game { Name = GameName1 };
+
             mockUserGameRepository.Setup(repository => repository.IsGamePurchased(gameToAdd)).Returns(true);
 
-            var exception = Assert.Throws<Exception>(() => userGameService.AddGameToWishlist(gameToAdd));
-            Assert.Equal(string.Format(ExceptionMessages.GameAlreadyOwned, GameName1), exception.Message);
+            var exceptionAddGameToWishList = Assert.Throws<Exception>(() => userGameService.AddGameToWishlist(gameToAdd));
+            Assert.Equal(string.Format(ExceptionMessages.GameAlreadyOwned, GameName1), exceptionAddGameToWishList.Message);
         }
 
         [Fact]
         public void AddGameToWishlist_WhenNotOwned_CallsRepository()
         {
             var gameToAdd = new Game { Name = GameName2 };
+
             mockUserGameRepository.Setup(repository => repository.IsGamePurchased(gameToAdd)).Returns(false);
 
             userGameService.AddGameToWishlist(gameToAdd);
@@ -97,9 +102,10 @@ namespace SteamStore.Tests.Services
         }
 
         [Fact]
-        public void AddGameToWishlist_WhenSqlException_FormatsMessage()
+        public void AddGameToWishlist_WhenSqlException_ThrowsException()
         {
             var gameToAdd = new Game { Name = GameName3 };
+
             mockUserGameRepository.Setup(repository => repository.IsGamePurchased(gameToAdd)).Returns(false);
             mockUserGameRepository.Setup(repository => repository.AddGameToWishlist(gameToAdd)).Throws(new Exception(ErrorStrings.SQLNONQUERYFAILUREINDICATOR));
 
@@ -139,72 +145,71 @@ namespace SteamStore.Tests.Services
         }
 
         [Fact]
-        public void ComputeNoOfUserGamesForEachTag_ShouldSetCountToOne_WhenTagIsUsedInOneGame()
+        public void ComputeNumberOfUserGamesForEachTag_SetCountToOne_WhenTagIsUsedInOneGame()
         {
-            const int NumberOfUsersGamesWithTagUsedOnce = 1;
-            var tag = new Tag { Tag_name = TagName1 };
+            var tagUsed = new Tag { Tag_name = TagName1 };
             var gameWithTag = new Game { Name = GameName1, Tags = new[] { TagName1 } };
 
             mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { gameWithTag });
 
-            var tagCollection = new Collection<Tag> { tag };
+            var tagCollection = new Collection<Tag> { tagUsed };
 
             userGameService.ComputeNoOfUserGamesForEachTag(tagCollection);
 
-            Assert.Equal(NumberOfUsersGamesWithTagUsedOnce, tag.NumberOfUserGamesWithTag);
+            Assert.Equal(NumberOfUsersGamesWithTagUsedOnce, tagUsed.NumberOfUserGamesWithTag);
         }
 
         [Fact]
-        public void ComputeNoOfUserGamesForEachTag_ShouldSetCountToZero_WhenTagNotPresentInAnyGame()
+        public void ComputeNumberOfUserGamesForEachTag_SetCountToZero_WhenTagNotPresentInAnyGame()
         {
             const int NumberOfUsersGamesWithTagNeverUsed = 0;
 
-            var tag = new Tag { Tag_name = TagName2 };
+            var tagNotUsed = new Tag { Tag_name = TagName2 };
             var gameWithoutTag = new Game { Name = GameName1, Tags = new[] { TagName1 } };
 
             mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { gameWithoutTag });
 
-            var tagCollection = new Collection<Tag> { tag };
+            var tagCollection = new Collection<Tag> { tagNotUsed };
 
             userGameService.ComputeNoOfUserGamesForEachTag(tagCollection);
 
-            Assert.Equal(NumberOfUsersGamesWithTagNeverUsed, tag.NumberOfUserGamesWithTag);
+            Assert.Equal(NumberOfUsersGamesWithTagNeverUsed, tagNotUsed.NumberOfUserGamesWithTag);
         }
 
         [Fact]
-        public void ComputeNoOfUserGamesForEachTag_ShouldCorrectlyCountMultipleGamesForSameTag()
+        public void ComputeNumberOfUserGamesForEachTag_SetCountCorrectly_WhenMultipleGamesForSameTag()
         {
             const int NumberOfUsersGamesWithTagUsedMultiple = 2;
 
-            var tag = new Tag { Tag_name = TagName1 };
-            var game1 = new Game { Name = GameName1, Tags = new[] { TagName1 } };
-            var game2 = new Game { Name = GameName2, Tags = new[] { TagName1, TagName2 } };
+            var tagUsed = new Tag { Tag_name = TagName1 };
+            var gameUsingTag1 = new Game { Name = GameName1, Tags = new[] { TagName1 } };
+            var gameUsingTag2 = new Game { Name = GameName2, Tags = new[] { TagName1, TagName2 } };
 
-            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { game1, game2 });
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { gameUsingTag1, gameUsingTag2 });
 
-            var tagCollection = new Collection<Tag> { tag };
+            var tagCollection = new Collection<Tag> { tagUsed };
 
             userGameService.ComputeNoOfUserGamesForEachTag(tagCollection);
 
-            Assert.Equal(NumberOfUsersGamesWithTagUsedMultiple, tag.NumberOfUserGamesWithTag);
+            Assert.Equal(NumberOfUsersGamesWithTagUsedMultiple, tagUsed.NumberOfUserGamesWithTag);
         }
 
         [Fact]
-        public void ComputeNoOfUserGamesForEachTag_ShouldHandleMultipleTagsAndGames()
+        public void ComputeNumberOfUserGamesForEachTag_SetCountCorrectly_HandleMultipleTagsAndGames()
         {
-            var tag1 = new Tag { Tag_name = TagName1 };
-            var tag2 = new Tag { Tag_name = TagName2 };
+            var tagUsed1 = new Tag { Tag_name = TagName1 };
+            var tagUsed2 = new Tag { Tag_name = TagName2 };
 
-            var multiTagGame = new Game { Name = GameName1, Tags = new[] { TagName1, TagName2 } };
+            var multipleTagGame = new Game { Name = GameName1, Tags = new[] { TagName1, TagName2 } };
 
-            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { multiTagGame });
+            mockUserGameRepository.Setup(repository => repository.GetAllUserGames()).Returns(new Collection<Game> { multipleTagGame });
 
-            var tagCollection = new Collection<Tag> { tag1, tag2 };
+            var tagCollection = new Collection<Tag> { tagUsed1, tagUsed2 };
 
             userGameService.ComputeNoOfUserGamesForEachTag(tagCollection);
 
-            Assert.Equal(1, tag1.NumberOfUserGamesWithTag);
-            Assert.Equal(1, tag2.NumberOfUserGamesWithTag);
+            Assert.Equal(NumberOfUsersGamesWithTagUsedOnce, tagUsed1.NumberOfUserGamesWithTag);
+            Assert.Equal(NumberOfUsersGamesWithTagUsedOnce, tagUsed2.NumberOfUserGamesWithTag);
         }
 
         [Fact]
