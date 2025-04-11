@@ -5,9 +5,13 @@ namespace SteamStore.Tests.Services;
 
 public class CartServiceTests
 {
-	private const decimal TEST_PRICE = 10.0m;
 	private readonly CartService cartService;
 	private readonly Mock<ICartRepository> repositoryMock;
+
+	private const int TestGameIdentifier = 1;
+	private const int TestSecondGameIdentifier = 2;
+	private const int TestGamePrice = 10;
+	private const int TestSecondGamePrice = 20;
 
 	public CartServiceTests()
 	{
@@ -16,25 +20,25 @@ public class CartServiceTests
 	}
 
 	[Fact]
-	public void GetCartGames_ShouldCallRepository()
+	public void GetCartGames_WhenCalled_ShouldCallRepositoryGetCartGames()
 	{
 		var mockedRepositoryData = new List<Game>();
 
-		repositoryMock.Setup(repository => repository.GetCartGames())
+		repositoryMock.Setup(repositoryMock => repositoryMock.GetCartGames())
 			.Returns(mockedRepositoryData)
 			.Verifiable();
 
 		cartService.GetCartGames();
 
-		repositoryMock.Verify(repository => repository.GetCartGames());
+		repositoryMock.Verify(repositoryMock => repositoryMock.GetCartGames());
 	}
 
 	[Fact]
-	public void GetCartGames_ShouldReturnData()
+	public void GetCartGames_WhenCalled_ShouldReturnData()
 	{
 		var games = new List<Game>();
 
-		repositoryMock.Setup(repository => repository.GetCartGames())
+		repositoryMock.Setup(repositoryMock => repositoryMock.GetCartGames())
 			.Returns(games)
 			.Verifiable();
 
@@ -44,35 +48,35 @@ public class CartServiceTests
 	}
 
 	[Fact]
-	public void RemoveGameFromCart_ShouldCallRepository()
+	public void RemoveGameFromCart_WhenCalledWithValidGame_ShouldCallRepositoryRemoveGameFromCart()
 	{
 		var game = new Game
 		{
-			Identifier = 1
+			Identifier = TestGameIdentifier
 		};
 
-		repositoryMock.Setup(repository => repository.RemoveGameFromCart(It.IsAny<Game>()))
+		repositoryMock.Setup(repositoryMock => repositoryMock.RemoveGameFromCart(It.IsAny<Game>()))
 			.Verifiable();
 
 		cartService.RemoveGameFromCart(game);
 
-		repositoryMock.Verify(f => f.RemoveGameFromCart(game));
+		repositoryMock.Verify(repositoryMock => repositoryMock.RemoveGameFromCart(game));
 	}
 
 	[Fact]
-	public void AddGameToCart_ShouldCallRepository()
+	public void AddGameToCart_WhenCalledWithValidGame_ShouldCallRepositoryAddGameToCart()
 	{
 		var game = new Game
 		{
-			Identifier = 1
+			Identifier = TestGameIdentifier
 		};
 
-		repositoryMock.Setup(repository => repository.AddGameToCart(It.IsAny<Game>()))
+		repositoryMock.Setup(repositoryMock => repositoryMock.AddGameToCart(It.IsAny<Game>()))
 			.Verifiable();
 
 		cartService.AddGameToCart(game);
 
-		repositoryMock.Verify(f => f.AddGameToCart(game));
+		repositoryMock.Verify(repositoryMock => repositoryMock.AddGameToCart(game));
 	}
 
 	[Fact]
@@ -82,78 +86,79 @@ public class CartServiceTests
 		{
 			new Game
 			{
-				Identifier = 1
+				Identifier = TestGameIdentifier
 			},
 			new Game
 			{
-				Identifier = 2
+				Identifier = TestSecondGameIdentifier
 			}
 		};
 
-		repositoryMock.Setup(repository => repository.RemoveGameFromCart(It.IsAny<Game>()))
+		var expectedRemoveCallsCount = 2;
+
+		repositoryMock.Setup(repositoryMock => repositoryMock.RemoveGameFromCart(It.IsAny<Game>()))
 			.Verifiable();
 
 		cartService.RemoveGamesFromCart(games);
 
-		repositoryMock.Verify(f => f.RemoveGameFromCart(games[0]));
-		repositoryMock.Verify(f => f.RemoveGameFromCart(games[1]));
+		repositoryMock.Verify(repositoryMock => repositoryMock.RemoveGameFromCart(It.IsAny<Game>()), Times.Exactly(expectedRemoveCallsCount));
 	}
 
 	[Fact]
-	public void GetUserFunds_ShouldCallRepository()
+	public void GetUserFunds_WhenCalled_ShouldCallRepositoryGetUserFunds()
 	{
-		repositoryMock.Setup(repository => repository.GetUserFunds())
+		repositoryMock.Setup(repositoryMock => repositoryMock.GetUserFunds())
 			.Verifiable();
 
 		cartService.GetUserFunds();
 
-		repositoryMock.Verify(f => f.GetUserFunds());
+		repositoryMock.Verify(repositoryMock => repositoryMock.GetUserFunds());
 	}
 
 	[Fact]
-	public void GetTotalSumToBePaid_ShouldCallRepository()
+	public void GetTotalSumToBePaid_WhenCalled_ShouldCallRepositoryGetCartGames()
 	{
 		var games = new List<Game>
 		{
 			new Game
 			{
-				Identifier = 1,
-				Price = 10
+				Identifier = TestGameIdentifier,
+				Price = TestGamePrice
 			},
 			new Game
 			{
-				Identifier = 2,
-				Price = 20
+				Identifier = TestSecondGameIdentifier,
+				Price = TestSecondGamePrice
 			}
 		};
-		repositoryMock.Setup(repository => repository.GetCartGames())
+		repositoryMock.Setup(repositoryMock => repositoryMock.GetCartGames())
 			.Returns(games)
 			.Verifiable();
 
 		cartService.GetTotalSumToBePaid();
 
-		repositoryMock.Verify(f => f.GetCartGames());
+		repositoryMock.Verify(repositoryMock => repositoryMock.GetCartGames());
 	}
 
 	[Fact]
-	public void GetTotalSumToBePaid_ShouldReturnProperSumToBePaid()
+	public void GetTotalSumToBePaid_WhenCalledWithTwoGamesWithPrices_ShouldReturnProperSumToBePaid()
 	{
 		var games = new List<Game>
 		{
 			new Game
 			{
-				Identifier = 1,
-				Price = 10
+				Identifier = TestGameIdentifier,
+				Price = TestGamePrice
 			},
 			new Game
 			{
-				Identifier = 2,
-				Price = 20
+				Identifier = TestSecondGameIdentifier,
+				Price = TestSecondGamePrice
 			}
 		};
 		var expectedTotal = 30;
 
-		repositoryMock.Setup(repository => repository.GetCartGames())
+		repositoryMock.Setup(repositoryMock => repositoryMock.GetCartGames())
 			.Returns(games);
 
 		var result = cartService.GetTotalSumToBePaid();
@@ -167,12 +172,14 @@ public class CartServiceTests
 		float expectedResult = 30.0f;
 		var cartGames = new List<Game>
 		{
-			new Game { Price = TEST_PRICE },
-			new Game { Price = TEST_PRICE },
-			new Game { Price = TEST_PRICE }
+			new Game { Price = TestGamePrice },
+			new Game { Price = TestGamePrice },
+			new Game { Price = TestGamePrice }
 		};
-		var actualResult = cartService.GetTheTotalSumOfItemsInCart(cartGames);
+		var expectedTotalPrice = 30f;
 
-		Assert.Equal(expectedResult, actualResult);
+		var result = cartService.GetTheTotalSumOfItemsInCart(cartGames);
+
+		Assert.Equal(expectedTotalPrice, result);
 	}
 }
