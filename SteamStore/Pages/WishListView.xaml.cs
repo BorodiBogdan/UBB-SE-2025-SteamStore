@@ -25,9 +25,9 @@ namespace SteamStore.Pages
             this.DataContext = this.viewModel;
         }
 
-        private void ViewDetails_Click(object sender, RoutedEventArgs e)
+        private void ViewDetails_Click(object viewDetailsButton, RoutedEventArgs viewDetailsEventArgument)
         {
-            if (sender is Button button && button.DataContext is Game game)
+            if (viewDetailsButton is Button button && button.DataContext is Game game)
             {
                 if (this.Parent is Frame frame)
                 {
@@ -36,7 +36,7 @@ namespace SteamStore.Pages
             }
         }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private void BackButton_Click(object backButton, RoutedEventArgs backButtonClickEventArgument)
         {
             if (this.Parent is Frame frame)
             {
@@ -44,7 +44,7 @@ namespace SteamStore.Pages
             }
         }
 
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void SearchBox_TextChanged(object searchTextBox, TextChangedEventArgs textChangedEventArguments)
         {
             if (this.viewModel != null)
             {
