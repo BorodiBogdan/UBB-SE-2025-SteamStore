@@ -30,9 +30,7 @@ namespace SteamStore.Tests.Services
         private const string TagName4 = "BLP";
         private const int UserPointsBeforePurchase = 10;
         private const int UserPointsAfterPurchase = 15;
-        private const int NumberOfUsersGamesWithTagNeverUsed = 0;
-        private const int NumberOfUsersGamesWithTagUsedOnce = 1;
-        private const int NumberOfUsersGamesWithTagUsedMultiple = 2;
+
         private const int NumberOfFavoriteTagsMaximum = 3;
         private const int NumberOfFavoriteTagsExpected = 2;
         private const decimal TagScoreComparator = 0.0001m;
@@ -143,6 +141,7 @@ namespace SteamStore.Tests.Services
         [Fact]
         public void ComputeNoOfUserGamesForEachTag_ShouldSetCountToOne_WhenTagIsUsedInOneGame()
         {
+            const int NumberOfUsersGamesWithTagUsedOnce = 1;
             var tag = new Tag { Tag_name = TagName1 };
             var gameWithTag = new Game { Name = GameName1, Tags = new[] { TagName1 } };
 
@@ -158,6 +157,8 @@ namespace SteamStore.Tests.Services
         [Fact]
         public void ComputeNoOfUserGamesForEachTag_ShouldSetCountToZero_WhenTagNotPresentInAnyGame()
         {
+            const int NumberOfUsersGamesWithTagNeverUsed = 0;
+
             var tag = new Tag { Tag_name = TagName2 };
             var gameWithoutTag = new Game { Name = GameName1, Tags = new[] { TagName1 } };
 
@@ -173,6 +174,8 @@ namespace SteamStore.Tests.Services
         [Fact]
         public void ComputeNoOfUserGamesForEachTag_ShouldCorrectlyCountMultipleGamesForSameTag()
         {
+            const int NumberOfUsersGamesWithTagUsedMultiple = 2;
+
             var tag = new Tag { Tag_name = TagName1 };
             var game1 = new Game { Name = GameName1, Tags = new[] { TagName1 } };
             var game2 = new Game { Name = GameName2, Tags = new[] { TagName1, TagName2 } };
