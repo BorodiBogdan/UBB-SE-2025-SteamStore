@@ -247,10 +247,22 @@ public class GameRepository : IGameRepository
     public Collection<Game> GetAllGames()
     {
         var gamesData = this.dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure);
-        var gameList = (from DataRow row in gamesData.Rows
-            select new Game
+        var gameList = new List<Game>();
+
+        foreach (DataRow row in gamesData.Rows)
+        {
+            var gameId = (int)row[SqlConstants.GameIdColumn];
+            var tagNames = new List<string>();
+            var tags = this.GetGameTags(gameId);
+
+            foreach (var tag in tags)
             {
-                Identifier = (int)row[SqlConstants.GameIdColumn],
+                tagNames.Add(tag.Tag_name);
+            }
+
+            var game = new Game
+            {
+                Identifier = gameId,
                 PublisherIdentifier = (int)row[SqlConstants.PublisherIdColumn],
                 Name = (string)row[SqlConstants.GameNameColumn],
                 Description = (string)row[SqlConstants.GameDescriptionColumn],
@@ -262,12 +274,15 @@ public class GameRepository : IGameRepository
                 RecommendedRequirements = (string)row[SqlConstants.RecommendedRequirementsColumn],
                 Status = (string)row[SqlConstants.GameStatusColumn],
                 Discount = (int)row[SqlConstants.DiscountColumn],
-                Tags = this.GetGameTags((int)row[SqlConstants.GameIdColumn]).Select(tag => tag.Tag_name).ToArray(),
-                Rating = this.GetGameRating((int)row[SqlConstants.GameIdColumn]),
-                NumberOfRecentPurchases = this.GetNumberOfRecentSalesForGame((int)row[SqlConstants.GameIdColumn]),
+                Tags = tagNames.ToArray(),
+                Rating = this.GetGameRating(gameId),
+                NumberOfRecentPurchases = this.GetNumberOfRecentSalesForGame(gameId),
                 TrendingScore = Game.NOTCOMPUTED,
                 TagScore = Game.NOTCOMPUTED,
-            }).ToList();
+            };
+
+            gameList.Add(game);
+        }
 
         return new Collection<Game>(gameList);
     }

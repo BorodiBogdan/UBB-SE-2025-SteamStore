@@ -1,9 +1,9 @@
-﻿using SteamStore.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SteamStore.ViewModels;
 
 namespace SteamStore.Tests.Commands
 {
@@ -45,7 +45,11 @@ namespace SteamStore.Tests.Commands
         {
             // Arrange
             Action execute = () => this.executeCalled = true;
-            Func<bool> canExecute = () => { this.canExecuteCalled = true; return true; };
+            Func<bool> canExecute = () =>
+            {
+                this.canExecuteCalled = true;
+                return true;
+            };
 
             // Act
             this.relayCommand = new RelayCommandWithoutParameter(execute, canExecute);
@@ -96,7 +100,11 @@ namespace SteamStore.Tests.Commands
             // Arrange
             this.relayCommand = new RelayCommandWithoutParameter(
                 () => { },
-                () => { this.canExecuteCalled = true; return true; });
+                () =>
+                {
+                    this.canExecuteCalled = true;
+                    return true;
+                });
 
             // Act
             this.relayCommand.CanExecute(null);
@@ -186,7 +194,11 @@ namespace SteamStore.Tests.Commands
             // Arrange
             this.relayCommand = new RelayCommandWithoutParameter(
                 () => { },
-                () => { this.canExecuteCalled = true; return true; });
+                () =>
+                {
+                    this.canExecuteCalled = true;
+                    return true;
+                });
 
             // Act
             this.relayCommand.CanExecute("some parameter");
