@@ -69,9 +69,10 @@ namespace SteamStore.Tests.Commands
         [Fact]
         public void CanExecute_WhenValidValueTypeParameterProvided_ReturnsTrue()
         {
+            int someIntegerValue = 42;
             var intCommand = new RelayCommand<int>((parameter) => { });
 
-            bool result = intCommand.CanExecute(42);
+            bool result = intCommand.CanExecute(someIntegerValue);
 
             Assert.True(result);
         }
@@ -122,37 +123,54 @@ namespace SteamStore.Tests.Commands
         }
 
         [Fact]
-        public void CanExecuteChanged_WhenSubscribedAndUnsubscribed_EventIsRaisedOrSuppressed()
+        public void CanExecuteChanged_WhenHandlerSubscribed_EventFires()
         {
             bool eventRaised = false;
-
             EventHandler handler = (sender, arguments) => eventRaised = true;
-            this.stringRelayCommand = new RelayCommand<string>((parameters) => { });
+
+            this.stringRelayCommand = new RelayCommand<string>(parameter => { });
             this.stringRelayCommand.CanExecuteChanged += handler;
             this.stringRelayCommand.RaiseCanExecuteChanged();
-            bool firstCall = eventRaised;
 
-            eventRaised = false;
-            this.stringRelayCommand.CanExecuteChanged -= handler;
-            this.stringRelayCommand.RaiseCanExecuteChanged();
-            bool secondCall = eventRaised;
-
-            Assert.True(firstCall);
-            Assert.False(secondCall);
+            Assert.True(eventRaised);
         }
 
         [Fact]
-        public void CanExecute_WhenConditionMatches_ReturnsExpectedResult()
+        public void CanExecuteChanged_WhenHandlerUnsubscribed_EventDoesNotFire()
+        {
+            bool eventRaised = false;
+            EventHandler handler = (sender, arguments) => eventRaised = true;
+
+            this.stringRelayCommand = new RelayCommand<string>(parameter => { });
+            this.stringRelayCommand.CanExecuteChanged += handler;
+            this.stringRelayCommand.CanExecuteChanged -= handler;
+            this.stringRelayCommand.RaiseCanExecuteChanged();
+
+            Assert.False(eventRaised);
+        }
+
+        [Fact]
+        public void CanExecute_WithExpectedCondition_ReturnsTrue()
         {
             this.stringRelayCommand = new RelayCommand<string>(
-                (parameters) => { },
-                (parameters) => parameters == "valid");
+                parameter => { },
+                parameter => parameter == "valid");
 
-            bool validResult = this.stringRelayCommand.CanExecute("valid");
-            bool invalidResult = this.stringRelayCommand.CanExecute("invalid");
+            bool result = this.stringRelayCommand.CanExecute("valid");
 
-            Assert.True(validResult);
-            Assert.False(invalidResult);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CanExecute_WithUnexpectedCondition_ReturnsFalse()
+        {
+            this.stringRelayCommand = new RelayCommand<string>(
+                parameter => { },
+                parameter => parameter == "valid");
+
+            bool result = this.stringRelayCommand.CanExecute("invalid");
+
+            Assert.False(result);
         }
 
         public void Dispose()
