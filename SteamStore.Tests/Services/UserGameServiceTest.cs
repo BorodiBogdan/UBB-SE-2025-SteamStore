@@ -71,7 +71,7 @@ namespace SteamStore.Tests.Services
         }
 
         [Fact]
-        public void RemoveGameFromWishlist_CallsRepository()
+        public void RemoveGameFromWishlist_Successful_CallsRepository()
         {
             var gameToRemove = new Game();
             userGameService.RemoveGameFromWishlist(gameToRemove);
@@ -110,7 +110,7 @@ namespace SteamStore.Tests.Services
         }
 
         [Fact]
-        public void PurchaseGames_CallsRepository()
+        public void PurchaseGames_Succesful_CallsRepository()
         {
             var gameToPurchase = new Game { Name = GameName1 };
             var gamesToPurchase = new List<Game> { gameToPurchase };
@@ -126,7 +126,7 @@ namespace SteamStore.Tests.Services
         }
 
         [Fact]
-        public void PurchaseGames_CalculatesPointsCorrectly()
+        public void PurchaseGames_Succesful_CalculatesPointsCorrectly()
         {
             var gameToPurchase = new Game { Name = GameName1 };
             var gamesToPurchase = new List<Game> { gameToPurchase };

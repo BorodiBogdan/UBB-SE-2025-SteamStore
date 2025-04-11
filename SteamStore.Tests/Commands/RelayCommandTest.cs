@@ -96,6 +96,7 @@ namespace SteamStore.Tests.Commands
         public void Execute_WhenCalled_ExecutesProvidedActionWithParameter()
         {
             const string testParameter = "test parameter";
+
             this.stringRelayCommand = new RelayCommand<string>((parameter) =>
             {
                 this.executeCalled = true;
@@ -112,9 +113,9 @@ namespace SteamStore.Tests.Commands
         public void RaiseCanExecuteChanged_WhenInvoked_RaisesCanExecuteChangedEvent()
         {
             bool eventRaised = false;
+
             this.stringRelayCommand = new RelayCommand<string>((parametr) => { });
             this.stringRelayCommand.CanExecuteChanged += (sender, arguments) => eventRaised = true;
-
             this.stringRelayCommand.RaiseCanExecuteChanged();
 
             Assert.True(eventRaised);
@@ -124,9 +125,9 @@ namespace SteamStore.Tests.Commands
         public void CanExecuteChanged_WhenSubscribedAndUnsubscribed_EventIsRaisedOrSuppressed()
         {
             bool eventRaised = false;
+
             EventHandler handler = (sender, arguments) => eventRaised = true;
             this.stringRelayCommand = new RelayCommand<string>((parameters) => { });
-
             this.stringRelayCommand.CanExecuteChanged += handler;
             this.stringRelayCommand.RaiseCanExecuteChanged();
             bool firstCall = eventRaised;

@@ -6,7 +6,6 @@ namespace SteamStore.Tests.Services;
 public class CartServiceTests
 {
 	private const decimal TEST_PRICE = 10.0m;
-	private const float TEST_PRICE_RESULT = 30.0f;
 	private readonly CartService cartService;
 	private readonly Mock<ICartRepository> repositoryMock;
 
@@ -164,15 +163,16 @@ public class CartServiceTests
 	[Fact]
 	public void GetTheTotalSumOfItemsInCart_WithMultipleGames_ReturnsCorrectTotal()
 	{
-		// Arrange
+        // Arrange
+		float expectedResult = 30.0f;
 		var cartGames = new List<Game>
 		{
 			new Game { Price = TEST_PRICE },
 			new Game { Price = TEST_PRICE },
 			new Game { Price = TEST_PRICE }
 		};
-		var result = cartService.GetTheTotalSumOfItemsInCart(cartGames);
+		var actualResult = cartService.GetTheTotalSumOfItemsInCart(cartGames);
 
-		Assert.Equal(TEST_PRICE_RESULT, result);
+		Assert.Equal(expectedResult, actualResult);
 	}
 }
