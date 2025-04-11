@@ -31,11 +31,12 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void IsGamePurchased_ReturnsTrue_WhenGameIsPurchased()
+        public void IsGamePurchased_WhenGameIsPurchased_ShouldReturnTrue()
         {
+            const int ItemWasPurchased = 1;
             var purchasedGame = new Game { Identifier = TestGameIdentifier };
             mockDataLink.Setup(dataLink => dataLink.ExecuteScalar<int>(SqlConstants.IsGamePurchasedProcedure, It.IsAny<SqlParameter[]>()))
-                        .Returns(1);
+                        .Returns(ItemWasPurchased);
 
             var isPurchased = userGameRepository.IsGamePurchased(purchasedGame);
 
@@ -43,11 +44,12 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void IsGamePurchased_ReturnsFalse_WhenGameIsNotPurchased()
+        public void IsGamePurchased_WhenGameIsNotPurchased_ShouldReturnFalse()
         {
+            const int ItemWasNotPurchased = 0;
             var unpurchasedGame = new Game { Identifier = TestGameIdentifier };
             mockDataLink.Setup(dataLink => dataLink.ExecuteScalar<int>(SqlConstants.IsGamePurchasedProcedure, It.IsAny<SqlParameter[]>()))
-                        .Returns(0);
+                        .Returns(ItemWasNotPurchased);
 
             var isPurchased = userGameRepository.IsGamePurchased(unpurchasedGame);
 
@@ -55,7 +57,7 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void RemoveGameFromWishlist_CallsExecuteNonQuery_WhenGameIsValid()
+        public void RemoveGameFromWishlist_WhenGameIsValid_CallsExecuteNonQuery()
         {
             var gameToRemove = new Game { Identifier = TestGameIdentifier };
             mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.RemoveGameFromWishlistProcedure, It.IsAny<SqlParameter[]>()))
@@ -67,7 +69,7 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void RemoveGameFromWishlist_ThrowsException_WhenDatabaseErrorOccurs()
+        public void RemoveGameFromWishlist_WhenDatabaseErrorOccurs_ThrowsException()
         {
             var gameToRemove = new Game { Identifier = TestGameIdentifier };
             mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.RemoveGameFromWishlistProcedure, It.IsAny<SqlParameter[]>()))
@@ -78,7 +80,7 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void AddGameToPurchased_ThrowsException_WhenFundsAreInsufficient()
+        public void AddGameToPurchased_WhenFundsAreInsufficient_ThrowsException()
         {
             const decimal TestGamePriceExpensive = 200.0m;
             const string ExceptionMessageInsufficientFunds = "Insufficient funds";
@@ -90,7 +92,7 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void AddGameToPurchased_UpdatesWalletBalance_WhenPurchaseIsSuccessful()
+        public void AddGameToPurchased_WhenPurchaseIsSuccessful_UpdatesWalletBalance()
         {
             const decimal TestGamePriceAffordable = 10.0m;
             const float TestGameCheckPrice = 90.0f;
@@ -106,7 +108,7 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void AddGameToWishlist_CallsExecuteNonQuery_WhenGameIsValid()
+        public void AddGameToWishlist_WhenGameIsValid_CallsExecuteNonQuery()
         {
             var gameToAdd = new Game { Identifier = TestGameIdentifier };
             mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.AddGameToWishlistProcedure, It.IsAny<SqlParameter[]>()))
@@ -118,7 +120,7 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void AddGameToWishlist_ThrowsException_WhenDatabaseFails()
+        public void AddGameToWishlist_WhenDatabaseFails_ThrowsException()
         {
             var gameToAdd = new Game { Identifier = TestGameIdentifier };
 
@@ -130,11 +132,10 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void GetGameTags_ReturnsTagList_WhenTagsAreAvailable()
+        public void GetGameTags_WhenTagsAreAvailable_ReturnsTagList()
         {
             const string TestTag1 = "Action";
             const string TestTag2 = "Adventure";
-            const int GetNumberGameTagsExpected = 2;
 
             var tagsTable = new DataTable();
             tagsTable.Columns.Add(SqlConstants.TagNameColumn);
@@ -146,31 +147,29 @@ namespace SteamStore.Tests.Repositories
 
             var gameTags = userGameRepository.GetGameTags(TestGameIdentifier);
 
-            Assert.Equal(GetNumberGameTagsExpected, gameTags.Length);
-            Assert.Contains(TestTag1, gameTags);
-            Assert.Contains(TestTag2, gameTags);
+            var expectedTags = new[] { TestTag1, TestTag2 };
+            Assert.Equal(expectedTags, gameTags);
         }
 
         [Fact]
-        public void GetGameTags_ThrowsException_WhenDatabaseFails()
+        public void GetGameTags_WhenDatabaseFails_ThrowsException()
         {
             mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, It.IsAny<SqlParameter[]>()))
                         .Throws(new Exception(ExceptionMessageDatabaseError));
 
             var exceptionGetGameTags = Assert.Throws<Exception>(() => userGameRepository.GetGameTags(TestGameIdentifier));
+
             Assert.Equal($"Error getting tags for game {TestGameIdentifier}: {ExceptionMessageDatabaseError}", exceptionGetGameTags.Message);
         }
 
         [Fact]
-        public void GetGameOwnerCount_ReturnsCorrectCount_WhenDataExists()
+        public void GetGameOwnerCount_WhenDataExists_ReturnsCorrectCount()
         {
             const string OwnerCountParameter = "OwnerCount";
             const int OwnerCountValue = 5;
-
             var ownerCountTable = new DataTable();
             ownerCountTable.Columns.Add(OwnerCountParameter);
             ownerCountTable.Rows.Add(OwnerCountValue);
-
             mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetGameOwnerCountProcedure, It.IsAny<SqlParameter[]>()))
                         .Returns(ownerCountTable);
 
@@ -180,12 +179,10 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void GetGameOwnerCount_ReturnsZero_WhenNoDataAvailable()
+        public void GetGameOwnerCount_WhenNoDataAvailable_ReturnsZero()
         {
             const int OwnerCountMinimum = 0;
-
             var emptyTable = new DataTable();
-
             mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetGameOwnerCountProcedure, It.IsAny<SqlParameter[]>()))
                         .Returns(emptyTable);
 
@@ -195,11 +192,10 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void AddPointsForPurchase_IncreasesUserPoints_WhenValidAmountIsProvided()
+        public void AddPointsForPurchase_WhenValidAmountIsProvided_IncreasesUserPoints()
         {
             const float PointBalanceMinimum = 0.0f;
             const int TestRewardPoints = 1210;
-
             mockUser.PointsBalance = PointBalanceMinimum;
             mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.UpdateUserPointBalance, It.IsAny<SqlParameter[]>()))
                         .Verifiable();
@@ -211,10 +207,9 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void AddPointsForPurchase_ThrowsException_WhenDatabaseFails()
+        public void AddPointsForPurchase_WhenDatabaseFails_ThrowsException()
         {
             const string ExceptionMessageFailAddPoints = "Failed to add points for purchase: Database error";
-
             mockDataLink.Setup(dataLink => dataLink.ExecuteNonQuery(SqlConstants.UpdateUserPointBalance, It.IsAny<SqlParameter[]>()))
                         .Throws(new Exception(ExceptionMessageDatabaseError));
 
@@ -224,7 +219,7 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void GetUserPointsBalance_ReturnsCorrectBalance()
+        public void GetUserPointsBalance_Always_ReturnsCorrectBalance()
         {
             mockUser.PointsBalance = InitialPointsBalance;
 
@@ -234,7 +229,7 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void GetWishlistGames_ReturnsListOfGames_WhenDataExists()
+        public void GetWishlistGames_WhenDataExists_ReturnsListOfGames()
         {
             var wishlistTable = new DataTable();
             wishlistTable.Columns.Add(SqlConstants.GameIdColumn, typeof(int));
@@ -248,33 +243,31 @@ namespace SteamStore.Tests.Repositories
             wishlistTable.Columns.Add(SqlConstants.DiscountColumn, typeof(decimal));
             wishlistTable.Columns.Add(SqlConstants.RatingColumn, typeof(decimal));
 
-            const int Game1Identifier = 1;
-            const string Game1Name = "Game1";
-            const decimal Game1Price = 19.99m;
-            const string Game1Description = "Desc1";
-            const string Game1Image = "Image1";
-            const string Game1MinimumRequirement = "Min1";
-            const string Game1RecommendedRequirement = "Rec1";
-            const string Game1Status = "Available";
-            const decimal Game1Discount = 10.0m;
-            const decimal Game1Rating = 4.5m;
+            const int FirstGameIdentifier = 1;
+            const string FirstGameName = "FirstGame";
+            const decimal FirstGamePrice = 19.99m;
+            const string FirstGameDescription = "FirstGame Description";
+            const string FirstGameImage = "FirstGame Image";
+            const string FirstGameMinimumRequirement = "FirstGame Min";
+            const string FirstGameRecommendedRequirement = "FirstGame Recommended";
+            const string FirstGameStatus = "Available";
+            const decimal FirstGameDiscount = 10.0m;
+            const decimal FirstGameRating = 4.5m;
 
-            const int Game2Identifier = 2;
-            const string Game2Name = "Game2";
-            const decimal Game2Price = 29.99m;
-            const string Game2Description = "Desc2";
-            const string Game2Image = "Image2";
-            const string Game2MinimumRequirement = "Min2";
-            const string Game2RecommendedRequirement = "Rec2";
-            const string Game2Status = "Available";
-            const decimal Game2Discount = 15.0m;
-            const decimal Game2Rating = 4.0m;
-
+            const int SecondGameIdentifier = 2;
+            const string SecondGameName = "SecondGame";
+            const decimal SecondGamePrice = 29.99m;
+            const string SecondGameDescription = "SecondGame Description";
+            const string SecondGameImage = "SecondGame Image";
+            const string SecondGameMinimumRequirement = "SecondGame Min";
+            const string SecondGameRecommendedRequirement = "SecondGame Recommended";
+            const string SecondGameStatus = "Available";
+            const decimal SecondGameDiscount = 15.0m;
+            const decimal SecondGameRating = 4.0m;
             const int ExpectedCountGamesWishlist = 2;
 
-            wishlistTable.Rows.Add(Game1Identifier, Game1Name, Game1Price, Game1Description, Game1Image, Game1MinimumRequirement, Game1RecommendedRequirement, Game1Status, Game1Discount, Game1Rating);
-            wishlistTable.Rows.Add(Game2Identifier, Game2Name, Game2Price, Game2Description, Game2Image, Game2MinimumRequirement, Game2RecommendedRequirement, Game2Status, Game2Discount, Game2Rating);
-
+            wishlistTable.Rows.Add(FirstGameIdentifier, FirstGameName, FirstGamePrice, FirstGameDescription, FirstGameImage, FirstGameMinimumRequirement, FirstGameRecommendedRequirement, FirstGameStatus, FirstGameDiscount, FirstGameRating);
+            wishlistTable.Rows.Add(SecondGameIdentifier, SecondGameName, SecondGamePrice, SecondGameDescription, SecondGameImage, SecondGameMinimumRequirement, SecondGameRecommendedRequirement, SecondGameStatus, SecondGameDiscount, SecondGameRating);
             mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetWishlistGamesProcedure, It.IsAny<SqlParameter[]>()))
                         .Returns(wishlistTable);
 
@@ -284,10 +277,9 @@ namespace SteamStore.Tests.Repositories
         }
 
         [Fact]
-        public void GetWishlistGames_ReturnsEmptyList_WhenNoDataExists()
+        public void GetWishlistGames_WhenNoDataExists_ReturnsEmptyList()
         {
             var emptyWishlist = new DataTable();
-
             mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetWishlistGamesProcedure, It.IsAny<SqlParameter[]>()))
                         .Returns(emptyWishlist);
 
