@@ -68,7 +68,7 @@ namespace SteamStore.Pages
             this.NotificationBar.Visibility = Visibility.Visible;
         }
 
-        private void ItemsGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ItemsGridView_SelectionChanged(object itemsGridView, SelectionChangedEventArgs itemGridViewArguments)
         {
             if (this.ViewModel.HandleItemSelection())
             {
@@ -98,13 +98,13 @@ namespace SteamStore.Pages
             }
         }
 
-        private void CloseDetailButton_Click(object sender, RoutedEventArgs e)
+        private void CloseDetailButton_Click(object closeDetailButton, RoutedEventArgs closeButtoClickEventArgument)
         {
             // Hide the item detail panel and clear the selection
             this.ViewModel.ClearSelection();
         }
 
-        private async void PurchaseButton_Click(object sender, RoutedEventArgs e)
+        private async void PurchaseButton_Click(object purchaseButton, RoutedEventArgs purchaseClickEventArgument)
         {
             bool success = await this.ViewModel.TryPurchaseSelectedItemAsync();
 
@@ -115,38 +115,38 @@ namespace SteamStore.Pages
             }
         }
 
-        private void ViewInventoryButton_Click(object sender, RoutedEventArgs e)
+        private void ViewInventoryButton_Click(object viewInventoryButton, RoutedEventArgs viewInventoryClickEventArgument)
         {
             this.InventoryPanel.Visibility = Visibility.Visible;
         }
 
-        private void CloseInventoryButton_Click(object sender, RoutedEventArgs e)
+        private void CloseInventoryButton_Click(object closeInventoryButton, RoutedEventArgs closeInventoryClickEventArgument)
         {
             this.InventoryPanel.Visibility = Visibility.Collapsed;
         }
 
-        private async void RemoveButtons_Click(object sender, RoutedEventArgs e)
+        private async void RemoveButtons_Click(object removeButton, RoutedEventArgs removeClickEventArgument)
         {
-            if (sender is Button button && int.TryParse(button.Tag?.ToString(), out int itemId))
+            if (removeButton is Button button && int.TryParse(button.Tag?.ToString(), out int itemId))
             {
                 await this.ViewModel.ToggleActivationForItemWithMessage(itemId);
             }
         }
 
-        private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        private void Image_ImageFailed(object imageControlSender, ExceptionRoutedEventArgs imageLoadFailEventArgument)
         {
             // Set a default image when loading fails
-            if (sender is Image img)
+            if (imageControlSender is Image image)
             {
                 // Set a placeholder or default image
-                img.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(
+                image.Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(
                     new Uri("https://via.placeholder.com/200x200?text=Image+Not+Found"));
             }
         }
 
-        private void ItemTypeFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ItemTypeFilter_SelectionChanged(object filterComboBoxSender, SelectionChangedEventArgs filterComboBoxArgument)
         {
-            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
+            if (filterComboBoxSender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 string filterType = selectedItem.Content.ToString();
                 if (this.ViewModel != null)
@@ -156,17 +156,17 @@ namespace SteamStore.Pages
             }
         }
 
-        private void CloseNotification_Click(object sender, RoutedEventArgs e)
+        private void CloseNotification_Click(object closeNotificationButton, RoutedEventArgs closeNotificationEventArgument)
         {
             this.NotificationBar.Visibility = Visibility.Collapsed;
         }
 
-        private void ViewTransactionHistoryButton_Click(object sender, RoutedEventArgs e)
+        private void ViewTransactionHistoryButton_Click(object viewTransactionHistoryButton, RoutedEventArgs viewTransactionHistoryClickEventArgument)
         {
             this.TransactionHistoryPanel.Visibility = Visibility.Visible;
         }
 
-        private void CloseTransactionHistoryButton_Click(object sender, RoutedEventArgs e)
+        private void CloseTransactionHistoryButton_Click(object closeTransactionHistoryButton, RoutedEventArgs closeTransactionHistoryEventArgument)
         {
             this.TransactionHistoryPanel.Visibility = Visibility.Collapsed;
         }
