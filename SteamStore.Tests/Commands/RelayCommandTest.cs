@@ -113,7 +113,7 @@ namespace SteamStore.Tests.Commands
         public void RaiseCanExecuteChanged_WhenInvoked_RaisesCanExecuteChangedEvent()
         {
             bool eventRaised = false;
-            
+
             this.stringRelayCommand = new RelayCommand<string>((parametr) => { });
             this.stringRelayCommand.CanExecuteChanged += (sender, arguments) => eventRaised = true;
             this.stringRelayCommand.RaiseCanExecuteChanged();
@@ -128,7 +128,6 @@ namespace SteamStore.Tests.Commands
 
             EventHandler handler = (sender, arguments) => eventRaised = true;
             this.stringRelayCommand = new RelayCommand<string>((parameters) => { });
-
             this.stringRelayCommand.CanExecuteChanged += handler;
             this.stringRelayCommand.RaiseCanExecuteChanged();
             bool firstCall = eventRaised;
