@@ -46,6 +46,7 @@ namespace SteamStore.Tests.Repositories
         private const decimal Game1Discount = 10.0m;
         private const decimal Game1Rating = 4.5m;
         private const int Game2Identifier = 2;
+
         private const string Game2Name = "Game2";
         private const decimal Game2Price = 29.99m;
         private const string Game2Description = "Desc2";
@@ -260,9 +261,9 @@ namespace SteamStore.Tests.Repositories
             wishlistTable.Columns.Add(SqlConstants.GameStatusColumn, typeof(string));
             wishlistTable.Columns.Add(SqlConstants.DiscountColumn, typeof(decimal));
             wishlistTable.Columns.Add(SqlConstants.RatingColumn, typeof(decimal));
-
             wishlistTable.Rows.Add(Game1Identifier, Game1Name, Game1Price, Game1Description, Game1Image, Game1MinimumRequirement, Game1RecommendedRequirement, Game1Status, Game1Discount, Game1Rating);
             wishlistTable.Rows.Add(Game2Identifier, Game2Name, Game2Price, Game2Description, Game2Image, Game2MinimumRequirement, Game2RecommendedRequirement, Game2Status, Game2Discount, Game2Rating);
+
 
             mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetWishlistGamesProcedure, It.IsAny<SqlParameter[]>()))
                         .Returns(wishlistTable);

@@ -20,7 +20,11 @@ namespace SteamStore.Tests
         private const string ErrorExecuteReader = "Error - ExecuteReader";
         private const string ErrorExecuteNonQuery = "Error - ExecuteNonQuery";
         private const string ErrorExecuteScalar = "Error - ExecutingScalar";
+
         private const int NumberRowsEmptyTable = 0;
+
+        private const int DataTableRowCountComparisonValue = 0;
+
         private const int GameOwnerCountComparisonValue = 0;
         private const int GameRatingComparisonMinimum = 0;
         private const int GameRatingComparisonMaximum = 5;
@@ -117,7 +121,9 @@ namespace SteamStore.Tests
                 new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, SqlDbType.Int) { Value = TestUserIdentifier }
             };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserByIdProcedure, parameters);
+
             Assert.True(dataTable.Rows.Count > NumberRowsEmptyTable);
+
         }
 
         [Fact]
@@ -139,7 +145,9 @@ namespace SteamStore.Tests
                 new SqlParameter(SqlConstants.UserIdentifierParameter, SqlDbType.Int) { Value = TestUserIdentifier }
             };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters);
+
             Assert.True(dataTable.Rows.Count > NumberRowsEmptyTable);
+
         }
 
         [Fact]
@@ -155,7 +163,9 @@ namespace SteamStore.Tests
         {
             var parameters = new SqlParameter[] { };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
+
             Assert.True(dataTable.Rows.Count > NumberRowsEmptyTable);
+
         }
 
         [Fact]
@@ -177,7 +187,9 @@ namespace SteamStore.Tests
                 new SqlParameter(SqlConstants.GameIdShortcutParameter, SqlDbType.Int) { Value = TestGameIdentifier }
             };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, parameters);
+
             Assert.True(dataTable.Rows.Count > NumberRowsEmptyTable);
+
         }
 
         [Fact]
@@ -194,6 +206,7 @@ namespace SteamStore.Tests
             var parameters = new SqlParameter[] { };
             DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure, parameters);
             Assert.True(dataTable.Rows.Count > NumberRowsEmptyTable);
+
         }
 
         [Fact]
