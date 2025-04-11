@@ -15,5 +15,4 @@ public static class DataLinkTestUtils
 
         return new DataLink(configuration);
     }
-
 }

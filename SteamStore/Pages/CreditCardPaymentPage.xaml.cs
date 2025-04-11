@@ -36,7 +36,7 @@ namespace SteamStore.Pages
 
         private CreditCardPaymentViewModel ViewModel { get; }
 
-        private async void ProcessPaymentButton_Click(object sender, RoutedEventArgs e)
+        private async void ProcessPaymentButton_Click(object processPaymentButton, RoutedEventArgs processPaymentEventArgument)
         {
             if (this.Parent is Frame frame)
             {
@@ -44,7 +44,7 @@ namespace SteamStore.Pages
             }
         }
 
-        private void NotificationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+        private void NotificationDialog_Opened(ContentDialog notificationDialog, ContentDialogOpenedEventArgs argumentsForOpenedDialog)
         {
         }
     }

@@ -89,9 +89,9 @@ namespace SteamStore.Pages
             }
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs navigationEventArguments)
         {
-            base.OnNavigatedTo(e);
+            base.OnNavigatedTo(navigationEventArguments);
 
             try
             {
@@ -101,12 +101,12 @@ namespace SteamStore.Pages
                     return;
                 }
 
-                if (e.Parameter is Game selectedGame)
+                if (navigationEventArguments.Parameter is Game selectedGame)
                 {
                     this.viewModel.LoadGame(selectedGame);
                     this.LoadGameUi();
                 }
-                else if (e.Parameter is int gameId)
+                else if (navigationEventArguments.Parameter is int gameId)
                 {
                     this.viewModel.LoadGameById(gameId);
                     this.LoadGameUi();
@@ -179,7 +179,7 @@ namespace SteamStore.Pages
             rating.Text = string.Format(LabelStrings.RATINGFORMAT, game.Rating);
         }
 
-        private void BuyButton_Click(object sender, RoutedEventArgs e)
+        private void BuyButton_Click(object buyButtonSender, RoutedEventArgs buyClickEventArgument)
         {
             try
             {
@@ -201,7 +201,7 @@ namespace SteamStore.Pages
             this.NotificationTip.IsOpen = true;
         }
 
-        private void WishlistButton_Click(object sender, RoutedEventArgs e)
+        private void WishlistButton_Click(object wishListButtonSender, RoutedEventArgs wishListClickEventArgument)
         {
             try
             {
@@ -224,9 +224,9 @@ namespace SteamStore.Pages
             }
         }
 
-        private void SimilarGame_Click(object sender, RoutedEventArgs e)
+        private void SimilarGame_Click(object similarGameButton, RoutedEventArgs similarGamesClickEventArgument)
         {
-            if (sender is Button button && button.Tag is Game game)
+            if (similarGameButton is Button button && button.Tag is Game game)
             {
                 Frame frame = this.Parent as Frame;
                 this.viewModel.GetSimilarGames(game, frame);
