@@ -55,7 +55,7 @@ namespace SteamStore.Pages
             this.ReviewGamesList.IsEnabled = false;
         }
 
-        private void DeveloperModePage_Loaded(object sender, RoutedEventArgs e)
+        private void DeveloperModePage_Loaded(object developerModePage, RoutedEventArgs developerPageLoadedArguments)
         {
             // Check if user is a developer
             if (!this.viewModel.CheckIfUserIsADeveloper())
@@ -68,7 +68,7 @@ namespace SteamStore.Pages
             }
         }
 
-        private void ReviewGamesButton_Click(object sender, RoutedEventArgs e)
+        private void ReviewGamesButton_Click(object reviewGamesButton, RoutedEventArgs reviewGamesEventArgument)
         {
             this.viewModel.LoadUnvalidated();
             this.DeveloperGamesList.Visibility = Visibility.Collapsed;
@@ -76,7 +76,7 @@ namespace SteamStore.Pages
             this.PageTitle.Text = DeveloperPageTitles.REVIEWGAMES;
         }
 
-        private void MyGamesButton_Click(object sender, RoutedEventArgs e)
+        private void MyGamesButton_Click(object myGamesButton, RoutedEventArgs myGamesClickEventArgument)
         {
             this.viewModel.LoadGames();
             this.DeveloperGamesList.Visibility = Visibility.Visible;
@@ -84,18 +84,18 @@ namespace SteamStore.Pages
             this.PageTitle.Text = DeveloperPageTitles.MYGAMES;
         }
 
-        private void AcceptButton_Click(object sender, RoutedEventArgs e)
+        private void AcceptButton_Click(object acceptButton, RoutedEventArgs acceptClickEventArgument)
         {
-            if (sender is Button button && button.CommandParameter is int gameId)
+            if (acceptButton is Button button && button.CommandParameter is int gameId)
             {
                 this.viewModel.ValidateGame(gameId);
                 this.viewModel.LoadUnvalidated();
             }
         }
 
-        private async void RejectButton_Click(object sender, RoutedEventArgs e)
+        private async void RejectButton_Click(object rejectButton, RoutedEventArgs rejectClickEventArgument)
         {
-            if (sender is Button button && button.CommandParameter is int gameId)
+            if (rejectButton is Button button && button.CommandParameter is int gameId)
             {
                 this.RejectGameDialog.XamlRoot = this.Content.XamlRoot;
 
@@ -109,7 +109,7 @@ namespace SteamStore.Pages
             }
         }
 
-        private async void AddGameButton_Click(object sender, RoutedEventArgs e)
+        private async void AddGameButton_Click(object addGameButton, RoutedEventArgs addGameEventArgument)
         {
             var result = await this.AddGameDialog.ShowAsync();
 
@@ -192,9 +192,9 @@ namespace SteamStore.Pages
             }
         }
 
-        private async void RejectionButton_Click(object sender, RoutedEventArgs e)
+        private async void RejectionButton_Click(object rejectButton, RoutedEventArgs rejectionClickEventArgument)
         {
-            if (sender is Button button && button.CommandParameter is int gameId)
+            if (rejectButton is Button button && button.CommandParameter is int gameId)
             {
                 try
                 {
@@ -217,9 +217,9 @@ namespace SteamStore.Pages
             }
         }
 
-        private async void RemoveButton_Click(object sender, RoutedEventArgs e)
+        private async void RemoveButton_Click(object removeButton, RoutedEventArgs removeClickEventArgument)
         {
-            if (sender is Button button && button.CommandParameter is int gameId)
+            if (removeButton is Button button && button.CommandParameter is int gameId)
             {
                 try
                 {
@@ -264,9 +264,9 @@ namespace SteamStore.Pages
             }
         }
 
-        private async void EditButton_Click(object sender, RoutedEventArgs e)
+        private async void EditButton_Click(object editButton, RoutedEventArgs editClickEventArgument)
         {
-            if (sender is Button button && button.CommandParameter is int gameId)
+            if (editButton is Button button && button.CommandParameter is int gameId)
             {
                 Game gameToEdit = this.viewModel.GetGameByIdInDeveloperGameList(gameId);
                 if (gameToEdit != null)
@@ -351,34 +351,5 @@ namespace SteamStore.Pages
                 System.Diagnostics.Debug.WriteLine($"Error loading game tags: {exception.Message}");
             }
         }
-
-
-        //private void LoadGameTags(Game game)
-        //{
-        //    this.EditGameTagList.SelectedItems.Clear();
-
-        //    try
-        //    {
-        //        var gameTags = this.viewModel.GetGameTags(game.Identifier);
-        //        if (gameTags.Any())
-        //        {
-        //            foreach (var tag in this.EditGameTagList.Items)
-        //            {
-        //                if (tag is Tag tagItem && gameTags.Any(t => t.TagId == tagItem.TagId))
-        //                {
-        //                    this.EditGameTagList.SelectedItems.Add(tag);
-        //                }
-        //            }
-        //        }
-        //        else
-        //        {
-        //            System.Diagnostics.Debug.WriteLine("No tags found for the game.");
-        //        }
-        //    }
-        //    catch (Exception exception)
-        //    {
-        //        System.Diagnostics.Debug.WriteLine($"Error loading game tags: {exception.Message}");
-        //    }
-        //}
     }
 }

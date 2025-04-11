@@ -34,7 +34,7 @@ namespace SteamStore.Pages
             this.DataContext = this.viewModel;
         }
 
-        private async void ValidateButton_Click(object sender, RoutedEventArgs e)
+        private async void ValidateButton_Click(object validateButton, RoutedEventArgs validateClickEventArgument)
         {
             if (this.Parent is Frame frame)
             {
@@ -42,7 +42,7 @@ namespace SteamStore.Pages
             }
         }
 
-        private void NotificationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+        private void NotificationDialog_Opened(ContentDialog notificationDialog, ContentDialogOpenedEventArgs dialogOpenedEventArguments)
         {
         }
     }
