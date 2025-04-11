@@ -261,9 +261,6 @@ namespace SteamStore.Tests.Repositories
             wishlistTable.Columns.Add(SqlConstants.DiscountColumn, typeof(decimal));
             wishlistTable.Columns.Add(SqlConstants.RatingColumn, typeof(decimal));
 
-            wishlistTable.Rows.Add(Game1Id, Game1Name, Game1Price, Game1Description, Game1Image, Game1MinReq, Game1RecReq, Game1Status, Game1Discount, Game1Rating);
-            wishlistTable.Rows.Add(Game2Id, Game2Name, Game2Price, Game2Description, Game2Image, Game2MinReq, Game2RecReq, Game2Status, Game2Discount, Game2Rating);
-
             mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetWishlistGamesProcedure, It.IsAny<SqlParameter[]>()))
                         .Returns(wishlistTable);
 
