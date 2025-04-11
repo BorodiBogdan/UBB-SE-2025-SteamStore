@@ -43,7 +43,7 @@ namespace SteamStore.Pages
 
         private HomePageViewModel HomePageViewModel { get; set; }
 
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void SearchBox_TextChanged(object searchBox, TextChangedEventArgs textChangedEventArgument)
         {
             string user_input = this.SearchBox.Text;
             if (this.DataContext is HomePageViewModel viewModel)
@@ -54,12 +54,12 @@ namespace SteamStore.Pages
             this.GameListView.UpdateLayout();
         }
 
-        private void FilterButton_Click(object sender, RoutedEventArgs e)
+        private void FilterButton_Click(object filterButton, RoutedEventArgs filterClickEventArgument)
         {
             this.FilterPopup.IsOpen = true;
         }
 
-        private void ApplyFilters_Click(object sender, RoutedEventArgs e)
+        private void ApplyFilters_Click(object applyFiltersButton, RoutedEventArgs applyFiltersArgument)
         {
             // You can access the filter values from PopupRatingSlider, MinPriceSlider, MaxPriceSlider here.
             int ratingFilter = (int)this.PopupRatingSlider.Value;
@@ -83,7 +83,7 @@ namespace SteamStore.Pages
             this.FilterPopup.IsOpen = false;
         }
 
-        private void ResetFilters_Click(object sender, RoutedEventArgs e)
+        private void ResetFilters_Click(object resetFiltersButton, RoutedEventArgs resetFiltersClickEventArgument)
         {
             this.PopupRatingSlider.Value = RATINGFILTERVALUE;
             this.MinPriceSlider.Value = MINIMUMPRICEFILTERVALUE;
@@ -98,9 +98,9 @@ namespace SteamStore.Pages
         }
 
         // Navigation to GamePage
-        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ListView_SelectionChanged(object gameListView, SelectionChangedEventArgs selectionChangedEventArgument)
         {
-            if (sender is ListView listView && listView.SelectedItem is Game selectedGame)
+            if (gameListView is ListView listView && listView.SelectedItem is Game selectedGame)
             {
                 // Get the services from DataContext
                 if (this.DataContext is HomePageViewModel viewModel)
