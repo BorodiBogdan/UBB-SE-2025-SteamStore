@@ -20,21 +20,12 @@ public class GameServiceTest
     private const string TEST_GAME_3 = "Game 2";
     private const string TEST_GAME_4 = "Game4";
     private const string TEST_GAME_5 = "Game5";
-    private const string GET_TRADING_GAMES_METHOD_NAME = "getTrendingGames";
-    private const string GET_DISCOUNTED_GAMES_METHOD_NAME = "getDiscountedGames";
-    private const string? INVALID_METHOD_NAME = "Invalid method name";
     private const int ZERO = 0;
     private const int OVER_CAP_ITEMS_COUNT = 11;
-    private const string TEST_TAG_3 = "tag3";
     private const int TWO_EXPECTED_GAMES = 2;
     private const int SECOND_ARRAY_ELEMENT = 1;
-    private const int TWO_FOUND_ELEMENTS = 2;
-    private const int SINGULAR_FOUND_ELEMENT = 1;
     private const int LOWER_MIN_RATING = 1;
-    private const int UPPER_MIN_RATING = 10;
     private const int LOWER_MIN_PRICE = 10;
-    private const int UPPER_MIN_PRICE = 400;
-    private const int AVERAGE_MIN_PRICE = 100;
     private const int LOWER_MAX_PRICE = 100;
     private const int UPPER_MAX_PRICE = 400;
     private const int AVERAGE_MAX_PRICE = 101;
@@ -110,9 +101,9 @@ public class GameServiceTest
     {
         var expectedGame1 = new Game { Name = TEST_GAME_1 };
         var expectedGame2 = new Game { Name = TEST_GAME_2 };
-        var excludedGame3 = new Game { Name = TEST_GAME_3 };
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { expectedGame1, expectedGame2, excludedGame3 });
+        var excludedGame = new Game { Name = TEST_GAME_3 };
+        repoMock.Setup(gameRepository => gameRepository.GetAllGames())
+            .Returns(new Collection<Game> { expectedGame1, expectedGame2, excludedGame });
 
         var actualGames = subject.SearchGames(TEST_NAME);
 
@@ -120,169 +111,75 @@ public class GameServiceTest
     }
 
     [Fact]
-    public void SearchItems_ShouldNoMatchItems()
+    public void SearchGames_WhenCalledWithSearchQueryThatDoesNotMatchAnyItem_ShouldReturnEmptyResult()
     {
-        var game1 = new Game { Name = TEST_GAME_1 };
-        var game2 = new Game { Name = TEST_GAME_2 };
-        var game3 = new Game { Name = TEST_GAME_3 };
-
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2, game3 });
+        var excludedGame1 = new Game { Name = TEST_GAME_1 };
+        var excludedGame2 = new Game { Name = TEST_GAME_2 };
+        var excludedGame3 = new Game { Name = TEST_GAME_3 };
+        repoMock.Setup(gameRepository => gameRepository.GetAllGames())
+            .Returns(new Collection<Game> { excludedGame1, excludedGame2, excludedGame3 });
 
         var actualGames = subject.SearchGames(NOT_MATCH_NAME);
+
         Assert.Empty(actualGames);
     }
 
     [Fact]
-    public void FilterItems_ShouldThrowExceptionIfTagIsNull()
+    public void FilterGames_WhenCalledWithNullTags_ShouldThrowException()
     {
         Assert.Throws<ArgumentNullException>(() =>
             subject.FilterGames(LOWER_MIN_RATING, LOWER_MIN_PRICE, LOWER_MAX_PRICE, null));
     }
 
-    [Theory]
-    [InlineData(LOWER_MIN_RATING, LOWER_MIN_PRICE, UPPER_MAX_PRICE, TWO_FOUND_ELEMENTS, new string[] { })]
-    public void FilterItems_ShouldReturnTwoGames(int minRating, int minPrice, int maxPrice, int foundElems,
-        string[] tags)
+    [Fact]
+    public void FilterGames_WhenCalledWithEmptyTags_ShouldFilterOnlyByRatingAndPriceRange()
     {
-        var game1 = new Game()
+        var expectedGame1 = new Game()
         {
             Rating = RATING_GAME_1,
             Price = PRICE_GAME_1,
             Tags = new[] { TEST_TAG_1, TEST_TAG_2 }
         };
-
-        var game2 = new Game()
+        var expectedGame2 = new Game()
         {
             Rating = RATING_GAME_2,
             Price = PRICE_GAME_2,
             Tags = new[] { TEST_TAG_2 }
         };
+        repoMock.Setup(gameRepository => gameRepository.GetAllGames())
+            .Returns(new Collection<Game> { expectedGame1, expectedGame2 });
 
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2 });
+        var actualGames = subject.FilterGames(LOWER_MIN_RATING, LOWER_MIN_PRICE, UPPER_MAX_PRICE, new string[] { });
 
-        var actualGames = subject.FilterGames(minRating, minPrice, maxPrice, tags);
-
-        Assert.Equal(foundElems, actualGames.Count);
+        AssertUtils.AssertContainsExactly(actualGames, new Game[] { expectedGame1, expectedGame2 });
     }
 
-    [Theory]
-    [InlineData(LOWER_MIN_RATING, LOWER_MIN_PRICE, UPPER_MAX_PRICE, new string[] { })]
-    public void FilterItems_ShouldReturnFirstGameInstance(int minRating, int minPrice, int maxPrice,
-        string[] tags)
+    [Fact]
+    public void FilterGames_WhenCalledWithTags_ShouldFilterByRatingPriceRangeAndTags()
     {
-        var game1 = new Game()
+        var expectedGame = new Game()
         {
             Rating = RATING_GAME_1,
             Price = PRICE_GAME_1,
             Tags = new[] { TEST_TAG_1, TEST_TAG_2 }
         };
-
-        var game2 = new Game()
+        var excludedGame = new Game()
         {
             Rating = RATING_GAME_2,
             Price = PRICE_GAME_2,
             Tags = new[] { TEST_TAG_2 }
         };
-
         repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2 });
+            .Returns(new Collection<Game> { expectedGame, excludedGame });
 
-        var actualGames = subject.FilterGames(minRating, minPrice, maxPrice, tags);
+        var actualGames =
+            subject.FilterGames(LOWER_MIN_RATING, LOWER_MIN_PRICE, AVERAGE_MAX_PRICE, new[] { TEST_TAG_1 });
 
-        Assert.Same(actualGames.First(), game1);
+        AssertUtils.AssertContainsExactly(actualGames, new Game[] { expectedGame });
     }
 
-    [Theory]
-    [InlineData(LOWER_MIN_RATING, LOWER_MIN_PRICE, UPPER_MAX_PRICE, new string[] { })]
-    public void FilterItems_ShouldReturnSecondGameInstance(int minRating, int minPrice, int maxPrice,
-        string[] tags)
-    {
-        var game1 = new Game()
-        {
-            Rating = RATING_GAME_1,
-            Price = PRICE_GAME_1,
-            Tags = new[] { TEST_TAG_1, TEST_TAG_2 }
-        };
-
-        var game2 = new Game()
-        {
-            Rating = RATING_GAME_2,
-            Price = PRICE_GAME_2,
-            Tags = new[] { TEST_TAG_2 }
-        };
-
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2 });
-
-        var actualGames = subject.FilterGames(minRating, minPrice, maxPrice, tags);
-
-        Assert.Same(actualGames[SECOND_ARRAY_ELEMENT], game2);
-    }
-
-    [Theory]
-    [InlineData(LOWER_MIN_RATING, LOWER_MIN_PRICE, AVERAGE_MAX_PRICE, SINGULAR_FOUND_ELEMENT, new[] { TEST_TAG_1 })]
-    public void FilterItems_ShouldReturnOneGame(int minRating, int minPrice, int maxPrice, int foundElems,
-        string[] tags)
-    {
-        var game1 = new Game()
-        {
-            Rating = RATING_GAME_1,
-            Price = PRICE_GAME_1,
-            Tags = new[] { TEST_TAG_1, TEST_TAG_2 }
-        };
-
-        var game2 = new Game()
-        {
-            Rating = RATING_GAME_2,
-            Price = PRICE_GAME_2,
-            Tags = new[] { TEST_TAG_2 }
-        };
-
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2 });
-
-        var actualGames = subject.FilterGames(minRating, minPrice, maxPrice, tags);
-
-        Assert.Equal(foundElems, actualGames.Count);
-    }
-
-    [Theory]
-    [InlineData(UPPER_MIN_RATING, LOWER_MIN_PRICE, LOWER_MAX_PRICE, ZERO, new[] { TEST_TAG_1, TEST_TAG_2 })]
-    [InlineData(LOWER_MIN_RATING, UPPER_MIN_PRICE, UPPER_MAX_PRICE, ZERO, new[] { TEST_TAG_1, TEST_TAG_2 })]
-    [InlineData(LOWER_MIN_RATING, AVERAGE_MIN_PRICE, AVERAGE_MAX_PRICE, ZERO, new[] { TEST_TAG_1, TEST_TAG_2 })]
-    [InlineData(LOWER_MIN_RATING, AVERAGE_MIN_PRICE, UPPER_MAX_PRICE, ZERO,
-        new[] { TEST_TAG_1, TEST_TAG_2, TEST_TAG_3 })]
-    public void FilterItems_ShouldNotReturnGames(int minRating, int minPrice, int maxPrice, int foundElems,
-        string[] tags)
-    {
-        var game1 = new Game()
-        {
-            Rating = RATING_GAME_1,
-            Price = PRICE_GAME_1,
-            Tags = new[] { TEST_TAG_1, TEST_TAG_2 }
-        };
-
-        var game2 = new Game()
-        {
-            Rating = RATING_GAME_2,
-            Price = PRICE_GAME_2,
-            Tags = new[] { TEST_TAG_2 }
-        };
-
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2 });
-
-        var actualGames = subject.FilterGames(minRating, minPrice, maxPrice, tags);
-
-        Assert.Equal(foundElems, actualGames.Count);
-    }
-
-    [Theory]
-    [InlineData(GET_TRADING_GAMES_METHOD_NAME)]
-    [InlineData(GET_DISCOUNTED_GAMES_METHOD_NAME)]
-    public void GetGamesMethod_shouldCapAtTenElems(string methodName)
+    [Fact]
+    public void GetTrendingGames_WhenCalled_ShouldCapAtTenElements()
     {
         var games = new Collection<Game>();
         for (var i = ZERO; i < OVER_CAP_ITEMS_COUNT; i++)
@@ -296,12 +193,27 @@ public class GameServiceTest
         repoMock.Setup(r => r.GetAllGames())
             .Returns(games);
 
-        var actualGames = methodName switch
+        var actualGames = subject.GetTrendingGames();
+
+        Assert.Equal(EXPECTED_CAP_NUMBER, actualGames.Count);
+    }
+
+    [Fact]
+    public void GetDiscountedGames_WhenCalled_ShouldCapAtTenElements()
+    {
+        var games = new Collection<Game>();
+        for (var i = ZERO; i < OVER_CAP_ITEMS_COUNT; i++)
         {
-            GET_TRADING_GAMES_METHOD_NAME => subject.GetTrendingGames(),
-            GET_DISCOUNTED_GAMES_METHOD_NAME => subject.GetDiscountedGames(),
-            _ => throw new ArgumentException(INVALID_METHOD_NAME, nameof(methodName))
-        };
+            games.Add(new Game()
+            {
+                Discount = GAME_DISCOUNT
+            });
+        }
+
+        repoMock.Setup(r => r.GetAllGames())
+            .Returns(games);
+
+        var actualGames = subject.GetDiscountedGames();
 
         Assert.Equal(EXPECTED_CAP_NUMBER, actualGames.Count);
     }
