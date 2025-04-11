@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.ObjectModel;
+using System.Reflection;
 using Xunit.Sdk;
 
 namespace SteamStore.Tests.TestUtils;
@@ -27,6 +28,20 @@ public static class AssertUtils
             {
                 throw EqualException.ForMismatchedValues(expectedValue, actualValue, property.ToString());
             }
+        }
+    }
+
+    public static void AssertContainsSingle<T>(Collection<T> collection, T expectedElement)
+    {
+        Assert.Single(collection);
+        Assert.Equal(expectedElement, collection.First());
+    }
+    public static void AssertContainsExactly<T>(Collection<T> collection, T[] expectedElements)
+    {
+        Assert.Equal(expectedElements.Length, collection.Count);
+        for (int i = 0; i < expectedElements.Length; i++)
+        {
+            Assert.Equal(expectedElements[i], collection.ElementAt(i));
         }
     }
 }
