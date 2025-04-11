@@ -3,11 +3,8 @@
 // </copyright>
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using SteamStore.ViewModels;
+using Xunit;
 
 namespace SteamStore.Tests.Commands
 {
@@ -26,192 +23,143 @@ namespace SteamStore.Tests.Commands
         [Fact]
         public void Constructor_WhenExecuteActionIsNull_ThrowsArgumentNullException()
         {
-            // Arrange & Act & Assert
-            string expectedStatus = "execute";
-
             var exception = Assert.Throws<ArgumentNullException>(() => new RelayCommandWithoutParameter(null));
 
-            Assert.Equal(expectedStatus, exception.ParamName);
+            Assert.Equal("execute", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WhenExecuteActionIsNotNull_AssignsActionCorrectly()
+        public void Constructor_WhenExecuteActionIsValid_AssignsActionCorrectly()
         {
-            // Arrange
-            Action executeAction = () => this.wasExecuteActionCalled = true;
+            this.relayCommand = new RelayCommandWithoutParameter(() => this.wasExecuteActionCalled = true);
 
-            // Act
-            this.relayCommand = new RelayCommandWithoutParameter(executeAction);
             this.relayCommand.Execute(null);
 
-            // Assert
             Assert.True(this.wasExecuteActionCalled);
         }
 
         [Fact]
-        public void Constructor_WhenValidParametersProvided_InitializesCommandCorrectly()
+        public void Constructor_WhenCanExecuteProvided_InitializesCommand()
         {
-            // Arrange
-            Action executeAction = () => this.wasExecuteActionCalled = true;
-            Func<bool> canExecuteFunction = () =>
-            {
-                this.wasCanExecuteFunctionCalled = true;
-                return true;
-            };
+            this.relayCommand = new RelayCommandWithoutParameter(() => this.wasExecuteActionCalled = true, () => true);
 
-            // Act
-            this.relayCommand = new RelayCommandWithoutParameter(executeAction, canExecuteFunction);
-
-            // Assert
             Assert.NotNull(this.relayCommand);
-
-            this.relayCommand.Execute(null);
-            Assert.True(this.wasExecuteActionCalled);
-
-            bool result = this.relayCommand.CanExecute(null);
-            Assert.True(this.wasCanExecuteFunctionCalled);
-            Assert.True(result);
         }
 
         [Fact]
-        public void CanExecute_WhenNoCanExecuteFunctionProvided_ReturnsTrue()
+        public void Execute_WhenCalled_TriggersExecuteAction()
         {
-            // Arrange
+            this.relayCommand = new RelayCommandWithoutParameter(() => this.wasExecuteActionCalled = true);
+
+            this.relayCommand.Execute(null);
+
+            Assert.True(this.wasExecuteActionCalled);
+        }
+
+        [Fact]
+        public void CanExecute_WhenNoPredicate_ReturnsTrue()
+        {
             this.relayCommand = new RelayCommandWithoutParameter(() => { });
 
-            // Act
             bool result = this.relayCommand.CanExecute(null);
 
-            // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void CanExecute_WhenCanExecuteFunctionReturnsFalse_ReturnsFalse()
+        public void CanExecute_WhenPredicateReturnsFalse_ReturnsFalse()
         {
-            // Arrange
-            this.relayCommand = new RelayCommandWithoutParameter(
-                () => { },
-                () => false);
+            this.relayCommand = new RelayCommandWithoutParameter(() => { }, () => false);
 
-            // Act
             bool result = this.relayCommand.CanExecute(null);
 
-            // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void CanExecute_WhenCanExecuteFunctionIsProvided_CallsFunction()
+        public void CanExecute_WhenPredicateIsCalled_SetsFlag()
         {
-            // Arrange
-            this.relayCommand = new RelayCommandWithoutParameter(
-                () => { },
-                () =>
-                {
-                    this.wasCanExecuteFunctionCalled = true;
-                    return true;
-                });
+            this.relayCommand = new RelayCommandWithoutParameter(() => { }, () =>
+            {
+                this.wasCanExecuteFunctionCalled = true;
+                return true;
+            });
 
-            // Act
             this.relayCommand.CanExecute(null);
 
-            // Assert
             Assert.True(this.wasCanExecuteFunctionCalled);
         }
 
         [Fact]
-        public void Execute_WhenCalled_InvokesAssignedAction()
+        public void RaiseCanExecuteChanged_WhenSubscribed_RaisesEvent()
         {
-            // Arrange
-            this.relayCommand = new RelayCommandWithoutParameter(() => this.wasExecuteActionCalled = true);
+            bool wasRaised = false;
 
-            // Act
-            this.relayCommand.Execute(null);
-
-            // Assert
-            Assert.True(this.wasExecuteActionCalled);
-        }
-
-        [Fact]
-        public void RaiseCanExecuteChanged_WhenCalled_InvokesEventIfSubscribed()
-        {
-            // Arrange
-            bool wasEventRaised = false;
             this.relayCommand = new RelayCommandWithoutParameter(() => { });
-            this.relayCommand.CanExecuteChanged += (sender, arguments) => wasEventRaised = true;
-
-            // Act
+            this.relayCommand.CanExecuteChanged += (sender, eventArguments) => wasRaised = true;
             this.relayCommand.RaiseCanExecuteChanged();
 
-            // Assert
-            Assert.True(wasEventRaised);
+            Assert.True(wasRaised);
         }
 
         [Fact]
-        public void RaiseCanExecuteChanged_WhenNoSubscribers_DoesNotThrowException()
+        public void RaiseCanExecuteChanged_WhenNoSubscribers_DoesNotThrow()
         {
-            // Arrange
             this.relayCommand = new RelayCommandWithoutParameter(() => { });
 
-            // Act & Assert
             var exception = Record.Exception(() => this.relayCommand.RaiseCanExecuteChanged());
 
             Assert.Null(exception);
         }
 
         [Fact]
-        public void CanExecuteChanged_WhenHandlerIsSubscribedAndUnsubscribed_EventIsRaisedAndThenNotRaised()
+        public void CanExecuteChanged_WhenHandlerSubscribedAndUnsubscribed_BehavesAsExpected_FirstRaiseTrue()
         {
-            // Arrange
-            bool wasEventRaised = false;
-            EventHandler handler = (sender, args) => wasEventRaised = true;
-            this.relayCommand = new RelayCommandWithoutParameter(() => { });
+            bool wasRaised = false;
 
-            // Act
+            EventHandler handler = (sender, eventArguments) => wasRaised = true;
+            this.relayCommand = new RelayCommandWithoutParameter(() => { });
             this.relayCommand.CanExecuteChanged += handler;
             this.relayCommand.RaiseCanExecuteChanged();
-            bool afterFirstRaise = wasEventRaised;
 
-            wasEventRaised = false;
-            this.relayCommand.CanExecuteChanged -= handler;
-            this.relayCommand.RaiseCanExecuteChanged();
-            bool afterSecondRaise = wasEventRaised;
-
-            // Assert
-            Assert.True(afterFirstRaise);
-            Assert.False(afterSecondRaise);
+            Assert.True(wasRaised);
         }
 
         [Fact]
-        public void Execute_WhenParameterProvided_StillExecutesAction()
+        public void CanExecuteChanged_WhenHandlerSubscribedAndUnsubscribed_BehavesAsExpected_SecondRaiseFalse()
         {
-            // Arrange
+            bool wasRaised = false;
+
+            EventHandler handler = (sender, eventArguments) => wasRaised = true;
+            this.relayCommand = new RelayCommandWithoutParameter(() => { });
+            this.relayCommand.CanExecuteChanged += handler;
+            this.relayCommand.CanExecuteChanged -= handler;
+            this.relayCommand.RaiseCanExecuteChanged();
+
+            Assert.False(wasRaised);
+        }
+
+        [Fact]
+        public void Execute_WithObjectParameter_StillCallsExecute()
+        {
             this.relayCommand = new RelayCommandWithoutParameter(() => this.wasExecuteActionCalled = true);
 
-            // Act
-            this.relayCommand.Execute("some parameter");
+            this.relayCommand.Execute("test");
 
-            // Assert
             Assert.True(this.wasExecuteActionCalled);
         }
 
         [Fact]
-        public void CanExecute_WhenParameterProvided_StillCallsCanExecuteFunction()
+        public void CanExecute_WithObjectParameter_StillCallsPredicate()
         {
-            // Arrange
-            this.relayCommand = new RelayCommandWithoutParameter(
-                () => { },
-                () =>
-                {
-                    this.wasCanExecuteFunctionCalled = true;
-                    return true;
-                });
+            this.relayCommand = new RelayCommandWithoutParameter(() => { }, () =>
+            {
+                this.wasCanExecuteFunctionCalled = true;
+                return true;
+            });
 
-            // Act
-            this.relayCommand.CanExecute("some parameter");
+            this.relayCommand.CanExecute("parameters");
 
-            // Assert
             Assert.True(this.wasCanExecuteFunctionCalled);
         }
 
