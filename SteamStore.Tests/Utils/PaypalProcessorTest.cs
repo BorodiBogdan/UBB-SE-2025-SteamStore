@@ -3,26 +3,53 @@
 public class PaypalProcessorTest
 {
     private readonly PaypalProcessor paypalProcessor = new PaypalProcessor();
-    private const string CORRECT_EMAIL = "test@test.com";
-    private const string INCORRECT_EMAIL = "*&^$%$^";
-    private const string CORRECT_PASSWORD = "123456789";
-    private const string INCORRECT_PASSWORD = "123";
-    private const string WHITESPACE = " ";
-    private const decimal AMOUNT = -1m;
-    public static IEnumerable<object[]> PaymentData =>
-        new List<object[]>
-        {
-            new object[] { true, CORRECT_EMAIL, CORRECT_PASSWORD, AMOUNT },
-            new object[] { false, INCORRECT_EMAIL, CORRECT_PASSWORD, AMOUNT },
-            new object[] { false, WHITESPACE, CORRECT_PASSWORD, AMOUNT },
-            new object[] { false, CORRECT_EMAIL, WHITESPACE, AMOUNT },
-            new object[] { false, CORRECT_EMAIL, INCORRECT_PASSWORD, AMOUNT }
-        };
 
-    [Theory]
-    [MemberData(nameof(PaymentData))]
-    public async Task ProcessPaymentAsync(bool result, string email, string password, decimal amount)
+    private const string ValidEmail = "test@test.com";
+    private const string ValidPassword = "123456789";
+    private const string Whitespace = " ";
+    private const decimal PaymentAmount = 1m;
+
+    [Fact]
+    public async Task ProcessPaymentAsync_WithValidEmailAndPassword_ReturnsTrue()
     {
-        Assert.Equal(result, await paypalProcessor.ProcessPaymentAsync(email, password, amount));
+        bool result = await paypalProcessor.ProcessPaymentAsync(ValidEmail, ValidPassword, PaymentAmount);
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task ProcessPaymentAsync_WithInvalidEmail_ReturnsFalse()
+    {
+        string invalidEmail = "*&^$%$^";
+
+        bool result = await paypalProcessor.ProcessPaymentAsync(invalidEmail, ValidPassword, PaymentAmount);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task ProcessPaymentAsync_WithWhitespaceEmail_ReturnsFalse()
+    {
+        bool result = await paypalProcessor.ProcessPaymentAsync(Whitespace, ValidPassword, PaymentAmount);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task ProcessPaymentAsync_WithWhitespacePassword_ReturnsFalse()
+    {
+        bool result = await paypalProcessor.ProcessPaymentAsync(ValidEmail, Whitespace, PaymentAmount);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task ProcessPaymentAsync_WithInvalidPassword_ReturnsFalse()
+    {
+        string invalidPassword = "123";
+
+        bool result = await paypalProcessor.ProcessPaymentAsync(ValidEmail, invalidPassword, PaymentAmount);
+
+        Assert.False(result);
     }
 }
