@@ -35,23 +35,24 @@ namespace SteamStore.Tests.Repositories
         private const int OwnerCountMinimum = 0;
         private const float TestPurchaseAmount = 10.0f;
         private const int TestRewardPoints = 1210;
-        private const int Game1Id = 1;
+        private const int Game1Identifier = 1;
         private const string Game1Name = "Game1";
         private const decimal Game1Price = 19.99m;
         private const string Game1Description = "Desc1";
         private const string Game1Image = "Image1";
-        private const string Game1MinReq = "Min1";
-        private const string Game1RecReq = "Rec1";
+        private const string Game1MinimumRequirement = "Min1";
+        private const string Game1RecommendedRequirement = "Rec1";
         private const string Game1Status = "Available";
         private const decimal Game1Discount = 10.0m;
         private const decimal Game1Rating = 4.5m;
-        private const int Game2Id = 2;
+        private const int Game2Identifier = 2;
+
         private const string Game2Name = "Game2";
         private const decimal Game2Price = 29.99m;
         private const string Game2Description = "Desc2";
         private const string Game2Image = "Image2";
-        private const string Game2MinReq = "Min2";
-        private const string Game2RecReq = "Rec2";
+        private const string Game2MinimumRequirement = "Min2";
+        private const string Game2RecommendedRequirement = "Rec2";
         private const string Game2Status = "Available";
         private const decimal Game2Discount = 15.0m;
         private const decimal Game2Rating = 4.0m;
@@ -260,9 +261,9 @@ namespace SteamStore.Tests.Repositories
             wishlistTable.Columns.Add(SqlConstants.GameStatusColumn, typeof(string));
             wishlistTable.Columns.Add(SqlConstants.DiscountColumn, typeof(decimal));
             wishlistTable.Columns.Add(SqlConstants.RatingColumn, typeof(decimal));
+            wishlistTable.Rows.Add(Game1Identifier, Game1Name, Game1Price, Game1Description, Game1Image, Game1MinimumRequirement, Game1RecommendedRequirement, Game1Status, Game1Discount, Game1Rating);
+            wishlistTable.Rows.Add(Game2Identifier, Game2Name, Game2Price, Game2Description, Game2Image, Game2MinimumRequirement, Game2RecommendedRequirement, Game2Status, Game2Discount, Game2Rating);
 
-            wishlistTable.Rows.Add(Game1Id, Game1Name, Game1Price, Game1Description, Game1Image, Game1MinReq, Game1RecReq, Game1Status, Game1Discount, Game1Rating);
-            wishlistTable.Rows.Add(Game2Id, Game2Name, Game2Price, Game2Description, Game2Image, Game2MinReq, Game2RecReq, Game2Status, Game2Discount, Game2Rating);
 
             mockDataLink.Setup(dataLink => dataLink.ExecuteReader(SqlConstants.GetWishlistGamesProcedure, It.IsAny<SqlParameter[]>()))
                         .Returns(wishlistTable);

@@ -166,14 +166,14 @@ public class CartServiceTests
 	[Fact]
 	public void GetTheTotalSumOfItemsInCart_WithMultipleGames_ReturnsCorrectTotal()
 	{
-		// Arrange
+        // Arrange
+		float expectedResult = 30.0f;
 		var cartGames = new List<Game>
 		{
 			new Game { Price = TestGamePrice },
 			new Game { Price = TestGamePrice },
 			new Game { Price = TestGamePrice }
 		};
-
 		var expectedTotalPrice = 30f;
 
 		var result = cartService.GetTheTotalSumOfItemsInCart(cartGames);

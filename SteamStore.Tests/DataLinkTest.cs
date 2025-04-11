@@ -1,232 +1,200 @@
-﻿using System;
-using System.Data.SqlClient;
+﻿// <copyright file="DataLinkTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+using System;
 using System.Data;
-using Xunit;
+using System.Data.SqlClient;
 using SteamStore.Data;
 using SteamStore.Constants;
 using SteamStore.Tests.TestUtils;
+using Xunit;
 
-namespace SteamStore.Tests
+namespace SteamStore.Tests.Data
 {
-    public class DataLinkTest
+    public class DataLinkTests
     {
         private readonly IDataLink dataLink;
 
-        private const string UnsupportedProcedure = "UnsupportedProcedure";
-        private const string GetGameOwnerCountProcedure = "GetGameOwnerCount";
-        private const string AnyProcedure = "AnyProcedure";
-        private const string InvalidParameter = "@InvalidParameter";
-        private const string InvalidValue = "InvalidValue";
-        private const string ErrorExecuteReader = "Error - ExecuteReader";
-        private const string ErrorExecuteNonQuery = "Error - ExecuteNonQuery";
-        private const string ErrorExecuteScalar = "Error - ExecutingScalar";
-        private const int DataTableRowCountComparisonValue = 0;
-        private const int GameOwnerCountComparisonValue = 0;
-        private const int GameRatingComparisonMinimum = 0;
-        private const int GameRatingComparisonMaximum = 5;
-        private const int TestUserIdentifier = 1;
-        private const int TestGameIdentifier = 1;
+        private const string UnsupportedProcedureName = "UnsupportedProcedure";
+        private const string ValidProcedureWithScalarResult = "GetGameOwnerCount";
+        private const string ArbitraryProcedure = "AnyProcedure";
+        private const string InvalidSqlParameterName = "@InvalidParameter";
+        private const string InvalidSqlParameterValue = "InvalidValue";
+        private const string ExpectedExecuteReaderError = "Error - ExecuteReader";
+        private const string ExpectedExecuteNonQueryError = "Error - ExecuteNonQuery";
+        private const string ExpectedExecuteScalarError = "Error - ExecutingScalar";
+        private const int EmptyReturnedRowsCount = 0;
+        private const int DefaultExpectedCount = 0;
+        private const int MinimumRatingThreshold = 0;
+        private const int MaximumRatingThreshold = 5;
+        private const int ExistingUserId = 1;
+        private const int ExistingGameId = 1;
 
-        public DataLinkTest()
+        public DataLinkTests()
         {
-            dataLink = DataLinkTestUtils.GetDataLink();
+            this.dataLink = DataLinkTestUtils.GetDataLink();
         }
 
         [Fact]
-        public void DataLink_OpenConnection_DoesNotThrow()
+        public void OpenConnection_WhenCalled_DoesNotThrow()
         {
-            dataLink.OpenConnection();
+            this.dataLink.OpenConnection();
+
             Assert.True(true);
         }
 
         [Fact]
-        public void DataLink_CloseConnection_DoesNotThrow()
+        public void CloseConnection_WhenCalled_DoesNotThrow()
         {
-            dataLink.CloseConnection();
+            this.dataLink.CloseConnection();
+
             Assert.True(true);
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_NullParameters_ThrowsException()
+        public void ExecuteReader_WithNullParameters_ThrowsExpectedException()
         {
             var exception = Assert.Throws<Exception>(() =>
-                dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, null));
-            Assert.Contains(ErrorExecuteReader, exception.Message);
+                this.dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, null));
+
+            Assert.Contains(ExpectedExecuteReaderError, exception.Message);
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_EmptyParameters_ThrowsException()
+        public void ExecuteReader_WithEmptyParameters_ThrowsExpectedException()
         {
             var exception = Assert.Throws<Exception>(() =>
-                dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, new SqlParameter[] { }));
-            Assert.Contains(ErrorExecuteReader, exception.Message);
+                this.dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, new SqlParameter[] { }));
+
+            Assert.Contains(ExpectedExecuteReaderError, exception.Message);
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_InvalidParameters_ThrowsException()
+        public void ExecuteReader_WithInvalidParameters_ThrowsExpectedException()
         {
-            var parameters = new SqlParameter[]
+            var parameters = new[]
             {
-                new SqlParameter(InvalidParameter, InvalidValue)
+                new SqlParameter(InvalidSqlParameterName, InvalidSqlParameterValue)
             };
+
             var exception = Assert.Throws<Exception>(() =>
-                dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters));
-            Assert.Contains(ErrorExecuteReader, exception.Message);
+                this.dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters));
+
+            Assert.Contains(ExpectedExecuteReaderError, exception.Message);
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_UnsupportedProcedure_ThrowsException()
-        {
-            var exception = Assert.Throws<Exception>(() =>
-                dataLink.ExecuteReader(UnsupportedProcedure));
-            Assert.Contains(ErrorExecuteReader, exception.Message);
-        }
-
-        [Fact]
-        public void DataLink_ExecuteNonQuery_UnsupportedProcedure_ThrowsException()
+        public void ExecuteReader_WithUnsupportedProcedure_ThrowsExpectedException()
         {
             var exception = Assert.Throws<Exception>(() =>
-                dataLink.ExecuteNonQuery(AnyProcedure));
-            Assert.Contains(ErrorExecuteNonQuery, exception.Message);
+                this.dataLink.ExecuteReader(UnsupportedProcedureName));
+
+            Assert.Contains(ExpectedExecuteReaderError, exception.Message);
         }
 
         [Fact]
-        public void DataLink_ExecuteScalar_UnsupportedProcedure_ThrowsException()
+        public void ExecuteNonQuery_WithUnsupportedProcedure_ThrowsExpectedException()
         {
             var exception = Assert.Throws<Exception>(() =>
-                dataLink.ExecuteScalar<int>(AnyProcedure));
-            Assert.Contains(ErrorExecuteScalar, exception.Message);
+                this.dataLink.ExecuteNonQuery(ArbitraryProcedure));
+
+            Assert.Contains(ExpectedExecuteNonQueryError, exception.Message);
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_GetUserById_ReturnsDataWithExpectedStructure()
+        public void ExecuteScalar_WithUnsupportedProcedure_ThrowsExpectedException()
         {
-            var parameters = new SqlParameter[]
+            var exception = Assert.Throws<Exception>(() =>
+                this.dataLink.ExecuteScalar<int>(ArbitraryProcedure));
+
+            Assert.Contains(ExpectedExecuteScalarError, exception.Message);
+        }
+
+        [Fact]
+        public void ExecuteReader_GetUserByIdProcedure_ReturnsTableWithUserIdColumn()
+        {
+            var parameters = new[]
             {
-                new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, SqlDbType.Int) { Value = TestUserIdentifier }
+                new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, SqlDbType.Int) { Value = ExistingUserId }
             };
-            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserByIdProcedure, parameters);
-            Assert.True(dataTable.Columns.Contains(SqlConstants.UserIdColumn));
+
+            DataTable result = this.dataLink.ExecuteReader(SqlConstants.GetUserByIdProcedure, parameters);
+
+            Assert.True(result.Columns.Contains(SqlConstants.UserIdColumn));
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_GetUserById_ReturnsDataWithValidContent()
+        public void ExecuteReader_GetUserByIdProcedure_ReturnsAtLeastOneRow()
         {
-            var parameters = new SqlParameter[]
+            var parameters = new[]
             {
-                new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, SqlDbType.Int) { Value = TestUserIdentifier }
+                new SqlParameter(SqlConstants.UserIdParameterWithCapitalLetter, SqlDbType.Int) { Value = ExistingUserId }
             };
-            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserByIdProcedure, parameters);
-            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
+
+            DataTable result = this.dataLink.ExecuteReader(SqlConstants.GetUserByIdProcedure, parameters);
+
+            Assert.True(result.Rows.Count > EmptyReturnedRowsCount);
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_getUserGames_ReturnsDataWithExpectedStructure()
+        public void ExecuteReader_GetUserGamesProcedure_ContainsExpectedGameIdColumn()
         {
-            var parameters = new SqlParameter[]
+            var parameters = new[]
             {
-                new SqlParameter(SqlConstants.UserIdentifierParameter, SqlDbType.Int) { Value = TestUserIdentifier }
+                new SqlParameter(SqlConstants.UserIdentifierParameter, SqlDbType.Int) { Value = ExistingUserId }
             };
-            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters);
-            Assert.True(dataTable.Columns.Contains(SqlConstants.GAMEIDCOLUMN));
+
+            DataTable result = this.dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters);
+
+            Assert.True(result.Columns.Contains(SqlConstants.GAMEIDCOLUMN));
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_getUserGames_ReturnsDataWithValidContent()
+        public void ExecuteReader_GetAllTagsProcedure_ContainsExpectedTagIdColumn()
         {
-            var parameters = new SqlParameter[]
+            DataTable result = this.dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure);
+
+            Assert.True(result.Columns.Contains(SqlConstants.TagIdColumn));
+        }
+
+        [Fact]
+        public void ExecuteReader_GetGameTagsProcedure_ContainsExpectedTagIdColumn()
+        {
+            var parameters = new[]
             {
-                new SqlParameter(SqlConstants.UserIdentifierParameter, SqlDbType.Int) { Value = TestUserIdentifier }
+                new SqlParameter(SqlConstants.GameIdShortcutParameter, SqlDbType.Int) { Value = ExistingGameId }
             };
-            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetUserGamesProcedure, parameters);
-            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
+
+            DataTable result = this.dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, parameters);
+
+            Assert.True(result.Columns.Contains(SqlConstants.TagIdColumn));
         }
 
         [Fact]
-        public void DataLink_ExecuteReader_getAllTags_ReturnsDataWithExpectedStructure()
+        public void ExecuteScalar_GetGameOwnerCountProcedure_ReturnsInteger()
         {
-            var parameters = new SqlParameter[] { };
-            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
-            Assert.True(dataTable.Columns.Contains(SqlConstants.TagIdColumn));
-        }
-
-        [Fact]
-        public void DataLink_ExecuteReader_getAllTags_ReturnsDataWithValidContent()
-        {
-            var parameters = new SqlParameter[] { };
-            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllTagsProcedure, parameters);
-            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
-        }
-
-        [Fact]
-        public void DataLink_ExecuteReader_getGameTags_ReturnsDataWithExpectedStructure()
-        {
-            var parameters = new SqlParameter[]
+            var parameters = new[]
             {
-                new SqlParameter(SqlConstants.GameIdShortcutParameter, SqlDbType.Int) { Value = TestGameIdentifier }
+                new SqlParameter(SqlConstants.GameIdParameter, SqlDbType.Int) { Value = ExistingGameId }
             };
-            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, parameters);
-            Assert.True(dataTable.Columns.Contains(SqlConstants.TagIdColumn));
-        }
 
-        [Fact]
-        public void DataLink_ExecuteReader_getGameTags_ReturnsDataWithValidContent()
-        {
-            var parameters = new SqlParameter[]
-            {
-                new SqlParameter(SqlConstants.GameIdShortcutParameter, SqlDbType.Int) { Value = TestGameIdentifier }
-            };
-            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetGameTagsProcedure, parameters);
-            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
-        }
+            int result = this.dataLink.ExecuteScalar<int>(ValidProcedureWithScalarResult, parameters);
 
-        [Fact]
-        public void DataLink_ExecuteReader_GetAllGames_ReturnsDataWithExpectedStructure()
-        {
-            var parameters = new SqlParameter[] { };
-            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure, parameters);
-            Assert.True(dataTable.Columns.Contains(SqlConstants.GAMEIDCOLUMN));
-        }
-
-        [Fact]
-        public void DataLink_ExecuteReader_GetAllGames_ReturnsDataWithValidContent()
-        {
-            var parameters = new SqlParameter[] { };
-            DataTable dataTable = dataLink.ExecuteReader(SqlConstants.GetAllGamesProcedure, parameters);
-            Assert.True(dataTable.Rows.Count > DataTableRowCountComparisonValue);
-        }
-
-        [Fact]
-        public void DataLink_ExecuteScalar_GetGameOwnerCount_StructureIsCorrect()
-        {
-            var parameters = new SqlParameter[]
-            {
-                new SqlParameter(SqlConstants.GameIdParameter, SqlDbType.Int) { Value = TestGameIdentifier }
-            };
-            int result = dataLink.ExecuteScalar<int>(GetGameOwnerCountProcedure, parameters);
             Assert.IsType<int>(result);
         }
 
         [Fact]
-        public void DataLink_ExecuteScalar_GetGameOwnerCount_ReturnsCorrectCount()
+        public void ExecuteScalar_GetGameRatingProcedure_ReturnsRatingInExpectedRange()
         {
-            var parameters = new SqlParameter[]
+            var parameters = new[]
             {
-                new SqlParameter(SqlConstants.GameIdParameter, SqlDbType.Int) { Value = TestGameIdentifier }
+                new SqlParameter(SqlConstants.GameIdShortcutParameter, SqlDbType.Int) { Value = ExistingGameId }
             };
-            int result = dataLink.ExecuteScalar<int>(GetGameOwnerCountProcedure, parameters);
-            Assert.True(result >= GameOwnerCountComparisonValue);
-        }
 
-        [Fact]
-        public void DataLink_ExecuteScalar_GetAverageGameRating_ReturnsCorrectAverage()
-        {
-            var parameters = new SqlParameter[]
-            {
-                new SqlParameter(SqlConstants.GameIdShortcutParameter, SqlDbType.Int) { Value = TestGameIdentifier }
-            };
-            float result = dataLink.ExecuteScalar<float>(SqlConstants.GetGameRatingProcedure, parameters);
-            Assert.True(result >= GameRatingComparisonMinimum && result <= GameRatingComparisonMaximum);
+            float result = this.dataLink.ExecuteScalar<float>(SqlConstants.GetGameRatingProcedure, parameters);
+
+            Assert.InRange(result, MinimumRatingThreshold, MaximumRatingThreshold);
         }
     }
 }
