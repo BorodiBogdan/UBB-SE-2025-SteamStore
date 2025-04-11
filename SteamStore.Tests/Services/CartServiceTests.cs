@@ -94,12 +94,14 @@ public class CartServiceTests
 			}
 		};
 
+		var expectedRemoveCallsCount = 2;
+
 		repositoryMock.Setup(repositoryMock => repositoryMock.RemoveGameFromCart(It.IsAny<Game>()))
 			.Verifiable();
 
 		cartService.RemoveGamesFromCart(games);
 
-		repositoryMock.Verify(repositoryMock => repositoryMock.RemoveGameFromCart(It.IsAny<Game>()), Times.Exactly(2));
+		repositoryMock.Verify(repositoryMock => repositoryMock.RemoveGameFromCart(It.IsAny<Game>()), Times.Exactly(expectedRemoveCallsCount));
 	}
 
 	[Fact]
