@@ -11,89 +11,75 @@ namespace SteamStore.Tests.Commands
     {
         private bool executeCalled;
         private bool canExecuteCalled;
-        private string lastParameter;
-        private RelayCommand<string> relayCommand;
+        private string capturedParameter;
+        private RelayCommand<string> stringRelayCommand;
 
         public RelayCommandTests()
         {
             this.executeCalled = false;
             this.canExecuteCalled = false;
-            this.lastParameter = null;
+            this.capturedParameter = null;
         }
 
         [Fact]
-        public void Constructor_ExecuteActionIsNull_ThrowsArgumentNullException()
+        public void Constructor_WhenExecuteActionIsNull_ThrowsArgumentNullException()
         {
-            // Arrange & Act & Assert
             Assert.Throws<ArgumentNullException>(() => new RelayCommand<string>(null));
         }
 
         [Fact]
-        public void Constructor_ValidParameters_InitializesCommand()
+        public void Constructor_WhenValidParameters_CommandIsInitializedCorrectly()
         {
-            // Arrange
-            Action<string> execute = (parameter) =>
+            Action<string> executeAction = (parameter) =>
             {
                 this.executeCalled = true;
-                this.lastParameter = parameter;
+                this.capturedParameter = parameter;
             };
-            Predicate<string> canExecute = (parameter) =>
+            Predicate<string> canExecutePredicate = (parameter) =>
             {
                 this.canExecuteCalled = true;
                 return true;
             };
 
-            // Act
-            this.relayCommand = new RelayCommand<string>(execute, canExecute);
+            this.stringRelayCommand = new RelayCommand<string>(executeAction, canExecutePredicate);
 
-            // Assert
-            Assert.NotNull(this.relayCommand);
+            Assert.NotNull(this.stringRelayCommand);
         }
 
         [Fact]
-        public void CanExecute_NoCanExecuteFunction_ReturnsTrue()
+        public void CanExecute_WhenNoCanExecuteFunctionProvided_ReturnsTrue()
         {
-            // Arrange
-            this.relayCommand = new RelayCommand<string>((parameter) => { });
+            this.stringRelayCommand = new RelayCommand<string>((parameter) => { });
 
-            // Act
-            bool result = this.relayCommand.CanExecute("test");
+            bool result = this.stringRelayCommand.CanExecute("test");
 
-            // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void CanExecute_NullParameterForValueType_ReturnsFalse()
+        public void CanExecute_WhenNullParameterPassedForValueType_ReturnsTrue()
         {
-            // Arrange
             var intCommand = new RelayCommand<int>((parameter) => { });
 
-            // Act
             bool result = intCommand.CanExecute(null);
 
-            // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void CanExecute_NonNullValueTypeParameter_ReturnsTrue()
+        public void CanExecute_WhenValidValueTypeParameterProvided_ReturnsTrue()
         {
-            // Arrange
             var intCommand = new RelayCommand<int>((parameter) => { });
 
-            // Act
             bool result = intCommand.CanExecute(42);
 
-            // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void CanExecute_WithCanExecuteFunction_CallsFunction()
+        public void CanExecute_WhenCanExecuteFunctionProvided_InvokesFunction()
         {
-            // Arrange
-            this.relayCommand = new RelayCommand<string>(
+            this.stringRelayCommand = new RelayCommand<string>(
                 (parameter) => { },
                 (parameter) =>
                 {
@@ -101,90 +87,78 @@ namespace SteamStore.Tests.Commands
                     return true;
                 });
 
-            // Act
-            this.relayCommand.CanExecute("test");
+            this.stringRelayCommand.CanExecute("test");
 
-            // Assert
             Assert.True(this.canExecuteCalled);
         }
 
         [Fact]
-        public void Execute_CallsExecuteActionWithParameter()
+        public void Execute_WhenCalled_ExecutesProvidedActionWithParameter()
         {
-            // Arrange
             const string testParameter = "test parameter";
-            this.relayCommand = new RelayCommand<string>((parameter) =>
+
+            this.stringRelayCommand = new RelayCommand<string>((parameter) =>
             {
                 this.executeCalled = true;
-                this.lastParameter = parameter;
+                this.capturedParameter = parameter;
             });
 
-            // Act
-            this.relayCommand.Execute(testParameter);
+            this.stringRelayCommand.Execute(testParameter);
 
-            // Assert
             Assert.True(this.executeCalled);
-            Assert.Equal(testParameter, this.lastParameter);
+            Assert.Equal(testParameter, this.capturedParameter);
         }
 
         [Fact]
-        public void RaiseCanExecuteChanged_InvokesCanExecuteChangedEvent()
+        public void RaiseCanExecuteChanged_WhenInvoked_RaisesCanExecuteChangedEvent()
         {
-            // Arrange
             bool eventRaised = false;
-            this.relayCommand = new RelayCommand<string>((parameter) => { });
-            this.relayCommand.CanExecuteChanged += (sender, args) => eventRaised = true;
+            
+            this.stringRelayCommand = new RelayCommand<string>((parametr) => { });
+            this.stringRelayCommand.CanExecuteChanged += (sender, arguments) => eventRaised = true;
+            this.stringRelayCommand.RaiseCanExecuteChanged();
 
-            // Act
-            this.relayCommand.RaiseCanExecuteChanged();
-
-            // Assert
             Assert.True(eventRaised);
         }
 
         [Fact]
-        public void CanExecuteChanged_CanSubscribeAndUnsubscribe()
+        public void CanExecuteChanged_WhenSubscribedAndUnsubscribed_EventIsRaisedOrSuppressed()
         {
-            // Arrange
             bool eventRaised = false;
-            EventHandler handler = (sender, args) => eventRaised = true;
-            this.relayCommand = new RelayCommand<string>((parameter) => { });
 
-            // Act
-            this.relayCommand.CanExecuteChanged += handler;
-            this.relayCommand.RaiseCanExecuteChanged();
+            EventHandler handler = (sender, arguments) => eventRaised = true;
+            this.stringRelayCommand = new RelayCommand<string>((parameters) => { });
+
+            this.stringRelayCommand.CanExecuteChanged += handler;
+            this.stringRelayCommand.RaiseCanExecuteChanged();
             bool firstCall = eventRaised;
 
             eventRaised = false;
-            this.relayCommand.CanExecuteChanged -= handler;
-            this.relayCommand.RaiseCanExecuteChanged();
+            this.stringRelayCommand.CanExecuteChanged -= handler;
+            this.stringRelayCommand.RaiseCanExecuteChanged();
             bool secondCall = eventRaised;
 
-            // Assert
             Assert.True(firstCall);
             Assert.False(secondCall);
         }
 
         [Fact]
-        public void CanExecute_ReturnsCanExecuteFunctionResult()
+        public void CanExecute_WhenConditionMatches_ReturnsExpectedResult()
         {
-            // Arrange
-            this.relayCommand = new RelayCommand<string>(
-                (parameter) => { },
-                (parameter) => parameter == "valid");
+            this.stringRelayCommand = new RelayCommand<string>(
+                (parameters) => { },
+                (parameters) => parameters == "valid");
 
-            // Act
-            bool validResult = this.relayCommand.CanExecute("valid");
-            bool invalidResult = this.relayCommand.CanExecute("invalid");
+            bool validResult = this.stringRelayCommand.CanExecute("valid");
+            bool invalidResult = this.stringRelayCommand.CanExecute("invalid");
 
-            // Assert
             Assert.True(validResult);
             Assert.False(invalidResult);
         }
 
         public void Dispose()
         {
-            this.relayCommand = null;
+            this.stringRelayCommand = null;
         }
     }
 }
