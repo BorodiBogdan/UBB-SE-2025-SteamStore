@@ -4,144 +4,234 @@ using SteamStore.Tests.TestUtils;
 
 namespace SteamStore.Tests.Repositories;
 
-public class GameRepositoryTest
+public class GameRepositoryTest : IDisposable
 {
+    private Game templateTestGame = new Game()
+    {
+        Identifier = (int)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+        Name = "TestName",
+        Description = "TestDescription",
+        ImagePath = "TestImagePath",
+        Price = 1.99m,
+        TrailerPath = "TestTrailerPath",
+        GameplayPath = "TestGameplayPath",
+        MinimumRequirements = "TestMinimumRequirements",
+        RecommendedRequirements = "TestRecommendedRequirements",
+        Status = PENDING_STATUS,
+        Tags = null,
+        Rating = 2,
+        Discount = 3,
+        PublisherIdentifier = 1
+    };
+
     private const string? PENDING_STATUS = "Pending";
     private const string? APPROVED_STATUS = "Approved";
     private const string? REJECTED_STATUS = "Rejected";
     private const string TEST_MESSAGE = "TEST";
     private const decimal UPDATED_GAME_RATING = 0m;
-    private const int NONEXISTENT_GAME_ID = -1;
+    private const int NONEXISTENT_GAME_IDENTIFIER = -1;
     private const int TEST_UNVALIDATED_USER_ID = 2;
     private readonly GameRepository subject = new GameRepository(DataLinkTestUtils.GetDataLink());
 
     [Fact]
-    public void CreateGame()
+    public void CreateGame_WhenCalled_IsInsertedInDatabase()
     {
-        var testGame = CreateRandomGame();
+        // Arrange & Act
+        var testGame = CreateTestGame();
+
+        // Assert
         var foundGame = subject.GetDeveloperGames(testGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == testGame.Name);
         AssertUtils.AssertAllPropertiesEqual(testGame, foundGame);
     }
 
     [Fact]
-    public void UpdateGame()
+    public void UpdateGame_WhenCalled_IsUpdatedInDatabase()
     {
-        var insertedGame = CreateRandomGame();
-        var updatedGame = GameTestUtils.CreateRandomGame();
+        // Arrange
+        var insertedGame = CreateTestGame();
+        var updatedGame = new Game()
+        {
+            Identifier = insertedGame.Identifier,
+            Name = "TestNameUpdated",
+            Description = "TestDescriptionUpdated",
+            ImagePath = "TestImagePathUpdated",
+            Price = 9.99m,
+            TrailerPath = "TestTrailerPathUpdated",
+            GameplayPath = "TestGameplayPathUpdated",
+            MinimumRequirements = "TestMinimumRequirementsUpdated",
+            RecommendedRequirements = "TestRecommendedRequirementsUpdated",
+            Status = APPROVED_STATUS,
+            Rating = 1,
+            Discount = 5,
+            PublisherIdentifier = 1
+        };
         updatedGame.Rating = UPDATED_GAME_RATING;
         updatedGame.Identifier = insertedGame.Identifier;
+
+        // Act
         subject.UpdateGame(updatedGame.Identifier, updatedGame);
+
+        // Assert
         var foundGame = subject.GetDeveloperGames(updatedGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == updatedGame.Name);
         AssertUtils.AssertAllPropertiesEqual(updatedGame, foundGame);
     }
 
     [Fact]
-    public void ValidateGame()
+    public void ValidateGame_WhenCalled_StatusIsChangedToApproved()
     {
-        var testGame = CreateRandomGame(PENDING_STATUS);
+        // Arrange
+        var testGame = CreateTestGame(PENDING_STATUS);
+
+        // Act
         subject.ValidateGame(testGame.Identifier);
+
+        // Assert
         var foundGame = subject.GetDeveloperGames(testGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == testGame.Name);
-
         Assert.Equal(APPROVED_STATUS, foundGame!.Status);
     }
 
     [Fact]
-    public void RejectGame_ReturnsRejectedStatus()
+    public void RejectGame_WhenCalled_StatusIsChangedToRejected()
     {
-        var testGame = CreateRandomGame(PENDING_STATUS);
+        // Arrange
+        var testGame = CreateTestGame(PENDING_STATUS);
+
+        // Act
         subject.RejectGame(testGame.Identifier);
+
+        // Assert
         var foundGame = subject.GetDeveloperGames(testGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == testGame.Name);
-
         Assert.Equal(REJECTED_STATUS, foundGame!.Status);
     }
+
     [Fact]
-    public void RejectGame_GetRejectionMessage()
+    public void RejectGame_WhenCalledWithExistingIdentifier_SetsEmptyRejectionMessage()
     {
-        var testGame = CreateRandomGame(PENDING_STATUS);
+        // Arrange
+        var testGame = CreateTestGame(PENDING_STATUS);
+
+        // Act
         subject.RejectGame(testGame.Identifier);
+
+        // Assert
         Assert.Equal(string.Empty, subject.GetRejectionMessage(testGame.Identifier));
     }
+
     [Fact]
-    public void RejectGame_GetNullRejectionMessage()
+    public void GetRejectionMessage_WhenCalledWithNonExistingIdentifier_ReturnsEmptyString()
     {
-        var testGame = CreateRandomGame(PENDING_STATUS);
+        // Act
+        var rejectionMessage = subject.GetRejectionMessage(NONEXISTENT_GAME_IDENTIFIER);
 
-        subject.RejectGame(testGame.Identifier);
-
-        Assert.Equal(string.Empty, subject.GetRejectionMessage(NONEXISTENT_GAME_ID));
+        // Assert
+        Assert.Equal(string.Empty, rejectionMessage);
     }
 
     [Fact]
-    public void RejectGameWithStatus()
+    public void RejectGameWithMessage_WhenCalled_StatusIsChangedToRejected()
     {
-        var testGame = CreateRandomGame(PENDING_STATUS);
+        // Arrange
+        var testGame = CreateTestGame(PENDING_STATUS);
+
+        // Act
         subject.RejectGameWithMessage(testGame.Identifier, TEST_MESSAGE);
+
+        // Assert
         var foundGame = subject.GetDeveloperGames(testGame.PublisherIdentifier)
             .FirstOrDefault(game => game.Name == testGame.Name);
-
         Assert.Equal(REJECTED_STATUS, foundGame!.Status);
     }
+
     [Fact]
-    public void RejectGameWithMessage()
+    public void RejectGameWithMessage_WhenCalled_SetsRejectionMessage()
     {
-        var testGame = CreateRandomGame(PENDING_STATUS);
+        // Arrange
+        var testGame = CreateTestGame(PENDING_STATUS);
+
+        // Act
         subject.RejectGameWithMessage(testGame.Identifier, TEST_MESSAGE);
+
+        // Assert
         Assert.Equal(TEST_MESSAGE, subject.GetRejectionMessage(testGame.Identifier));
     }
 
     [Fact]
-    public void GetAllGames()
+    public void GetAllGames_WhenCalled_ReturnsAllGames()
     {
-        var testGame = CreateRandomGame(APPROVED_STATUS);
-        var tags = CreateRandomTagsForGame(testGame);
-
-        var foundGame = subject.GetAllGames().FirstOrDefault(game => game.Name == testGame.Name);
+        // Arrange
+        var testGame = CreateTestGame(APPROVED_STATUS);
+        var tags = CreateTagsForGame(testGame);
         testGame.Tags = tags.Select(tag => tag.Tag_name).ToArray();
         testGame.TrendingScore = Game.NOTCOMPUTED;
         testGame.TagScore = Game.NOTCOMPUTED;
+
+        // Act
+        var foundGame = subject.GetAllGames().FirstOrDefault(game => game.Name == testGame.Name);
+
+        // Assert
         AssertUtils.AssertAllPropertiesEqual(testGame, foundGame);
     }
 
     [Fact]
-    public void GetUnvalidated()
+    public void GetUnvalidated_WhenCalled_ReturnsAllPendingStatusGamesBelongingToOtherUsers()
     {
-        var testGame = CreateRandomGame(PENDING_STATUS);
-        var foundGame = subject.GetUnvalidated(TEST_UNVALIDATED_USER_ID).FirstOrDefault(game => game.Name == testGame.Name);
+        // Arrange
+        var testGame = CreateTestGame(PENDING_STATUS);
 
-        AssertUtils.AssertAllPropertiesEqual(testGame, foundGame);
-    }
-
-    [Fact]
-    public void DeleteGame()
-    {
-        var testGame = CreateRandomGame(APPROVED_STATUS);
-        CreateRandomTagsForGame(testGame);
-        subject.DeleteGame(testGame.Identifier);
-        var notFound = subject.GetDeveloperGames(testGame.PublisherIdentifier)
+        // Act
+        var foundGame = subject.GetUnvalidated(TEST_UNVALIDATED_USER_ID)
             .FirstOrDefault(game => game.Name == testGame.Name);
 
+        // Assert
+        AssertUtils.AssertAllPropertiesEqual(testGame, foundGame);
+    }
+
+    [Fact]
+    public void DeleteGame_WhenCalled_DeletesGameFromDatabase()
+    {
+        // Arrange
+        var testGame = CreateTestGame(APPROVED_STATUS);
+        CreateTagsForGame(testGame);
+
+        // Act
+        subject.DeleteGame(testGame.Identifier);
+
+        // Assert
+        var notFound = subject.GetDeveloperGames(testGame.PublisherIdentifier)
+            .FirstOrDefault(game => game.Name == testGame.Name);
         Assert.Null(notFound);
     }
 
     [Fact]
-    public void IsGameIdUsed()
+    public void IsGameIdInUse_WhenCalledOnExistingGameIdentifier_ReturnsTrue()
     {
-        var testGame = CreateRandomGame();
-        Assert.True(subject.IsGameIdInUse(testGame.Identifier));
-    }
-    [Fact]
-    public void IsGameIdNotUsed()
-    {
-        Assert.False(subject.IsGameIdInUse(NONEXISTENT_GAME_ID));
+        // Arrange
+        var testGame = CreateTestGame();
+
+        // Act
+        var isGameIdInUse = subject.IsGameIdInUse(testGame.Identifier);
+
+        // Assert
+        Assert.True(isGameIdInUse);
     }
 
-    private Tag[] CreateRandomTagsForGame(Game testGame)
+    [Fact]
+    public void IsGameIdInUse_WhenCalledOnNonExistingGameIdentifier_ReturnsFalse()
     {
-        var tags = GameTestUtils.RandomTags();
+        // Act
+        var isGameIdInUse = subject.IsGameIdInUse(NONEXISTENT_GAME_IDENTIFIER);
+
+        // Assert
+        Assert.False(isGameIdInUse);
+    }
+
+    private Tag[] CreateTagsForGame(Game testGame)
+    {
+        var tags = TagsConstants.ALL_TAGS.OrderBy(tag => tag.Tag_name).ToArray();
         foreach (var tag in tags)
         {
             subject.InsertGameTag(testGame.Identifier, tag.TagId);
@@ -150,16 +240,20 @@ public class GameRepositoryTest
         return tags;
     }
 
-    private Game CreateRandomGame(string? status = null)
+    private Game CreateTestGame(string? status = null)
     {
-        var testGame = GameTestUtils.CreateRandomGame();
-        testGame.Rating = UPDATED_GAME_RATING;
+        templateTestGame.Rating = UPDATED_GAME_RATING;
         if (status != null)
         {
-            testGame.Status = status;
+            templateTestGame.Status = status;
         }
 
-        subject.CreateGame(testGame);
-        return testGame;
+        subject.CreateGame(templateTestGame);
+        return templateTestGame;
+    }
+
+    public void Dispose()
+    {
+        subject.DeleteGame(templateTestGame.Identifier);
     }
 }
