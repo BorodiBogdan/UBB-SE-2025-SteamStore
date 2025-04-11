@@ -23,7 +23,7 @@ namespace SteamStore.Pages
             this.DataContext = this.viewModel;
         }
 
-        private async void CheckoutButton_Click(object sender, RoutedEventArgs e)
+        private async void CheckoutButton_Click(object sender, RoutedEventArgs checkoutEventArgument)
         {
             if (this.viewModel.CartGames.Count > EmptyGamesCounter)
             {
