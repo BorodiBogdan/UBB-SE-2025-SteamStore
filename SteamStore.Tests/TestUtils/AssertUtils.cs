@@ -36,7 +36,7 @@ public static class AssertUtils
         Assert.Single(collection);
         Assert.Equal(expectedElement, collection.First());
     }
-    public static void AssertContainsExactly<T>(Collection<T> collection, T[] expectedElements)
+    public static void AssertContainsExactly<T>(Collection<T> collection, params T[] expectedElements)
     {
         Assert.Equal(expectedElements.Length, collection.Count);
         for (int i = 0; i < expectedElements.Length; i++)

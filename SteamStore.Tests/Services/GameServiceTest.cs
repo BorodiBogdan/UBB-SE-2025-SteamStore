@@ -22,8 +22,6 @@ public class GameServiceTest
     private const string TEST_GAME_5 = "Game5";
     private const int ZERO = 0;
     private const int OVER_CAP_ITEMS_COUNT = 11;
-    private const int TWO_EXPECTED_GAMES = 2;
-    private const int SECOND_ARRAY_ELEMENT = 1;
     private const int LOWER_MIN_RATING = 1;
     private const int LOWER_MIN_PRICE = 10;
     private const int LOWER_MAX_PRICE = 100;
@@ -41,7 +39,6 @@ public class GameServiceTest
     private const decimal DISCOUNT_GAME_2 = 2;
     private const int NUMBER_OF_RECENT_PURCHASES_GAME_3 = 5;
     private const decimal EXPECTED_TRENDING_SCORE_GAME_1 = 1;
-    private const decimal EXPECTED_TRENDING_SCORE_GAME_2 = 0.5m;
     private const int EXPECTED_SIMILAR_GAMES = 3;
     private const int IDENTIFIER_1 = 1;
     private const int IDENTIFIER_2 = 2;
@@ -189,7 +186,6 @@ public class GameServiceTest
                 Discount = GAME_DISCOUNT
             });
         }
-
         repoMock.Setup(r => r.GetAllGames())
             .Returns(games);
 
@@ -209,8 +205,7 @@ public class GameServiceTest
                 Discount = GAME_DISCOUNT
             });
         }
-
-        repoMock.Setup(r => r.GetAllGames())
+        repoMock.Setup(gameRepository => gameRepository.GetAllGames())
             .Returns(games);
 
         var actualGames = subject.GetDiscountedGames();
@@ -219,165 +214,73 @@ public class GameServiceTest
     }
 
     [Fact]
-    public void GetDiscountedGames_HasFirstGameInstance()
+    public void GetDiscountedGames_WhenCalled_ShouldOnlyReturnGamesWithDiscount()
     {
-        var game1 = new Game()
+        var expectedGame1 = new Game()
         {
             NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_1,
             Discount = DISCOUNT_GAME_1
         };
-
-        var game2 = new Game()
+        var expectedGame2 = new Game()
         {
             NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_2,
             Discount = DISCOUNT_GAME_2
         };
-
-        var game3 = new Game()
+        var excludedGame = new Game()
         {
             NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_3
         };
-
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2, game3 });
+        repoMock.Setup(gameRepository => gameRepository.GetAllGames())
+            .Returns(new Collection<Game> { expectedGame1, expectedGame2, excludedGame });
 
         var actualGames = subject.GetDiscountedGames();
 
-        Assert.Same(actualGames.First(), game1);
+        AssertUtils.AssertContainsExactly(actualGames, expectedGame1, expectedGame2);
     }
 
     [Fact]
-    public void GetDiscountedGames_HasSecondGameInstance()
+    public void GetDiscountedGames_WhenCalled_ShouldComputeTrendingScore()
     {
         var game1 = new Game()
         {
             NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_1,
             Discount = DISCOUNT_GAME_1
         };
+        repoMock.Setup(gameRepository => gameRepository.GetAllGames())
+            .Returns(new Collection<Game> { game1 });
 
-        var game2 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_2,
-            Discount = DISCOUNT_GAME_2
-        };
-
-        var game3 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_3
-        };
-
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2, game3 });
-
-        var actualGames = subject.GetDiscountedGames();
-
-        Assert.Same(actualGames[SECOND_ARRAY_ELEMENT], game2);
-    }
-
-    [Fact]
-    public void GetDiscountedGames_HasTwoExpectedElements()
-    {
-        var game1 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_1,
-            Discount = DISCOUNT_GAME_1
-        };
-
-        var game2 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_2,
-            Discount = DISCOUNT_GAME_2
-        };
-
-        var game3 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_3
-        };
-
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2, game3 });
-
-        var actualGames = subject.GetDiscountedGames();
-        Assert.Equal(TWO_EXPECTED_GAMES, actualGames.Count);
-    }
-
-    [Fact]
-    public void GetDiscountedGames_CheckFirstGameComputedTrendingScore()
-    {
-        var game1 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_1,
-            Discount = DISCOUNT_GAME_1
-        };
-
-        var game2 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_2,
-            Discount = DISCOUNT_GAME_2
-        };
-
-        var game3 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_3
-        };
-
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2, game3 });
         subject.GetDiscountedGames();
+
         Assert.Equal(EXPECTED_TRENDING_SCORE_GAME_1, game1.TrendingScore);
     }
 
     [Fact]
-    public void GetDiscountedGames_CheckSecondGameComputedTrendingScore()
-    {
-        var game1 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_1,
-            Discount = DISCOUNT_GAME_1
-        };
-
-        var game2 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_2,
-            Discount = DISCOUNT_GAME_2
-        };
-
-        var game3 = new Game()
-        {
-            NumberOfRecentPurchases = NUMBER_OF_RECENT_PURCHASES_GAME_3
-        };
-
-        repoMock.Setup(r => r.GetAllGames())
-            .Returns(new Collection<Game> { game1, game2, game3 });
-        subject.GetDiscountedGames();
-
-        Assert.Equal(EXPECTED_TRENDING_SCORE_GAME_2, game2.TrendingScore);
-    }
-
-    [Fact]
-    public void GetSimilarGames_returnsThreeFilteredElements()
+    public void GetSimilarGames_WhenCalled_ReturnsThreeFilteredElements()
     {
         var similarGames = GetSimilarGamesSetUp();
+
         Assert.Equal(EXPECTED_SIMILAR_GAMES, similarGames.Count);
     }
 
     [Fact]
-    public void GetSimilarGames_SelfExcludedElement()
+    public void GetSimilarGames_WhenCalled_AssertDoesNotContainSelf()
     {
         var similarGames = GetSimilarGamesSetUp();
-        Assert.DoesNotContain(similarGames, g => g.Identifier == IDENTIFIER_1);
+
+        Assert.DoesNotContain(similarGames, game => game.Identifier == IDENTIFIER_1);
     }
 
     [Fact]
-    public void GetSimilarGames_returnsDistinctFilteredElements()
+    public void GetSimilarGames_WhenCalled_ReturnsDistinctFilteredElements()
     {
         var similarGames = GetSimilarGamesSetUp();
-        var identifiers = similarGames.Select(g => g.Identifier).ToList();
+
+        var identifiers = similarGames.Select(game => game.Identifier).ToList();
         Assert.True(identifiers.Count == identifiers.Distinct().Count());
     }
 
     [Fact]
-    public void GetSimilarGames_ShouldBeRandomChosen()
+    public void GetSimilarGames_WhenCalled_ShouldBeRandomlyChosen()
     {
         var allGames = new Collection<Game>
         {
@@ -387,7 +290,6 @@ public class GameServiceTest
             new Game() { Identifier = IDENTIFIER_4, Name = TEST_GAME_4 },
             new Game() { Identifier = IDENTIFIER_5, Name = TEST_GAME_5 }
         };
-
         repoMock.Setup(r => r.GetAllGames())
             .Returns(allGames);
 
